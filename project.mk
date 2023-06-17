@@ -10,10 +10,10 @@ PADVALUE := 0xFF
 VERSION := 0
 
 # 4-ASCII letter game ID
-GAMEID := BOIL
+GAMEID := GBPY
 
 # Game title, up to 11 ASCII chars
-TITLE := BOILERPLATE
+TITLE := PYCOMPILER
 
 # New licensee, 2 ASCII chars
 # Homebrew games FTW!
@@ -60,7 +60,7 @@ ASFLAGS += -h
 # LDFLAGS += -d
 
 # No banked WRAM mode
-# LDFLAGS += -w
+LDFLAGS += -w
 
 # 32k mode
 # LDFLAGS += -t
