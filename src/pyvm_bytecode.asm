@@ -44,24 +44,24 @@ ExecBytecodes:
 	ldh [hPyParam], a
 	push hl
 	ld a, b
-	cp $64
+	cp $01
+	jp z, PopTop
+    cp $09
+	jp z, Nope
+    cp $64
 	jp z, LoadConst
 	cp $6c
 	jp z, ImportName
 	cp $6d
 	jp z, ImportFrom
-	cp $7d
-	jp z, StoreFast
-	cp $01
-	jp z, PopTop
+    cp $71
+	jp z, JumpAbsolute
 	cp $7c
 	jp z, LoadFast
+    cp $7d
+	jp z, StoreFast
 	cp $83
 	jp z, CallFunction
-	cp $09
-	jp z, Nope
-	cp $71
-	jp z, JumpAbsolute
 	cp $9b
 	jp z, FormatValue
 	cp $9d

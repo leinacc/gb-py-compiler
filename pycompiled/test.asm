@@ -1,15 +1,43 @@
-TestPythonData:
-dw .consts
-dw .names
-dw .bytecode
-.consts:
-	dw .const0
-	dw .const1
-	dw .const2
-	dw .const3
-	dw .const4
-	dw .const5
-	dw .const6
+PyBlock__module_:
+	dw .consts
+	dw .names
+	dw .bytecode
+	.consts:
+		dw .const0
+		dw .const1
+		dw .const2
+	.const0:
+		dw PyBlock_main
+	.const1:
+		db TYPE_STR, $05
+		db "main", $ff
+	.const2:
+		db TYPE_NONE
+.names:
+	dw .name0
+	.name0:
+		db $05, "main", $ff
+.bytecode:
+	db $64, $00
+	db $64, $01
+	db $84, $00
+	db $5a, $00
+	db $64, $02
+	db $53, $00
+
+
+PyBlock_main:
+	dw .consts
+	dw .names
+	dw .bytecode
+	.consts:
+		dw .const0
+		dw .const1
+		dw .const2
+		dw .const3
+		dw .const4
+		dw .const5
+		dw .const6
 	.const0:
 		db TYPE_NONE
 	.const1:

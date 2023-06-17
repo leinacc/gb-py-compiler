@@ -11,7 +11,7 @@ Intro::
 	xor a
 	call LCDMemset
 
-	ld hl, TestPythonData
+	ld hl, PyBlock_main
 	call CallPython
 	jr @
 
