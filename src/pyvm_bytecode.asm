@@ -157,22 +157,65 @@ ImportName:
 
 
 ImportFrom:
-; todo: this should use param to get a name from co_names[param]
-; that name should be pushed to stack
-; instead I'll temp use it with the assumption they are 1-3, to get a ptr to the fake GbpyModule
+; This should uses a param to get a name from co_names[param]
+; The thing that name points to should be pushed to stack
 	call PeekStack
-	ld a, [hPyParam]
+
+; todo: allow other types, like regular modules
+    ld a, [hl+]
+    cp TYPE_GBPY_MODULE
+    jp nz, Debug
+
+    push hl
+
+; HL = address of names
+	ldh a, [hPyNamesAddr]
+	ld l, a
+	ldh a, [hPyNamesAddr+1]
+	ld h, a
+
+; HL = address of ptr to data
+	ldh a, [hPyParam]
 	add a
-	dec a
 	add l
 	ld l, a
 	jr nc, :+
 	inc h
 
-; Push ptr to asm
-:	ld a, [hl+]
-	ld h, [hl]
-	ld l, a
+; HL = address of name string to find
+:   ld a, [hl+]
+    ld e, a
+    ld d, [hl]
+
+    pop hl
+
+.nextString:
+; Save ptr to next file to check
+	ld a, [hl+]
+	ldh [hStringTableNextAddr], a
+	ld a, [hl+]
+	ldh [hStringTableNextAddr+1], a
+
+    push de
+    call CheckString
+    pop de
+    jr z, .storePtr
+
+; To next string
+    ldh a, [hStringTableNextAddr]
+    ld l, a
+    ldh a, [hStringTableNextAddr+1]
+    ld h, a
+    cp $ff
+    jp z, Debug
+
+    jr .nextString
+
+.storePtr:
+; Push ptr to asm type
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a
 	call PushStack
 	jp ExecBytecodes
 
@@ -494,7 +537,7 @@ hPyNamesAddr: dw
 hBytecodeAddr: dw
 hPyOpcode: db
 hPyParam: db
-hFilesDirNextAddr:: dw
+hStringTableNextAddr:: dw
 
 ; Stack for a single block frame
 hPyStackTop:: db

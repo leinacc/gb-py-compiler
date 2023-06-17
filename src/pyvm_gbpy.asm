@@ -4,11 +4,20 @@ SECTION "Python VM gbpy module asm routines", ROMX
 
 
 GbpyModule::
-	db TYPE_MODULE
-; todo: these are purposely in order in my `main.py`, there should be strings+ptrs
-	dw AsmLoadTiles
-	dw AsmPrintString
-	dw AsmWaitVBlank
+	db TYPE_GBPY_MODULE
+	dw .next0
+		db $0b, "load_tiles", $ff
+		dw AsmLoadTiles
+.next0:
+	dw .next1
+		db $0d, "print_string", $ff
+		dw AsmPrintString
+.next1:
+	dw .next2
+		db $0c, "wait_vblank", $ff
+		dw AsmWaitVBlank
+.next2:
+	dw $ffff
 
 
 InitGbpyModule::
@@ -68,9 +77,9 @@ AsmLoadTiles:
 
 ; Save ptr to next file to check
 	ld a, [hl+]
-	ldh [hFilesDirNextAddr], a
+	ldh [hStringTableNextAddr], a
 	ld a, [hl+]
-	ldh [hFilesDirNextAddr], a
+	ldh [hStringTableNextAddr+1], a
 
 ; Check filename
 	push de

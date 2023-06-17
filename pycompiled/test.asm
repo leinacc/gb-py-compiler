@@ -48,13 +48,13 @@ dw .bytecode
 	dw .name2
 	dw .name3
 	.name0:
-		db "gbpy", $ff
+		db $05, "gbpy", $ff
 	.name1:
-		db "load_tiles", $ff
+		db $0b, "load_tiles", $ff
 	.name2:
-		db "print_string", $ff
+		db $0d, "print_string", $ff
 	.name3:
-		db "wait_vblank", $ff
+		db $0c, "wait_vblank", $ff
 .bytecode:
 	db $64, $01
 	db $64, $02
