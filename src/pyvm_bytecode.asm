@@ -1,6 +1,6 @@
 INCLUDE "src/include/defines.asm"
 
-SECTION "Python VM bytecode handlers", ROMX
+SECTION "Python VM bytecode handlers", ROM0
 
 CallPython::
 	xor a
