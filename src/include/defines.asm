@@ -95,3 +95,14 @@ error: MACRO
 		jr \1, @+1
 	ENDC
 ENDM
+
+
+; Python VM
+
+rsreset
+def TYPE_NONE rb 1
+def TYPE_INT rb 1
+def TYPE_TUPLE rb 1
+def TYPE_STR rb 1
+def TYPE_MODULE rb 1
+def TYPE_ASM rb 1

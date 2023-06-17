@@ -1,0 +1,101 @@
+TestPythonData:
+dw .consts
+dw .names
+dw .bytecode
+.consts:
+	dw .const0
+	dw .const1
+	dw .const2
+	dw .const3
+	dw .const4
+	dw .const5
+	dw .const6
+	.const0:
+		db TYPE_NONE
+	.const1:
+		db TYPE_INT
+		db $00
+	.const2:
+		db TYPE_TUPLE
+		db $03
+		dw .tupleItem0
+		dw .tupleItem1
+		dw .tupleItem2
+		.tupleItem0
+			db TYPE_STR
+			db "load_tiles", $ff
+		.tupleItem1
+			db TYPE_STR
+			db "print_string", $ff
+		.tupleItem2
+			db TYPE_STR
+			db "wait_vblank", $ff
+	.const3:
+		db TYPE_STR
+		db "ascii.2bpp", $ff
+	.const4:
+		db TYPE_INT
+		db $17
+	.const5:
+		db TYPE_STR
+		db "Hello,\nGBCompo '", $ff
+	.const6:
+		db TYPE_STR
+		db "!", $ff
+.names:
+	dw .name0
+	dw .name1
+	dw .name2
+	dw .name3
+	.name0:
+		db "gbpy", $ff
+	.name1:
+		db "load_tiles", $ff
+	.name2:
+		db "print_string", $ff
+	.name3:
+		db "wait_vblank", $ff
+.bytecode:
+	db $64, $01
+	db $64, $02
+	db $6c, $00
+	db $6d, $01
+	db $7d, $00
+	db $6d, $02
+	db $7d, $01
+	db $6d, $03
+	db $7d, $02
+	db $01, $00
+	db $7c, $00
+	db $64, $03
+	db $83, $01
+	db $7d, $03
+	db $64, $04
+	db $7d, $04
+	db $7c, $01
+	db $64, $05
+	db $7c, $04
+	db $9b, $00
+	db $64, $06
+	db $9d, $03
+	db $7c, $03
+	db $83, $02
+	db $01, $00
+	db $09, $00
+	db $7c, $02
+	db $83, $00
+	db $01, $00
+	db $71, $1a
+
+
+FileSystem::
+	dw .next0
+	db "ascii.2bpp", $ff
+		dw File0
+		dw File0.end-File0
+.next0:
+	dw $ffff
+
+File0:
+	INCBIN "data/ascii.2bpp"
+.end:
