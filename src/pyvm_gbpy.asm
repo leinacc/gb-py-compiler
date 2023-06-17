@@ -27,30 +27,6 @@ InitGbpyModule::
     ret
 
 
-; Returns HL pointing to the newly-pushed data
-PushNewNone:
-	ld bc, 1
-	call Malloc
-	ld a, TYPE_NONE
-	ld [hl], a
-	jp PushStack
-
-
-; B - int to push
-PushNewInt:
-	push bc
-	ld bc, 2
-	call Malloc
-	pop bc
-
-; Store an INT:B there
-	ld a, TYPE_INT
-	ld [hl+], a
-	ld a, b
-	ld [hl-], a
-	jp PushStack
-
-
 AsmLoadTiles:
 	db TYPE_ASM
 
