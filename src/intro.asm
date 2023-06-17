@@ -132,10 +132,10 @@ File0:
 CallPython:
 	xor a
 	ldh [hPyStackTop], a
-	ldh [hStackDataOffs], a
-	ldh [hStackDataOffs+1], a
 	ld [wPrintTileCol], a
 	ld [wPrintTileCol+1], a
+
+	call InitHeap
 
 ; Python code address in hram
 	ld a, l
@@ -249,53 +249,25 @@ PushStack:
 
 ; Returns HL pointing to the newly-pushed data
 PushNewNone:
-; HL = curr offset in dynamic stack data
-	ldh a, [hStackDataOffs]
-	ld l, a
-	ldh a, [hStackDataOffs+1]
-	add HIGH(wPyStackData)
-	ld h, a
-
-	push hl
-
-; Store a None there
+	ld bc, 1
+	call Malloc
 	ld a, TYPE_NONE
-	ld [hl+], a
-
-; Save the new data offset
-	ld a, l
-	ldh [hStackDataOffs], a
-	ld a, h
-	sub HIGH(wPyStackData)
-	ldh [hStackDataOffs+1], a
-
-	pop hl
+	ld [hl], a
 	jp PushStack
 
 
 ; B - int to push
 PushNewInt:
-; HL = curr offset in dynamic stack data
-	ldh a, [hStackDataOffs]
-	ld l, a
-	ldh a, [hStackDataOffs+1]
-	add HIGH(wPyStackData)
-	ld h, a
-	push hl
+	push bc
+	ld bc, 2
+	call Malloc
+	pop bc
 
 ; Store an INT:B there
 	ld a, TYPE_INT
 	ld [hl+], a
 	ld a, b
-	ld [hl+], a
-
-	ld a, l
-	ldh [hStackDataOffs], a
-	ld a, h
-	sub HIGH(wPyStackData)
-	ldh [hStackDataOffs+1], a
-	
-	pop hl
+	ld [hl-], a
 	jp PushStack
 
 
@@ -377,7 +349,29 @@ StoreFast:
 
 PopTop:
 	ldh a, [hPyStackTop]
-	sub 2
+	ld l, a
+	ld h, HIGH(wPyStackPtrs)
+	dec hl
+
+; Check if we need to free data
+	ld a, [hl-]
+	cp HIGH(wHeapData)
+	jr c, .afterFree
+
+	cp HIGH(wHeapData+$1000)
+	jr nc, .afterFree
+
+; If so, go from user data to chunk header, and Free the chunk
+	push hl
+	ld l, [hl]
+	ld h, a
+	ld de, -6
+	add hl, de
+	call Free
+	pop hl
+
+.afterFree:
+	ld a, l
 	ldh [hPyStackTop], a
 	jp ExecBytecodes
 
@@ -457,17 +451,19 @@ FormatValue:
 	cp TYPE_INT
 	jp nz, Debug
 
-	ld b, [hl]
+	ld a, [hl]
+	push af
 
 ; Convert B to a 1 or 2-digit string in the data stack
+; Malloc'd data = TYPE, 1 or 2 chars, $ff
+	ld bc, 3
+	cp 10
+	jr c, :+
+	inc bc
+:	call Malloc
 
-; HL = curr offset in dynamic stack data
-	ldh a, [hStackDataOffs]
-	ld l, a
-	ldh a, [hStackDataOffs+1]
-	add HIGH(wPyStackData)
-	ld h, a
-	push hl
+	pop bc ; B = int value
+	push hl ; push to stack later, a ptr to the text
 
 ; Store a ptr to a string there
 	ld a, TYPE_STR
@@ -492,14 +488,8 @@ FormatValue:
 	add "0"
 	ld [hl+], a
 	ld a, $ff
-	ld [hl+], a
+	ld [hl], a
 
-	ld a, l
-	ldh [hStackDataOffs], a
-	ld a, h
-	sub HIGH(wPyStackData)
-	ldh [hStackDataOffs+1], a
-	
 	pop hl
 	call PushStack
 	jp ExecBytecodes
@@ -517,12 +507,9 @@ BuildString:
 		dec b
 		jr nz, :-
 
-; HL = curr offset in dynamic stack data
-	ldh a, [hStackDataOffs]
-	ld l, a
-	ldh a, [hStackDataOffs+1]
-	add HIGH(wPyStackData)
-	ld h, a
+; todo: calc string length
+	ld bc, $100
+	call Malloc
 	push hl
 
 	ld a, TYPE_STR
@@ -567,14 +554,7 @@ BuildString:
 		jr nz, .nextString
 
 	ld a, $ff
-	ld [hl+], a
-
-; Save stack data offset
-	ld a, l
-	ldh [hStackDataOffs], a
-	ld a, h
-	sub HIGH(wPyStackData)
-	ldh [hStackDataOffs+1], a
+	ld [hl], a
 
 	pop hl
 	call PushStack
@@ -817,12 +797,11 @@ hPyOpcode: db
 hPyParam: db
 hFilesDirNextAddr: dw
 
+; Stack for a single block frame
 hPyStackTop: db
-hStackDataOffs: dw
 
 SECTION "PYVM Wram Main", WRAM0, ALIGN[8]
 wPyStackPtrs: ds $100 ; word-sized (low, then high)
-wPyStackData: ds $1000
 wPyVarNames: ds $100 ; word-sized ptrs to data rather than names
 
 SECTION "PYVM Wram Print", WRAM0
