@@ -56,7 +56,7 @@ AsmLoadTiles:
 	ld h, [hl]
 	ld l, a
 
-; Check filename is str
+; Check filename to load is str
 	ld a, [hl+]
 	cp TYPE_STR
 	jp nz, Debug
@@ -75,7 +75,7 @@ AsmLoadTiles:
 ; Check filename
 	push de
 	call CheckString
-; todo: we're assuming 1 file here
+; todo: we're assuming 1 file here for now (which would use the `pop de`)
 	jr nz, .debug
 
 	pop de
@@ -140,6 +140,9 @@ AsmPrintString:
 	ld a, [hl+]
 	cp TYPE_STR
 	jr nz, .debug
+
+; Skip past length byte
+	inc hl
 
 	.nextChar:
 		ld a, [hl+]

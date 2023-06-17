@@ -303,8 +303,8 @@ FormatValue:
 	push af
 
 ; Convert A to a 1 or 2-digit string in the data stack
-; Malloc'd data = TYPE, 1 or 2 chars, $ff
-	ld bc, 3
+; Malloc'd data = TYPE, length byte, 1 or 2 chars, $ff
+	ld bc, 4
 	cp 10
 	jr c, :+
 	inc bc
@@ -317,8 +317,15 @@ FormatValue:
 	ld a, TYPE_STR
 	ld [hl+], a
 	ld a, b
+    ld c, 2
 	cp 10
 	jr c, .doDigit
+
+; Store string length, including $ff
+    inc c
+    ld [hl], c
+    inc hl
+
 ; Get 10s
 	ld c, 0
 	:	sub 10
@@ -342,9 +349,18 @@ FormatValue:
 	call PushStack
 	jp ExecBytecodes
 
+.digitOnly:
+; Store string length, including $ff
+    ld [hl], c
+    inc hl
+    jr .doDigit
+
 
 BuildString:
 ; Param is number of string components - build them into 1 string, and push
+; C = malloc length - TYPE, length byte, string length, $ff
+; 3 = all but string length
+    ld c, 3
 
 ; Have stack point to 1st string, while saving hPyStackTop as if the strings were popped
 	ldh a, [hPyParam]
@@ -352,16 +368,38 @@ BuildString:
 	:	ldh a, [hPyStackTop]
 		sub 2
 		ldh [hPyStackTop], a
+        ld h, HIGH(wPyStackPtrs)
+        ld l, a
+    ; HL now points to a ptr to a string?
+        ld a, [hl+]
+        ld h, [hl]
+        ld l, a
+
+        ld a, [hl+]
+        cp TYPE_STR
+        jp nz, Debug
+
+    ; Add the string length, excluding the $ff, onto C
+        ld a, [hl]
+        dec a
+        add c
+        ld c, a
+
 		dec b
 		jr nz, :-
 
-; todo: calc string length
-	ld bc, $100
+; BC = $00<string length>
+    push bc
 	call Malloc
+    pop bc
 	push hl
 
 	ld a, TYPE_STR
 	ld [hl+], a
+    ld a, c
+    dec a
+    dec a
+    ld [hl+], a
 
 ; Combines strings
 	ldh a, [hPyParam]
@@ -386,6 +424,9 @@ BuildString:
 		cp TYPE_STR
 		jp nz, Debug
 
+    ; Skip length
+        inc bc
+
 	; Copy string into HL
 		.nextChar
 			ld a, [bc]
@@ -409,38 +450,30 @@ BuildString:
 	jp ExecBytecodes
 
 
-; DE - 1 string
-; HL - 1 string
+; DE - 1 string (the 1st byte being length, the last being $ff)
+; HL - 1 string (same as above)
 ; Return Z flag set if strings match
 ; Does not preserve regs (DE and HL will be past a terminator if they match)
+; todo: if string length == $ff, this will fail
 CheckString::
 .nextChar:
-; If [hl] and [de] are both $ff, they matched til now, and terminated at the same time
+; If either [hl] or [de] are both $ff, they have the same length, so are both $ff
 	ld a, [hl+]
 	cp $ff
-	jr z, .checkZended
-
-	ld b, a
-
-; If [de] == $ff, [hl] wasn't, so it's no match
-	ld a, [de]
-	inc de
-	cp $ff
-	jr z, .nomatch
+	jr z, .match
 
 ; If any character doesn't match, jump
+	ld b, a
+	ld a, [de]
+	inc de
+
 	cp b
 	jr nz, .nomatch
 
 	jr .nextChar
 
-.checkZended:
-	ld a, [de]
-	inc de
-	cp $ff
-	jr nz, .nomatch
-
 .match:
+    inc de
 	xor a
 	ret
 

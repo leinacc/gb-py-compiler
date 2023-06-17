@@ -22,25 +22,25 @@ dw .bytecode
 		dw .tupleItem1
 		dw .tupleItem2
 		.tupleItem0
-			db TYPE_STR
+			db TYPE_STR, $0b
 			db "load_tiles", $ff
 		.tupleItem1
-			db TYPE_STR
+			db TYPE_STR, $0d
 			db "print_string", $ff
 		.tupleItem2
-			db TYPE_STR
+			db TYPE_STR, $0c
 			db "wait_vblank", $ff
 	.const3:
-		db TYPE_STR
+		db TYPE_STR, $0b
 		db "ascii.2bpp", $ff
 	.const4:
 		db TYPE_INT
 		db $17
 	.const5:
-		db TYPE_STR
+		db TYPE_STR, $11
 		db "Hello,\nGBCompo '", $ff
 	.const6:
-		db TYPE_STR
+		db TYPE_STR, $02
 		db "!", $ff
 .names:
 	dw .name0
@@ -90,7 +90,7 @@ dw .bytecode
 
 FileSystem::
 	dw .next0
-	db "ascii.2bpp", $ff
+	db $0b, "ascii.2bpp", $ff
 		dw File0
 		dw File0.end-File0
 .next0:
