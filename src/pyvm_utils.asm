@@ -20,6 +20,7 @@ PeekStack::
 
 
 ; Returns word ptr in HL (eg ptr to data)
+; Trashes A
 PopStack::
 ; Dec word ptr, and have L point to popped word's 'high' (little-endian word ptrs)
 	ldh a, [hPyStackTop]

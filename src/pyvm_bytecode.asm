@@ -52,6 +52,8 @@ ExecBytecodes:
 	jp z, PopTop
     cp $09
 	jp z, Nope
+    cp $17
+    jp z, BinaryAdd
     cp $53
     jp z, ReturnValue
     cp $5a
@@ -82,7 +84,7 @@ ExecBytecodes:
 	jp z, BuildString
 
 	pop hl
-	ret
+	jp Debug
 
 
 LoadConst:
@@ -241,7 +243,7 @@ LoadFast:
 CallFunction:
 ; todo: verify correct num params used?
 
-; Have stack point to before the ptr to function (hopefully)
+; Have stack point to after the ptr to function
 	ldh a, [hPyParam]
 	and a
 	jr z, .afterDescendingStack
@@ -278,20 +280,22 @@ CallFunction:
 
 ; HL - points to the address of a function block
 _StartNewFrameStack:
+; Save prev stack top to get values to add to new function's fast vars
+    ldh a, [hPyStackTop]
+    add 2
+    push af
+
     push hl
 
 ; Save prev stack
     ldh a, [hCallStackTop]
-    add a
-    add a
-    add a
-    add a
+    swap a
     add LOW(wCallStackSavedVars)
     ld l, a
     ld h, HIGH(wCallStackSavedVars)
     ld de, hPyCodeAddr
-    ld bc, hPyOpcode-hPyCodeAddr
-    call Memcpy
+    ld c, hPyOpcode-hPyCodeAddr
+    rst MemcpySmall
 
 ; Start on a new frame
     ldh a, [hCallStackTop]
@@ -328,8 +332,12 @@ _StartNewFrameStack:
 	ld a, [hl]
 	ldh [hBytecodeAddr+1], a
 
+; E = prev stack top
+    pop af
+    ld e, a
+
 ; Return to .return
-    ld bc, .return
+    ld bc, .execBytecode
     push bc
 
 ; Get bytecode addr
@@ -338,9 +346,26 @@ _StartNewFrameStack:
 	ld h, a
 	push hl
 
-    jp ExecBytecodes
+; Store fast values, DE = prev frame's stack where the fast values are
+	ldh a, [hPyParam]
+    add a
+    jr z, .execBytecode
+	ld c, a
 
-.return:
+    ldh a, [hCallStackTop]
+    dec a
+	add HIGH(wFrameStackPtrs)
+	ld d, a
+
+; HL = where to store the fast names
+    ld l, LOW(wPyFastNames)
+	ldh a, [hCallStackTop]
+	add HIGH(wPyFastNames)
+	ld h, a
+
+    rst MemcpySmall
+
+.execBytecode:
     jp ExecBytecodes
 
 
@@ -359,6 +384,29 @@ MakeFunction:
 
 Nope:
 	jp ExecBytecodes
+
+
+BinaryAdd:
+; Push TOS1 + TOS
+; todo: allow other types
+    call PopStack
+    ld a, [hl+]
+    cp TYPE_INT
+    jp nz, Debug
+
+    ld b, [hl]
+
+    call PopStack
+    ld a, [hl+]
+    cp TYPE_INT
+    jp nz, Debug
+
+    ld a, [hl]
+    add b
+    ld b, a
+    call PushNewInt
+
+    jp ExecBytecodes
 
 
 ReturnValue:
@@ -381,15 +429,12 @@ ReturnValue:
 
 ; Restore prev stack
     ldh a, [hCallStackTop]
-    add a
-    add a
-    add a
-    add a
+    swap a
     ld e, a
     ld d, HIGH(wCallStackSavedVars)
     ld hl, hPyCodeAddr
-    ld bc, hPyOpcode-hPyCodeAddr
-    call Memcpy
+    ld c, hPyOpcode-hPyCodeAddr
+    rst MemcpySmall
 
     pop hl
     call PushStack

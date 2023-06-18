@@ -30,10 +30,10 @@ PyBlock__module_:
 			db "wait_vblank", $ff
 	.const2:
 		db TYPE_FUNCTION
-		dw PyBlock_ret_23
+		dw PyBlock_add
 	.const3:
-		db TYPE_STR, $07
-		db "ret_23", $ff
+		db TYPE_STR, $04
+		db "add", $ff
 	.const4:
 		db TYPE_FUNCTION
 		dw PyBlock_main
@@ -49,7 +49,7 @@ PyBlock__module_:
 	dw .name3
 	dw .name4
 	dw .name5
-	db $48
+	db $45
 	.name0:
 		db $05, "gbpy", $ff
 	.name1:
@@ -59,7 +59,7 @@ PyBlock__module_:
 	.name3:
 		db $0c, "wait_vblank", $ff
 	.name4:
-		db $07, "ret_23", $ff
+		db $04, "add", $ff
 	.name5:
 		db $05, "main", $ff
 .bytecode:
@@ -97,6 +97,8 @@ PyBlock_main:
 		dw .const1
 		dw .const2
 		dw .const3
+		dw .const4
+		dw .const5
 	.const0:
 		db TYPE_NONE
 	.const1:
@@ -106,6 +108,12 @@ PyBlock_main:
 		db TYPE_STR, $11
 		db "Hello,\nGBCompo '", $ff
 	.const3:
+		db TYPE_INT
+		db $14
+	.const4:
+		db TYPE_INT
+		db $03
+	.const5:
 		db TYPE_STR, $02
 		db "!", $ff
 .names:
@@ -113,13 +121,13 @@ PyBlock_main:
 	dw .name1
 	dw .name2
 	dw .name3
-	db $38
+	db $35
 	.name0:
 		db $0b, "load_tiles", $ff
 	.name1:
 		db $0d, "print_string", $ff
 	.name2:
-		db $07, "ret_23", $ff
+		db $04, "add", $ff
 	.name3:
 		db $0c, "wait_vblank", $ff
 .bytecode:
@@ -130,9 +138,11 @@ PyBlock_main:
 	db $74, $01
 	db $64, $02
 	db $74, $02
-	db $83, $00
-	db $9b, $00
 	db $64, $03
+	db $64, $04
+	db $83, $02
+	db $9b, $00
+	db $64, $05
 	db $9d, $03
 	db $7c, $00
 	db $83, $02
@@ -141,25 +151,23 @@ PyBlock_main:
 	db $74, $03
 	db $83, $00
 	db $01, $00
-	db $71, $0f
+	db $71, $11
 
 
-PyBlock_ret_23:
+PyBlock_add:
 	dw .consts
 	dw .names
 	dw .bytecode
 	.consts:
 		dw .const0
-		dw .const1
 	.const0:
 		db TYPE_NONE
-	.const1:
-		db TYPE_INT
-		db $17
 .names:
 	db $01
 .bytecode:
-	db $64, $01
+	db $7c, $00
+	db $7c, $01
+	db $17, $00
 	db $53, $00
 
 

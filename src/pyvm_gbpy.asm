@@ -188,7 +188,7 @@ ENDR
 
 AsmWaitVBlank:
 	db TYPE_ASM
-	call WaitVBlank
+	rst WaitVBlank
 	jp PushNewNone
 
 
