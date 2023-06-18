@@ -48,7 +48,7 @@ AsmLoadTiles:
 ; Each name has 2 word ptrs after it
 	ld a, 4
 	ldh [hStringListExtraBytes], a
-	jp HLequAfterMatchingNameInList
+	call HLequAfterMatchingNameInList
 
 ; DE = src of data
 	ld a, [hl+]

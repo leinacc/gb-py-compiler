@@ -207,7 +207,7 @@ ImportFrom:
 ; Each name has a word ptr after it
 	ld a, 2
 	ldh [hStringListExtraBytes], a
-	jp HLequAfterMatchingNameInList
+	call HLequAfterMatchingNameInList
 
 ; Push ptr to asm type
     ld a, [hl+]
