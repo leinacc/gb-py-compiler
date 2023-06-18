@@ -553,7 +553,7 @@ FormatValue:
 	ld a, b
     ld c, 2
 	cp 10
-	jr c, .doDigit
+	jr c, .digitOnly
 
 ; Store string length, including $ff
     inc c

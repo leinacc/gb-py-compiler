@@ -109,10 +109,10 @@ PyBlock_main:
 		db "Hello,\nGBCompo '", $ff
 	.const3:
 		db TYPE_INT
-		db $14
+		db $01
 	.const4:
 		db TYPE_INT
-		db $03
+		db $02
 	.const5:
 		db TYPE_STR, $02
 		db "!", $ff
@@ -139,11 +139,16 @@ PyBlock_main:
 	db $64, $02
 	db $74, $02
 	db $64, $03
+	db $64, $03
+	db $83, $02
+	db $9b, $00
+	db $74, $02
+	db $64, $03
 	db $64, $04
 	db $83, $02
 	db $9b, $00
 	db $64, $05
-	db $9d, $03
+	db $9d, $04
 	db $7c, $00
 	db $83, $02
 	db $01, $00
@@ -151,7 +156,7 @@ PyBlock_main:
 	db $74, $03
 	db $83, $00
 	db $01, $00
-	db $71, $11
+	db $71, $16
 
 
 PyBlock_add:
