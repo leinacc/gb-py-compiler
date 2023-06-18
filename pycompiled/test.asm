@@ -7,6 +7,7 @@ PyBlock__module_:
 		dw .const1
 		dw .const2
 	.const0:
+		db TYPE_FUNCTION
 		dw PyBlock_main
 	.const1:
 		db TYPE_STR, $05

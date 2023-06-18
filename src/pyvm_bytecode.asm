@@ -10,11 +10,6 @@ CallName::
 	ld l, a
 	ld h, HIGH(wPyLocalNames)
 
-; HL = a ptr to the address of the function block
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
-
 ; HL = the address of the function block
     ld a, [hl+]
     ld h, [hl]
@@ -294,9 +289,17 @@ CallFunction:
 MakeFunction:
 ; TOS - qualified name of function
 ; TOS1 - ptr to function block
-; Pushes function object to stack
+; Pushes address of the function object to stack
     call PopStack
-; Skip PopStack / PushStack
+    call PopStack
+    ld a, [hl+]
+    cp TYPE_FUNCTION
+    jp nz, Debug
+
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+    call PushStack
     jp ExecBytecodes
 
 

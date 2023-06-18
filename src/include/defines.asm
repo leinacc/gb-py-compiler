@@ -106,3 +106,4 @@ def TYPE_TUPLE rb 1
 def TYPE_STR rb 1
 def TYPE_GBPY_MODULE rb 1
 def TYPE_ASM rb 1
+def TYPE_FUNCTION rb 1

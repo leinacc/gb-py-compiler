@@ -48,6 +48,7 @@ def get_block_output(block):
             output += f"\t\tdb TYPE_STR, ${str_len:02x}\n"
             output += f"\t\tdb \"{val}\", $ff\n"
         elif type(el).__name__ == 'code':
+            output += f"\t\tdb TYPE_FUNCTION\n"
             clean_name = el.co_name.replace("<", "_").replace(">", "_")
             output += f"\t\tdw PyBlock_{clean_name}\n"
             outputs.insert(0, get_block_output(el))
