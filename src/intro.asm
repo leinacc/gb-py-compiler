@@ -12,11 +12,14 @@ Intro::
 	call LCDMemset
 
 	ld hl, PyBlock__module_
-	call CallPython
+	call LoadModule
 
-	xor a
+	ld de, .main
 	call CallName
 	jr @
+
+.main:
+	db $05, "main", $ff
 
 
 INCLUDE "pycompiled/test.asm"

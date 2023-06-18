@@ -34,7 +34,7 @@ AsmLoadTiles:
 	ldh a, [hPyStackTop]
 	add 2
 	ld l, a
-	ld h, HIGH(wPyStackPtrs)
+	ld h, HIGH(wFrameStackPtrs)
 
 ; HL = pointer to data
 	ld a, [hl+]
@@ -94,7 +94,7 @@ AsmPrintString:
 	ldh a, [hPyStackTop]
 	add 4
 	ld l, a
-	ld h, HIGH(wPyStackPtrs)
+	ld h, HIGH(wFrameStackPtrs)
 
 ; HL = pointer to data
 	ld a, [hl+]
@@ -112,7 +112,7 @@ AsmPrintString:
 	ldh a, [hPyStackTop]
 	add 2
 	ld l, a
-	ld h, HIGH(wPyStackPtrs)
+	ld h, HIGH(wFrameStackPtrs)
 
 ; HL = pointer to data
 	ld a, [hl+]

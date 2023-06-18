@@ -60,6 +60,10 @@ def get_block_output(block):
     output += ".names:\n"
     for i in range(len(block.co_names)):
         output += f"\tdw .name{i}\n"
+    heap_name_len = 1  # terminator
+    for i, el in enumerate(block.co_names):
+        heap_name_len += 1 + len(el) + 1 + 2
+    output += f"\tdb ${heap_name_len:02x}\n"
     for i, el in enumerate(block.co_names):
         str_len = len(el) + 1
         output += f"\t.name{i}:\n"

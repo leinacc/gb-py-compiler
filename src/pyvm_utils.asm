@@ -10,7 +10,7 @@ PeekStack::
 	ld l, a
 
 ; Load high into A then H, and low into L
-	ld h, HIGH(wPyStackPtrs)
+	ld h, HIGH(wFrameStackPtrs)
 	ld a, [hl-]
 	ld l, [hl]
 	ld h, a
@@ -27,7 +27,7 @@ PopStack::
 	ld l, a
 
 ; Load high into A then H, and low into L
-	ld h, HIGH(wPyStackPtrs)
+	ld h, HIGH(wFrameStackPtrs)
 	ld a, [hl-]
 	ld l, [hl]
 	ld h, a
@@ -38,7 +38,7 @@ PopStack::
 PushStack::
 	ldh a, [hPyStackTop]
 	ld c, a
-	ld b, HIGH(wPyStackPtrs)
+	ld b, HIGH(wFrameStackPtrs)
 	ld a, l
 	ld [bc], a
 	inc c
@@ -104,6 +104,38 @@ CheckString::
 .nomatch:
 	ld a, 1
 	and a
+	ret
+
+
+; DE - address of name to find
+HLequGlobalNamePtrAddr::
+; HL = global name list
+    ld a, [hGlobalNamesPtr]
+    ld l, a
+    ld a, [hGlobalNamesPtr+1]
+    ld h, a
+
+; Start looking for the string
+; todo: check for terminator after names
+    .nextName:
+        push hl
+        push de
+        call CheckString
+        pop de
+        jr z, .foundName
+
+        pop hl
+    ; Skip past length byte + ptr to name's value
+        ld a, [hl]
+        add 3
+        ld c, a
+        ld b, 0
+        add hl, bc
+        jr .nextName
+
+.foundName:
+; Remove 'push hl'
+    pop de
 	ret
 
 
