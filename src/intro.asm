@@ -13,13 +13,7 @@ Intro::
 
 	ld hl, PyBlock__module_
 	call LoadModule
-
-	ld de, .main
-	call CallName
 	jr @
-
-.main:
-	db $05, "main", $ff
 
 
 INCLUDE "pycompiled/test.asm"

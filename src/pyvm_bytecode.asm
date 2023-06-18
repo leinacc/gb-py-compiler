@@ -2,57 +2,6 @@ INCLUDE "defines.asm"
 
 SECTION "Python VM bytecode handlers", ROM0
 
-; DE points to a name
-CallName::
-    call HLequGlobalNamePtrAddr
-
-; HL = the address of the function block
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
-
-; Check and get function addr
-    ld a, [hl+]
-    cp TYPE_FUNCTION
-    jp nz, Debug
-
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
-
-; Init frame
-    xor a
-    ldh [hPyStackTop], a
-
-; Python code address in hram
-	ld a, l
-	ldh [hPyCodeAddr], a
-	ld a, h
-	ldh [hPyCodeAddr+1], a
-
-; Save ptrs addr
-	ld a, [hl+]
-	ldh [hPyConstAddr], a
-	ld a, [hl+]
-	ldh [hPyConstAddr+1], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr+1], a
-	ld a, [hl+]
-	ldh [hBytecodeAddr], a
-	ld a, [hl]
-	ldh [hBytecodeAddr+1], a
-
-; Get bytecode addr
-	ld a, [hl-]
-	ld l, [hl]
-	ld h, a
-	push hl
-
-    jp ExecBytecodes
-
-
 ; HL - address of module to load
 LoadModule::
 	xor a
@@ -109,6 +58,8 @@ ExecBytecodes:
     jp z, StoreName
     cp $64
 	jp z, LoadConst
+    cp $65
+    jp z, LoadName
 	cp $6c
 	jp z, ImportName
 	cp $6d
@@ -225,7 +176,9 @@ StoreFast:
 	add a
     add LOW(wPyFastNames)
 	ld c, a
-	ld b, HIGH(wPyFastNames)
+	ldh a, [hCallStackTop]
+	add HIGH(wPyFastNames)
+	ld b, a
 
 ; Store the stack word ptr to data in BC
 	ld a, l
@@ -239,7 +192,9 @@ StoreFast:
 PopTop:
 	ldh a, [hPyStackTop]
 	ld l, a
-	ld h, HIGH(wFrameStackPtrs)
+    ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+    ld h, a
 	dec hl
 
 ; Check if we need to free data
@@ -271,7 +226,9 @@ LoadFast:
 	add a
     add LOW(wPyFastNames)
 	ld l, a
-	ld h, HIGH(wPyFastNames)
+	ldh a, [hCallStackTop]
+	add HIGH(wPyFastNames)
+	ld h, a
 
 ; Push the ptr to that data
 	ld a, [hl+]
@@ -300,8 +257,14 @@ CallFunction:
 	call PopStack
 	ld a, [hl+]
 	cp TYPE_ASM
-	jp nz, Debug
+    jr z, .doAsm
 
+    cp TYPE_FUNCTION
+    jr z, _StartNewFrameStack
+
+	jp Debug
+
+.doAsm:
 ; Jump to HL, then return to ExecBytecodes
 ; hPyStackTop points to the routine ptr, so params are eg [hPyStackTop]+2
 	ld bc, .return
@@ -311,6 +274,74 @@ CallFunction:
 
 .return:
 	jp ExecBytecodes
+
+
+; HL - points to the address of a function block
+_StartNewFrameStack:
+    push hl
+
+; Save prev stack
+    ldh a, [hCallStackTop]
+    add a
+    add a
+    add a
+    add a
+    add LOW(wCallStackSavedVars)
+    ld l, a
+    ld h, HIGH(wCallStackSavedVars)
+    ld de, hPyCodeAddr
+    ld bc, hPyOpcode-hPyCodeAddr
+    call Memcpy
+
+; Start on a new frame
+    ldh a, [hCallStackTop]
+    inc a
+    ldh [hCallStackTop], a
+
+; HL = address of the function block
+    pop hl
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+
+; Init frame
+    xor a
+    ldh [hPyStackTop], a
+
+; Python code address in hram
+	ld a, l
+	ldh [hPyCodeAddr], a
+	ld a, h
+	ldh [hPyCodeAddr+1], a
+
+; Save ptrs addr
+	ld a, [hl+]
+	ldh [hPyConstAddr], a
+	ld a, [hl+]
+	ldh [hPyConstAddr+1], a
+	ld a, [hl+]
+	ldh [hPyNamesAddr], a
+	ld a, [hl+]
+	ldh [hPyNamesAddr+1], a
+	ld a, [hl+]
+	ldh [hBytecodeAddr], a
+	ld a, [hl]
+	ldh [hBytecodeAddr+1], a
+
+; Return to .return
+    ld bc, .return
+    push bc
+
+; Get bytecode addr
+	ld a, [hl-]
+	ld l, [hl]
+	ld h, a
+	push hl
+
+    jp ExecBytecodes
+
+.return:
+    jp ExecBytecodes
 
 
 MakeFunction:
@@ -331,12 +362,38 @@ Nope:
 
 
 ReturnValue:
-; todo: call stack returns
     ldh a, [hCallStackTop]
     and a
-    jp nz, Debug
+    jr nz, .returnUpCallStack
 
 ; Return from python vm
+    pop hl
+    ret
+
+.returnUpCallStack:
+    call PopStack
+    push hl
+
+; Restore prev frame
+    ldh a, [hCallStackTop]
+    dec a
+    ldh [hCallStackTop], a
+
+; Restore prev stack
+    ldh a, [hCallStackTop]
+    add a
+    add a
+    add a
+    add a
+    ld e, a
+    ld d, HIGH(wCallStackSavedVars)
+    ld hl, hPyCodeAddr
+    ld bc, hPyOpcode-hPyCodeAddr
+    call Memcpy
+
+    pop hl
+    call PushStack
+
     pop hl
     ret
 
@@ -391,6 +448,7 @@ JumpAbsolute:
 	jp ExecBytecodes
 
 
+LoadName:
 LoadGlobal:
 ; Push address of co_names[namei] to TOS
 
@@ -499,8 +557,10 @@ BuildString:
 	:	ldh a, [hPyStackTop]
 		sub 2
 		ldh [hPyStackTop], a
-        ld h, HIGH(wFrameStackPtrs)
         ld l, a
+        ldh a, [hCallStackTop]
+	    add HIGH(wFrameStackPtrs)
+        ld h, a
     ; HL now points to a ptr to a string?
         ld a, [hl+]
         ld h, [hl]
@@ -537,7 +597,9 @@ BuildString:
 	ld b, a
 	ldh a, [hPyStackTop]
 	ld e, a
-	ld d, HIGH(wFrameStackPtrs)
+    ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+	ld d, a
 
 	.nextString:
 		push bc
@@ -653,7 +715,7 @@ HeapifyNames:
 SECTION "PYVM Hram", HRAM
 
 ; Local to a single block frame
-hPyCodeAddr: dw ; todo: use to restore the below 3
+hPyCodeAddr: dw
 hPyConstAddr: dw
 hPyNamesAddr: dw
 hBytecodeAddr: dw
@@ -666,7 +728,7 @@ hPyParam: db
 hStringListExtraBytes:: db
 
 ; Call stack which 1st points to a global frame
-hCallStackTop: db
+hCallStackTop:: db
 
 hGlobalNamesPtr:: dw
 
@@ -677,9 +739,10 @@ SECTION "PYVM Wram Frame data", WRAM0, ALIGN[8]
 ; This should be 1st so we can use HIGH(wFrameStackPtrs)
 wFrameStackPtrs:: ds $80 ; word-sized (low, then high)
 wPyFastNames: ds $80 ; word-sized ptrs to 'fast' data rather than names
+wLocalFrameIgnore: ds (CALL_STACK_LEN-1) * $100 ; per frame
 
 
-SECTION "PYVM Wram Global data", WRAM0
+SECTION "PYVM Wram Global data", WRAM0, ALIGN[8]
 
 ; Per-module
-wCallStackPtrs: ds $10 ; word-sized (low, then high)
+wCallStackSavedVars: ds CALL_STACK_LEN * $10

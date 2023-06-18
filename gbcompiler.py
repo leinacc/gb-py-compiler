@@ -87,12 +87,10 @@ output =  "FileSystem::\n"
 fnames = os.listdir("data")
 for i, fname in enumerate(fnames):
     str_len = len(fname) + 1
-    output += f"\tdw .next{i}\n"
     output += f"\tdb ${str_len:02x}, \"{fname}\", $ff\n"
     output += f"\t\tdw File{i}\n"
     output += f"\t\tdw File{i}.end-File{i}\n"
-    output += f".next{i}:\n"
-output += "\tdw $ffff\n"
+output += "\tdb $ff\n"
 
 for i, fname in enumerate(fnames):
     output += f"\nFile{i}:\n"

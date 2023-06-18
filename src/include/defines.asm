@@ -107,3 +107,6 @@ def TYPE_STR rb 1
 def TYPE_GBPY_MODULE rb 1
 def TYPE_ASM rb 1
 def TYPE_FUNCTION rb 1
+
+
+CALL_STACK_LEN equ 8

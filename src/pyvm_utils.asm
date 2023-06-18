@@ -10,7 +10,9 @@ PeekStack::
 	ld l, a
 
 ; Load high into A then H, and low into L
-	ld h, HIGH(wFrameStackPtrs)
+	ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+	ld h, a
 	ld a, [hl-]
 	ld l, [hl]
 	ld h, a
@@ -27,7 +29,9 @@ PopStack::
 	ld l, a
 
 ; Load high into A then H, and low into L
-	ld h, HIGH(wFrameStackPtrs)
+	ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+	ld h, a
 	ld a, [hl-]
 	ld l, [hl]
 	ld h, a
@@ -38,7 +42,9 @@ PopStack::
 PushStack::
 	ldh a, [hPyStackTop]
 	ld c, a
-	ld b, HIGH(wFrameStackPtrs)
+	ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+	ld b, a
 	ld a, l
 	ld [bc], a
 	inc c
