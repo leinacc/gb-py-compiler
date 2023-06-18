@@ -1,4 +1,4 @@
-INCLUDE "src/include/defines.asm"
+INCLUDE "defines.asm"
 
 SECTION "Intro", ROMX
 
@@ -11,8 +11,11 @@ Intro::
 	xor a
 	call LCDMemset
 
-	ld hl, PyBlock_main
+	ld hl, PyBlock__module_
 	call CallPython
+
+	xor a
+	call CallName
 	jr @
 
 

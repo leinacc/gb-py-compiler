@@ -1,4 +1,4 @@
-INCLUDE "src/include/defines.asm"
+INCLUDE "defines.asm"
 
 SECTION "Python VM gbpy module asm routines", ROMX
 

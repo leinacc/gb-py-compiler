@@ -1,10 +1,29 @@
-INCLUDE "src/include/defines.asm"
+INCLUDE "defines.asm"
 
 SECTION "Python VM bytecode handlers", ROM0
+
+; todo - input should be a proper name
+; A - co_names idx
+CallName::
+; HL points to a name ptr to data
+	add a
+	ld l, a
+	ld h, HIGH(wPyLocalNames)
+
+; HL = a ptr to the address of the function block
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+
+; HL = the address of the function block
+    ld a, [hl+]
+    ld h, [hl]
+    ld l, a
 
 CallPython::
 	xor a
 	ldh [hPyStackTop], a
+    ldh [hCallStackTop], a
 
 	call InitGbpyModule
 	call InitHeap
@@ -48,6 +67,10 @@ ExecBytecodes:
 	jp z, PopTop
     cp $09
 	jp z, Nope
+    cp $53
+    jp z, ReturnValue
+    cp $5a
+    jp z, StoreName
     cp $64
 	jp z, LoadConst
 	cp $6c
@@ -62,6 +85,8 @@ ExecBytecodes:
 	jp z, StoreFast
 	cp $83
 	jp z, CallFunction
+    cp $84
+    jp z, MakeFunction
 	cp $9b
 	jp z, FormatValue
 	cp $9d
@@ -179,7 +204,7 @@ StoreFast:
 	ldh a, [hPyParam]
 	add a
 	ld c, a
-	ld b, HIGH(wPyVarNames)
+	ld b, HIGH(wPyFastNames)
 
 ; Store the stack word ptr to data in BC
 	ld a, l
@@ -224,7 +249,7 @@ LoadFast:
 	ldh a, [hPyParam]
 	add a
 	ld l, a
-	ld h, HIGH(wPyVarNames)
+	ld h, HIGH(wPyFastNames)
 
 ; Push the ptr to that data
 	ld a, [hl+]
@@ -266,7 +291,45 @@ CallFunction:
 	jp ExecBytecodes
 
 
+MakeFunction:
+; TOS - qualified name of function
+; TOS1 - ptr to function block
+; Pushes function object to stack
+    call PopStack
+; Skip PopStack / PushStack
+    jp ExecBytecodes
+
+
 Nope:
+	jp ExecBytecodes
+
+
+ReturnValue:
+; todo: call stack returns
+    ldh a, [hCallStackTop]
+    and a
+    jp nz, Debug
+
+; Return from python vm
+    pop hl
+    ret
+
+
+StoreName:
+	call PopStack
+
+; BC points to a name ptr to data
+	ldh a, [hPyParam]
+	add a
+	ld c, a
+	ld b, HIGH(wPyLocalNames)
+
+; Store the stack word ptr to data in BC
+	ld a, l
+	ld [bc], a
+	inc c
+	ld a, h
+	ld [bc], a
 	jp ExecBytecodes
 
 
@@ -446,17 +509,24 @@ BuildString:
 
 
 SECTION "PYVM Hram", HRAM
-hPyCodeAddr: dw
+
+; Values for a single block frame
+hPyCodeAddr: dw ; todo: use to restore the below 3
 hPyConstAddr: dw
 hPyNamesAddr: dw
 hBytecodeAddr: dw
+hPyStackTop:: db
+
 hPyOpcode: db
 hPyParam: db
+; For generic singly-linked list string tables
 hStringTableNextAddr:: dw
 
-; Stack for a single block frame
-hPyStackTop:: db
+; Call stack which 1st points to a global frame
+hCallStackTop: db
 
 SECTION "PYVM Wram Main", WRAM0, ALIGN[8]
 wPyStackPtrs:: ds $100 ; word-sized (low, then high)
-wPyVarNames: ds $100 ; word-sized ptrs to data rather than names
+wPyFastNames: ds $100 ; word-sized ptrs to 'fast' data rather than names
+wPyLocalNames: ds $100 ; word-sized ptrs to 'local' data rather than names
+wCallStackPtrs: ds $100 ; word-sized (low, then high)
