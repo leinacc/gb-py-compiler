@@ -5,19 +5,13 @@ SECTION "Python VM gbpy module asm routines", ROMX
 
 GbpyModule::
 	db TYPE_GBPY_MODULE
-	dw .next0
-		db $0b, "load_tiles", $ff
+	db $0b, "load_tiles", $ff
 		dw AsmLoadTiles
-.next0:
-	dw .next1
-		db $0d, "print_string", $ff
+	db $0d, "print_string", $ff
 		dw AsmPrintString
-.next1:
-	dw .next2
-		db $0c, "wait_vblank", $ff
+	db $0c, "wait_vblank", $ff
 		dw AsmWaitVBlank
-.next2:
-	dw $ffff
+	db $ff
 
 
 InitGbpyModule::
@@ -51,19 +45,10 @@ AsmLoadTiles:
 
 	ld hl, FileSystem
 
-; Save ptr to next file to check
-	ld a, [hl+]
-	ldh [hStringTableNextAddr], a
-	ld a, [hl+]
-	ldh [hStringTableNextAddr+1], a
-
-; Check filename
-	push de
-	call CheckString
-; todo: we're assuming 1 file here for now (which would use the `pop de`)
-	jr nz, .debug
-
-	pop de
+; Each name has 2 word ptrs after it
+	ld a, 4
+	ldh [hStringListExtraBytes], a
+	jp HLequAfterMatchingNameInList
 
 ; DE = src of data
 	ld a, [hl+]
@@ -82,9 +67,6 @@ AsmLoadTiles:
 ; todo: this is going to be the 1st tile idx from the auto-allocation
 	ld b, 0
 	jp PushNewInt
-
-.debug:
-	ret
 
 
 AsmPrintString:

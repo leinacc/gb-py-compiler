@@ -204,29 +204,11 @@ ImportFrom:
 
     pop hl
 
-.nextString:
-; Save ptr to next file to check
-	ld a, [hl+]
-	ldh [hStringTableNextAddr], a
-	ld a, [hl+]
-	ldh [hStringTableNextAddr+1], a
+; Each name has a word ptr after it
+	ld a, 2
+	ldh [hStringListExtraBytes], a
+	jp HLequAfterMatchingNameInList
 
-    push de
-    call CheckString
-    pop de
-    jr z, .storePtr
-
-; To next string
-    ldh a, [hStringTableNextAddr]
-    ld l, a
-    ldh a, [hStringTableNextAddr+1]
-    ld h, a
-    cp $ff
-    jp z, Debug
-
-    jr .nextString
-
-.storePtr:
 ; Push ptr to asm type
     ld a, [hl+]
     ld h, [hl]
@@ -681,7 +663,7 @@ hPyOpcode: db
 hPyParam: db
 
 ; For generic singly-linked list string tables
-hStringTableNextAddr:: dw
+hStringListExtraBytes:: db
 
 ; Call stack which 1st points to a global frame
 hCallStackTop: db

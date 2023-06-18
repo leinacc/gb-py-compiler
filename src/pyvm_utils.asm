@@ -115,23 +115,38 @@ HLequGlobalNamePtrAddr::
     ld a, [hGlobalNamesPtr+1]
     ld h, a
 
-; Start looking for the string
-; todo: check for terminator after names
-    .nextName:
-        push hl
-        push de
-        call CheckString
-        pop de
-        jr z, .foundName
+; Each name has a word ptr after it
+	ld a, 2
+	ldh [hStringListExtraBytes], a
+	jp HLequAfterMatchingNameInList
 
-        pop hl
-    ; Skip past length byte + ptr to name's value
-        ld a, [hl]
-        add 3
-        ld c, a
-        ld b, 0
-        add hl, bc
-        jr .nextName
+
+; DE - string to find
+; HL - list of strings to match against
+; hStringListExtraBytes - num bytes in a string entry, excluding string + $ff
+HLequAfterMatchingNameInList::
+.nextName:
+	push hl
+; String lists end in $ff
+	ld a, [hl]
+	cp $ff
+	jp z, Debug
+
+	push de
+	call CheckString
+	pop de
+	jr z, .foundName
+
+	pop hl
+; Skip past length byte + str + $ff + extra bytes
+	ldh a, [hStringListExtraBytes]
+	inc a
+	ld c, [hl]
+	add c
+	ld c, a
+	ld b, 0
+	add hl, bc
+	jr .nextName
 
 .foundName:
 ; Remove 'push hl'

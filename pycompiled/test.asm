@@ -129,12 +129,10 @@ PyBlock_main:
 
 
 FileSystem::
-	dw .next0
 	db $0b, "ascii.2bpp", $ff
 		dw File0
 		dw File0.end-File0
-.next0:
-	dw $ffff
+    db $ff
 
 File0:
 	INCBIN "data/ascii.2bpp"
