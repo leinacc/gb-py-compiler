@@ -57,7 +57,7 @@ PushStack::
 	ret
 
 
-; Returns HL pointing to the newly-pushed data
+; Returns HL pointing to the newly-pushed None
 PushNewNone::
 	ld bc, 1
 	call Malloc
@@ -67,6 +67,7 @@ PushNewNone::
 
 
 ; B - int to push
+; Returns HL pointing to the newly-pushed int
 PushNewInt::
 	push bc
 	ld bc, 2
@@ -159,6 +160,42 @@ HLequAfterMatchingNameInList::
 ; Remove 'push hl'
     pop de
 	ret
+
+
+; A - param idx starting 0
+HLequAfterFilenameInVMDir::
+; 1st param is +2 after block's stack ptr
+; (as the ptr looks at the function address)
+	inc a
+	add a
+	ld b, a
+
+	ldh a, [hPyStackTop]
+	add b
+	ld l, a
+	ldh a, [hCallStackTop]
+	add HIGH(wFrameStackPtrs)
+	ld h, a
+
+; HL = pointer to data
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+
+; Check filename to load is str
+	ld a, [hl+]
+	cp TYPE_STR
+	jp nz, Debug
+
+	ld d, h
+	ld e, l
+
+	ld hl, FileSystem
+
+; Each name has 2 word ptrs after it
+	ld a, 4
+	ldh [hStringListExtraBytes], a
+	jp HLequAfterMatchingNameInList
 
 
 Debug::

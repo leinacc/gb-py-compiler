@@ -148,7 +148,7 @@ $(BINDIR)/%.$(ROMEXT) $(BINDIR)/%.sym $(BINDIR)/%.map: $(patsubst src/%.asm,$(OB
 # Also add all obj dependencies to the dep file too, so Make knows to remake it
 # Caution: some of these flags were added in RGBDS 0.4.0, using an earlier version WILL NOT WORK
 # (and produce weird errors)
-$(OBJDIR)/%.o $(DEPDIR)/%.mk: src/%.asm data/ascii.2bpp
+$(OBJDIR)/%.o $(DEPDIR)/%.mk: src/%.asm
 	@$(MKDIR_P) $(patsubst %/,%,$(dir $(OBJDIR)/$* $(DEPDIR)/$*))
 	$(RGBASM) $(ASFLAGS) -M $(DEPDIR)/$*.mk -MG -MP -MQ $(OBJDIR)/$*.o -MQ $(DEPDIR)/$*.mk -o $(OBJDIR)/$*.o $<
 

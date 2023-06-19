@@ -710,7 +710,8 @@ HeapifyNames:
     ldh a, [hPyNamesAddr+1]
     ld h, a
 
-; HL = address of name 0 (end marker) - 1 => ptr to heap length
+; HL = address of name 0 (end marker)
+; HL-1 => ptr to heap length
 	ld a, [hl+]
 	ld h, [hl]
 	ld l, a

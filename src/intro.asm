@@ -30,17 +30,19 @@ Intro::
 ; Clear screen
 	ld hl, _SCRN0
 	ld bc, $400
-	xor a
+	ld a, $ff
 	call LCDMemset
 
 	ld a, BANK(PyBlock__module_)
 	ld hl, PyBlock__module_
 	call LoadModule
-	jr @
+
+:	rst WaitVBlank
+	jr :-
 
 
 GrayscalePals:
-	dw $7fff, $0000, $7fff, $7fff
+	dw $7fff, $0000, $294a, $56b6
 
 
 INCLUDE "pycompiled/test.asm"

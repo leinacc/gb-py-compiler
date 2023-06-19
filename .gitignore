@@ -1,4 +1,5 @@
-/bin/
+/bin/*
 /obj/
 /dep/
 /res/
+!/bin/*.dbg

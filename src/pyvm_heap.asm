@@ -19,10 +19,10 @@
 ;   * get a pointer to a chunk
 ;   * get its backwards and forwards chunks
 ;   * link them together
-;   * if backwards chunk missing (1st item was freed), set the forward chunk's backwards ptr to -1
+;   * if backwards chunk missing (1st item was freed), set the forward chunk's backwards ptr to $ffff
 ;   * if forwards chunk missing (last allocated item was freed), main ptr points to the backwards chunk
 ; * defragment process (todo: when allocate can't find space):
-;   * loop through linked list of chunks, until forward_ptr == $ffxx
+;   * loop through linked list of chunks, until backward_ptr == $ffxx
 ;   * whenever forward_ptr - curr_chunk_addr > size, memcopy the forward chunk closer
 ;
 ;-----------------------------------------------------------------------------
