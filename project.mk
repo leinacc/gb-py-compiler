@@ -24,18 +24,18 @@ OLDLIC := 0x33
 # MBC type, tells which hardware is in the cart
 # See https://gbdev.io/pandocs/#_0147-cartridge-type or consult any copy of Pan Docs
 # If using no MBC, consider enabling `-t` below
-MBC := 0x00
+MBC := 0x1b  # MBC5 + RAM + BATTERY
 
 # ROM size is set automatically by RGBFIX
 
 # Size of the on-board SRAM; MBC type should indicate the presence of RAM
 # See https://gbdev.io/pandocs/#_0149-ram-size or consult any copy of Pan Docs
 # Set this to 0 when using MBC2's built-in SRAM
-SRAMSIZE := 0x00
+SRAMSIZE := 0x02  # 1 bank of 8KiB
 
 # ROM name
-ROMNAME := boilerplate
-ROMEXT  := gb
+ROMNAME := MonstrousEnigma
+ROMEXT  := gbc
 
 
 # Compilation parameters, uncomment to apply, comment to cancel
@@ -51,7 +51,7 @@ ASFLAGS += -h
 # Game Boy Color compatible
 # FIXFLAGS += -c
 # Game Boy Color required
-# FIXFLAGS += -C
+FIXFLAGS += -C
 
 # Super Game Boy compatible
 # FIXFLAGS += -s
@@ -60,7 +60,7 @@ ASFLAGS += -h
 # LDFLAGS += -d
 
 # No banked WRAM mode
-LDFLAGS += -w
+# LDFLAGS += -w
 
 # 32k mode
 # LDFLAGS += -t

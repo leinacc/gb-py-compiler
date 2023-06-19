@@ -188,5 +188,5 @@ Free::
 SECTION "PyVM Heap Hram", HRAM
 hHeapMainPtr: dw
 
-SECTION "PyVM Heap Wram", WRAM0[$d000]
+SECTION "PyVM Heap Wram", WRAMX[$d000]
 wHeapData:: ds $1000

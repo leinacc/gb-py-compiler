@@ -1,6 +1,6 @@
 INCLUDE "defines.asm"
 
-SECTION "Python VM gbpy module asm routines", ROMX
+SECTION "Python VM gbpy module asm routines", ROM0
 
 
 GbpyModule::

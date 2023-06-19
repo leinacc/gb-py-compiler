@@ -2,8 +2,12 @@ INCLUDE "defines.asm"
 
 SECTION "Python VM bytecode handlers", ROM0
 
+; A - rom bank of module to load
 ; HL - address of module to load
 LoadModule::
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
 	xor a
 	ldh [hPyStackTop], a
     ldh [hCallStackTop], a
