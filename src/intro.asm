@@ -9,40 +9,26 @@ Intro::
 	ld a, $01
 	ldh [hCanSoftReset], a
 
-; Init GBC palettes
-	ld a, BCPSF_AUTOINC
-	ldh [rBCPS], a
-	ld e, 8
-	ld c, LOW(rBCPD)
-	.nextPalette:
-		ld hl, GrayscalePals
-		ld d, 8
-		.nextColByte:
-			wait_vram
-			ld a, [hl+]
-			ldh [c], a
-			dec d
-			jr nz, .nextColByte
-
-		dec e
-		jr nz, .nextPalette
-
 ; Clear screen
 	ld hl, _SCRN0
 	ld bc, $400
 	ld a, $ff
 	call LCDMemset
 
+; Init sub-engines
+	call InitEntites
+
+	ldh a, [hLCDC]
+	or LCDCF_OBJON
+	ldh [hLCDC], a
+
+; test: load a sample room
 	ld a, BANK(PyBlock__module_)
 	ld hl, PyBlock__module_
 	call LoadModule
 
 :	rst WaitVBlank
 	jr :-
-
-
-GrayscalePals:
-	dw $7fff, $0000, $294a, $56b6
 
 
 INCLUDE "pycompiled/test.asm"

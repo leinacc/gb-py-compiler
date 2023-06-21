@@ -108,5 +108,27 @@ def TYPE_GBPY_MODULE rb 1
 def TYPE_ASM rb 1
 def TYPE_FUNCTION rb 1
 
-
 CALL_STACK_LEN equ 8
+
+
+; Entities
+	struct Entity
+	; Keep the following in order (before the new line)
+	; For init and resetting
+	bytes 1, InUse
+	bytes 1, TileX
+	bytes 1, TileY
+	bytes 3, ScriptDef
+	bytes 1, ScreenX
+	bytes 1, ScreenY
+	bytes 3, AnimDef ; ptr to animation definition
+	bytes 1, PalBaseIdx
+	bytes 1, TilesBaseIdx
+
+	bytes 1, AnimIdx ; which cel is being displayed
+	bytes 1, AnimCtr ; num frames until next cel is displayed
+	bytes 1, State
+	bytes 1, Dir
+	end_struct
+
+NUM_ENTITIES equ $10

@@ -223,6 +223,7 @@ HLequAfterFilenameInVMDir::
 
 
 ; A - param idx starting 0
+; Trashes A, B
 HLequAddrOfFuncParam::
 ; 1st param is +2 after block's stack ptr
 ; (as the ptr looks at the function address)

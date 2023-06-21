@@ -52,8 +52,24 @@ Reset::
 	dec b
 	jr nz, .copyOAMDMA
 
-	WARN "Edit to set palettes here"
-	; CGB palettes maybe, DMG ones always
+; Init GBC palettes
+	ld a, BCPSF_AUTOINC
+	ldh [rBCPS], a
+	ld e, 8
+	ld c, LOW(rBCPD)
+	.nextPalette:
+		ld hl, GrayscalePals
+		ld d, 8
+		.nextColByte:
+			ld a, [hl+]
+			ldh [c], a
+			dec d
+			jr nz, .nextColByte
+
+		dec e
+		jr nz, .nextPalette
+
+	call SpeedUpCPU
 
 	; You will also need to reset your handlers' variables below
 	; I recommend reading through, understanding, and customizing this file
@@ -107,6 +123,40 @@ Reset::
 
 	; `Intro`'s bank has already been loaded earlier
 	jp Intro
+
+
+GrayscalePals:
+	dw $7fff, $0000, $294a, $56b6
+
+; FAST BOI
+SpeedUpCPU::
+	ld a, [rKEY1]
+	rla ; Bit 7 goes into carry
+	ret c ; Already at double speed
+	
+	jr SwitchCPUSpeed
+	
+; Less power-consuming
+SlowDownCPU::
+	ld a, [rKEY1]
+	rla
+	ret nc ; Not at double-speed
+	
+SwitchCPUSpeed:
+	ld a, P1F_GET_NONE ; Prevent misclicking...
+	ld [rP1], a
+	ld a, 1
+	ld [rKEY1], a ; Request speed switch
+	ld a, [rIE] ; Save interrupts
+	ld b, a
+	xor a
+	ld [rIE], a ; Prevent any interrupt
+	stop ; GO!!
+	ld a, b
+	ld [rIE], a ; Restore ints
+	ret
+
+
 
 SECTION "OAM DMA routine", ROMX
 
