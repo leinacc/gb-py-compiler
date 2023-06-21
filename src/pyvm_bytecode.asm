@@ -3,19 +3,38 @@ INCLUDE "defines.asm"
 SECTION "Python VM bytecode handlers", ROM0
 
 ; A - rom bank of module to load
+; todo: preserve the curr bank
 ; HL - address of module to load
 LoadModule::
+	push hl
 	ldh [hCurROMBank], a
 	ld [rROMB0], a
 
 	xor a
 	ldh [hPyStackTop], a
-    ldh [hCallStackTop], a
+	ldh [hCurrCallStackIdx], a
+	
+; Allow use of all function call stacks...
+	ld a, $ff
+	ld b, CALL_STACK_LEN-1
+	ld h, HIGH(wReturnCallStackIdx)+1
+	ld l, LOW(wReturnCallStackIdx)
+	:	ld [hl+], a
+		ld [hl-], a
+		inc h
+		dec b
+		jr nz, :-
+
+; Except the global one
+	xor a
+	ld hl, wCurrCallStackIdx
+	ld [hl], a
 
 	call InitGbpyModule
 	call InitHeap
 
 ; Python code address in hram
+	pop hl
 	ld a, l
 	ldh [hPyCodeAddr], a
 	ld a, h
@@ -182,9 +201,7 @@ StoreFast:
 	add a
     add LOW(wPyFastNames)
 	ld c, a
-	ldh a, [hCallStackTop]
-	add HIGH(wPyFastNames)
-	ld b, a
+	call BequCurrFastNamesHi
 
 ; Store the stack word ptr to data in BC
 	ld a, l
@@ -196,11 +213,7 @@ StoreFast:
 
 
 PopTop:
-	ldh a, [hPyStackTop]
-	ld l, a
-    ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-    ld h, a
+	call HLequCurrFrameStackPtrs
 	dec hl
 
 ; Check if we need to free data
@@ -232,9 +245,7 @@ LoadFast:
 	add a
     add LOW(wPyFastNames)
 	ld l, a
-	ldh a, [hCallStackTop]
-	add HIGH(wPyFastNames)
-	ld h, a
+	call HequCurrFastNamesHi
 
 ; Push the ptr to that data
 	ld a, [hl+]
@@ -266,7 +277,7 @@ CallFunction:
     jr z, .doAsm
 
     cp TYPE_FUNCTION
-    jr z, _StartNewFrameStack
+    jr z, CallNewFrameStack
 
 	jp Debug
 
@@ -283,16 +294,38 @@ CallFunction:
 
 
 ; HL - points to the address of a function block
+; This routine allows pushing a frame stack, that will return to the current one
+CallNewFrameStack:
+	ldh a, [hCurrCallStackIdx]
+	ld b, a
+	jr _StartNewFrameStack
+
+
+; HL - points to the address of a function block
+; This routine allows starting a new python routine from outside the VM
+StartNewFrameStack:
+	ld b, $ff
+
+; B - return call stack idx
+; HL - points to the address of a function block
 _StartNewFrameStack:
-; Save prev stack top to get values to add to new function's fast vars
+; Push curr call stack, and stack top, to get the addr for new function's fast vars
+	ldh a, [hCurrCallStackIdx]
+	ld d, a
+
     ldh a, [hPyStackTop]
     add 2
-    push af
+	ld e, a
+    push de
 
+; Push curr call stack idx to set the next one's 'return'
+	push bc
+
+; Push addr of function block to store later
     push hl
 
 ; Save prev stack
-    ldh a, [hCallStackTop]
+    ldh a, [hCurrCallStackIdx]
     swap a
     add LOW(wCallStackSavedVars)
     ld l, a
@@ -302,9 +335,24 @@ _StartNewFrameStack:
     rst MemcpySmall
 
 ; Start on a new frame
-    ldh a, [hCallStackTop]
-    inc a
-    ldh [hCallStackTop], a
+	ld c, 1
+	ld b, CALL_STACK_LEN
+	ld h, HIGH(wCurrCallStackIdx)+1
+	ld l, LOW(wCurrCallStackIdx)
+	.nextCallStackToTryUsing:
+		ld a, [hl]
+		cp $ff
+		jr z, .foundCallStack
+
+		inc h
+		inc c
+		dec b
+		jp z, Debug
+		jr .nextCallStackToTryUsing
+
+.foundCallStack:
+	ld a, c
+	ldh [hCurrCallStackIdx], a
 
 ; HL = address of the function block
     pop hl
@@ -336,38 +384,44 @@ _StartNewFrameStack:
 	ld a, [hl]
 	ldh [hBytecodeAddr+1], a
 
+; Save prev and curr call stack idx
+	call HLequCurrReturnCallStackIdx
+	pop af
+	ld [hl+], a
+	ldh a, [hCurrCallStackIdx]
+	ld [hl], a
+
 ; E = prev stack top
-    pop af
-    ld e, a
-
-; Return to .return
-    ld bc, .execBytecode
-    push bc
-
-; Get bytecode addr
-	ld a, [hl-]
-	ld l, [hl]
-	ld h, a
-	push hl
+    pop de
 
 ; Store fast values, DE = prev frame's stack where the fast values are
 	ldh a, [hPyParam]
     add a
-    jr z, .execBytecode
+    jr z, .afterFast
 	ld c, a
 
-    ldh a, [hCallStackTop]
-    dec a
+; D = prev call stack idxes set of vars
+    ld a, d
 	add HIGH(wFrameStackPtrs)
 	ld d, a
 
 ; HL = where to store the fast names
     ld l, LOW(wPyFastNames)
-	ldh a, [hCallStackTop]
-	add HIGH(wPyFastNames)
-	ld h, a
+	call HequCurrFastNamesHi
 
     rst MemcpySmall
+
+.afterFast:
+; Return to .return
+    ld bc, .execBytecode
+    push bc
+
+; Get bytecode addr
+	ldh a, [hBytecodeAddr]
+	ld l, a
+	ldh a, [hBytecodeAddr+1]
+	ld h, a
+	push hl
 
 .execBytecode:
     jp ExecBytecodes
@@ -414,8 +468,9 @@ BinaryAdd:
 
 
 ReturnValue:
-    ldh a, [hCallStackTop]
-    and a
+	call HLequCurrReturnCallStackIdx
+	ld a, [hl]
+	cp $ff
     jr nz, .returnUpCallStack
 
 ; Return from python vm
@@ -423,16 +478,15 @@ ReturnValue:
     ret
 
 .returnUpCallStack:
+	ld b, a
     call PopStack
     push hl
 
 ; Restore prev frame
-    ldh a, [hCallStackTop]
-    dec a
-    ldh [hCallStackTop], a
+	ld a, b
+    ldh [hCurrCallStackIdx], a
 
 ; Restore prev stack
-    ldh a, [hCallStackTop]
     swap a
     ld e, a
     ld d, HIGH(wCallStackSavedVars)
@@ -443,6 +497,7 @@ ReturnValue:
     pop hl
     call PushStack
 
+; Return from the function
     pop hl
     ret
 
@@ -603,13 +658,13 @@ BuildString:
 ; Have stack point to 1st string, while saving hPyStackTop as if the strings were popped
 	ldh a, [hPyParam]
 	ld b, a
-	:	ldh a, [hPyStackTop]
-		sub 2
+	.nextStringLen:
+		call HLequCurrFrameStackPtrs
+		dec l
+		dec l
+		ld a, l
 		ldh [hPyStackTop], a
-        ld l, a
-        ldh a, [hCallStackTop]
-	    add HIGH(wFrameStackPtrs)
-        ld h, a
+
     ; HL now points to a ptr to a string?
         ld a, [hl+]
         ld h, [hl]
@@ -626,7 +681,7 @@ BuildString:
         ld c, a
 
 		dec b
-		jr nz, :-
+		jr nz, .nextStringLen
 
 ; BC = $00<string length>
     push bc
@@ -644,11 +699,8 @@ BuildString:
 ; Combines strings
 	ldh a, [hPyParam]
 	ld b, a
-	ldh a, [hPyStackTop]
-	ld e, a
-    ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld d, a
+
+	call DEequCurrFrameStackPtrs
 
 	.nextString:
 		push bc
@@ -778,7 +830,7 @@ hPyParam: db
 hStringListExtraBytes:: db
 
 ; Call stack which 1st points to a global frame
-hCallStackTop:: db
+hCurrCallStackIdx:: db
 
 hGlobalNamesPtr:: dw
 
@@ -788,11 +840,13 @@ SECTION "PYVM Wram Frame data", WRAM0, ALIGN[8]
 
 ; This should be 1st so we can use HIGH(wFrameStackPtrs)
 wFrameStackPtrs:: ds $80 ; word-sized (low, then high)
-wPyFastNames: ds $80 ; word-sized ptrs to 'fast' data rather than names
+wPyFastNames:: ds $7e ; word-sized ptrs to 'fast' data rather than names
+wReturnCallStackIdx:: db
+wCurrCallStackIdx: db
 wLocalFrameIgnore: ds (CALL_STACK_LEN-1) * $100 ; per frame
 
 
 SECTION "PYVM Wram Global data", WRAM0, ALIGN[8]
 
-; Per-module
+; todo: Per-module (a concept which doesn't exist yet)
 wCallStackSavedVars: ds CALL_STACK_LEN * $10

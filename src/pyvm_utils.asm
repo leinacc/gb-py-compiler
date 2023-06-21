@@ -2,17 +2,64 @@ INCLUDE "defines.asm"
 
 SECTION "Python VM common routines", ROM0
 
+
+BCequCurrFrameStackPtrs:
+	ldh a, [hPyStackTop]
+	ld c, a
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wFrameStackPtrs)
+	ld b, a
+	ret
+
+
+BequCurrFastNamesHi::
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wPyFastNames)
+	ld b, a
+	ret
+
+
+DEequCurrFrameStackPtrs::
+	ldh a, [hPyStackTop]
+	ld e, a
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wFrameStackPtrs)
+	ld d, a
+	ret
+
+
+HLequCurrFrameStackPtrs::
+	ldh a, [hPyStackTop]
+	ld l, a
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wFrameStackPtrs)
+	ld h, a
+	ret
+
+
+HLequCurrReturnCallStackIdx::
+	ldh a, [hPyStackTop]
+	ld l, a
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wReturnCallStackIdx)
+	ld h, a
+	ret
+
+
+HequCurrFastNamesHi::
+	ldh a, [hCurrCallStackIdx]
+	add HIGH(wPyFastNames)
+	ld h, a
+	ret
+
+
 ; Returns word ptr in HL (eg ptr to data)
 PeekStack::
 ; Dec word ptr, and have L point to popped word's 'high' (little-endian word ptrs)
-	ldh a, [hPyStackTop]
-	dec a
-	ld l, a
+	call HLequCurrFrameStackPtrs
+	dec l
 
 ; Load high into A then H, and low into L
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld h, a
 	ld a, [hl-]
 	ld l, [hl]
 	ld h, a
@@ -22,30 +69,23 @@ PeekStack::
 ; Returns word ptr in HL (eg ptr to data)
 ; Trashes A
 PopStack::
-; Dec word ptr, and have L point to popped word's 'high' (little-endian word ptrs)
-	ldh a, [hPyStackTop]
-	sub 2
+; Dec word ptr, and have L point to popped word's 'low' (little-endian word ptrs)
+	call HLequCurrFrameStackPtrs
+	dec l
+	dec l
+	ld a, l
 	ldh [hPyStackTop], a
-	inc a
-	ld l, a
 
 ; Load high into A then H, and low into L
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld h, a
-	ld a, [hl-]
-	ld l, [hl]
-	ld h, a
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
 	ret
 
 
 ; HL - word ptr to push (eg ptr to data)
 PushStack::
-	ldh a, [hPyStackTop]
-	ld c, a
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld b, a
+	call BCequCurrFrameStackPtrs
 	ld a, l
 	ld [bc], a
 	inc c
@@ -164,23 +204,7 @@ HLequAfterMatchingNameInList::
 
 ; A - param idx starting 0
 HLequAfterFilenameInVMDir::
-; 1st param is +2 after block's stack ptr
-; (as the ptr looks at the function address)
-	inc a
-	add a
-	ld b, a
-
-	ldh a, [hPyStackTop]
-	add b
-	ld l, a
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld h, a
-
-; HL = pointer to data
-	ld a, [hl+]
-	ld h, [hl]
-	ld l, a
+	call HLequAddrOfFuncParam
 
 ; Check filename to load is str
 	ld a, [hl+]
@@ -196,6 +220,26 @@ HLequAfterFilenameInVMDir::
 	ld a, 4
 	ldh [hStringListExtraBytes], a
 	jp HLequAfterMatchingNameInList
+
+
+; A - param idx starting 0
+HLequAddrOfFuncParam::
+; 1st param is +2 after block's stack ptr
+; (as the ptr looks at the function address)
+	inc a
+	add a
+	ld b, a
+
+	call HLequCurrFrameStackPtrs
+	ld a, b
+	add l
+	ld l, a
+
+; HL = pointer to data
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+	ret
 
 
 Debug::

@@ -121,18 +121,18 @@ PyBlock_main:
 	.name1:
 		db $0b, "load_tiles", $ff
 	.name2:
-		db $0a, "load_room", $ff
-	.name3:
 		db $0f, "load_metatiles", $ff
+	.name3:
+		db $0a, "load_room", $ff
 .bytecode:
 	db $74, $00
 	db $64, $01
 	db $83, $01
-	db $01, $00
+	db $7d, $00
 	db $74, $01
 	db $64, $02
 	db $83, $01
-	db $01, $00
+	db $7d, $01
 	db $74, $02
 	db $64, $03
 	db $83, $01
@@ -140,7 +140,9 @@ PyBlock_main:
 	db $74, $03
 	db $64, $04
 	db $64, $05
-	db $83, $02
+	db $7c, $01
+	db $7c, $00
+	db $83, $04
 	db $01, $00
 	db $64, $00
 	db $53, $00

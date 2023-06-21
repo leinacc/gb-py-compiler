@@ -72,6 +72,7 @@ AsmLoadPalettes:
 	pop hl
 
 ; todo: allow choosing a starting palette
+; todo: return the starting palette idx, save the next allocatable one, choose bg/spr
 	ld a, BCPSF_AUTOINC
 	ldh [rBCPS], a
 	ld c, LOW(rBCPD)
@@ -85,10 +86,10 @@ AsmLoadPalettes:
 	jp PushNewNone
 
 
-AsmLoadRoom:
+AsmLoadMetatiles:
 	db TYPE_ASM
 
-; 1st param file is the palette data to load
+; 1st param file is the room metatile data to load
 	xor a
 	call HLequAfterFilenameInVMDir
 
@@ -107,7 +108,7 @@ AsmLoadRoom:
 	jp PushNewNone
 
 
-AsmLoadMetatiles:
+AsmLoadRoom:
 	db TYPE_ASM
 
 ; 1st param file is the metatile tiles to load
@@ -222,17 +223,8 @@ AsmPrintString:
 	db TYPE_ASM
 
 ; 2nd param = starting tile idx
-	ldh a, [hPyStackTop]
-	add 4
-	ld l, a
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld h, a
-
-; HL = pointer to data
-	ld a, [hl+]
-	ld h, [hl]
-	ld l, a
+	ld a, 1
+	call HLequAddrOfFuncParam
 
 	ld a, [hl+]
 	cp TYPE_INT
@@ -242,17 +234,8 @@ AsmPrintString:
 	ld [wPrintStartingTileIdx], a
 
 ; 1st param = string to print
-	ldh a, [hPyStackTop]
-	add 2
-	ld l, a
-	ldh a, [hCallStackTop]
-	add HIGH(wFrameStackPtrs)
-	ld h, a
-
-; HL = pointer to data
-	ld a, [hl+]
-	ld h, [hl]
-	ld l, a
+	ld a, 0
+	call HLequAddrOfFuncParam
 
 ; Check type
 ; todo: like python, should be able to print non-strs?
