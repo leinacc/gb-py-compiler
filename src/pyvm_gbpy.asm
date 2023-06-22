@@ -304,6 +304,22 @@ StoreMetatileTilesOrAttrs:
 AsmAddEntity:
 	db TYPE_ASM
 
+; 7th param is the metatiles tiles data
+	ld a, 6
+	call HLequAfterFilenameInVMDir
+	ld a, [hl+]
+	ld [wTempEntityMtilesAddr], a
+	ld a, [hl]
+	ld [wTempEntityMtilesAddr+1], a
+
+; 8th param is the metatiles attrs data
+	ld a, 7
+	call HLequAfterFilenameInVMDir
+	ld a, [hl+]
+	ld [wTempEntityMattrsAddr], a
+	ld a, [hl]
+	ld [wTempEntityMattrsAddr+1], a
+
 ; 1st param is the tile x (push as the below routine trashes B)
 	xor a
 	call HLequAddrOfFuncParam
@@ -501,3 +517,5 @@ wPrintTileRow: db
 SECTION "Room loading", WRAM0
 wRoomMetatiles: ds 10*9
 wMetatileTableAddr: dw
+wTempEntityMtilesAddr:: dw
+wTempEntityMattrsAddr:: dw

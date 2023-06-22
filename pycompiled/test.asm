@@ -15,7 +15,7 @@ PyBlock__module_:
 		db $00
 	.const1:
 		db TYPE_TUPLE
-		db $09
+		db $07
 		dw .tupleItem0
 		dw .tupleItem1
 		dw .tupleItem2
@@ -23,8 +23,6 @@ PyBlock__module_:
 		dw .tupleItem4
 		dw .tupleItem5
 		dw .tupleItem6
-		dw .tupleItem7
-		dw .tupleItem8
 		.tupleItem0
 			db TYPE_STR, $11
 			db "load_bg_palettes", $ff
@@ -46,12 +44,6 @@ PyBlock__module_:
 		.tupleItem6
 			db TYPE_STR, $0b
 			db "add_entity", $ff
-		.tupleItem7
-			db TYPE_STR, $10
-			db "update_entities", $ff
-		.tupleItem8
-			db TYPE_STR, $0c
-			db "wait_vblank", $ff
 	.const2:
 		db TYPE_FUNCTION
 		dw PyBlock_cutscene_movement
@@ -77,9 +69,7 @@ PyBlock__module_:
 	dw .name7
 	dw .name8
 	dw .name9
-	dw .name10
-	dw .name11
-	db $c1
+	db $9f
 	.name0:
 		db $05, "gbpy", $ff
 	.name1:
@@ -97,12 +87,8 @@ PyBlock__module_:
 	.name7:
 		db $0b, "add_entity", $ff
 	.name8:
-		db $10, "update_entities", $ff
-	.name9:
-		db $0c, "wait_vblank", $ff
-	.name10:
 		db $12, "cutscene_movement", $ff
-	.name11:
+	.name9:
 		db $05, "main", $ff
 .bytecode:
 	db $64, $00
@@ -122,20 +108,16 @@ PyBlock__module_:
 	db $5a, $06
 	db $6d, $07
 	db $5a, $07
-	db $6d, $08
-	db $5a, $08
-	db $6d, $09
-	db $5a, $09
 	db $01, $00
 	db $64, $02
 	db $64, $03
 	db $84, $00
-	db $5a, $0a
+	db $5a, $08
 	db $64, $04
 	db $64, $05
 	db $84, $00
-	db $5a, $0b
-	db $65, $0b
+	db $5a, $09
+	db $65, $09
 	db $83, $00
 	db $01, $00
 	db $64, $06
@@ -157,35 +139,55 @@ PyBlock_main:
 		dw .const7
 		dw .const8
 		dw .const9
+		dw .const10
+		dw .const11
+		dw .const12
 	.const0:
 		db TYPE_NONE
 	.const1:
-		db TYPE_STR, $0a
-		db "crypt.pal", $ff
-	.const2:
-		db TYPE_STR, $0b
-		db "crypt.2bpp", $ff
-	.const3:
-		db TYPE_STR, $0a
-		db "room1.bin", $ff
-	.const4:
-		db TYPE_STR, $11
-		db "crypt_mtiles.bin", $ff
-	.const5:
-		db TYPE_STR, $11
-		db "crypt_mattrs.bin", $ff
-	.const6:
-		db TYPE_STR, $08
-		db "orc.pal", $ff
-	.const7:
-		db TYPE_STR, $09
-		db "orc.2bpp", $ff
-	.const8:
-		db TYPE_INT
-		db $05
-	.const9:
 		db TYPE_INT
 		db $00
+	.const2:
+		db TYPE_TUPLE
+		db $02
+		dw .tupleItem0
+		dw .tupleItem1
+		.tupleItem0
+			db TYPE_STR, $10
+			db "update_entities", $ff
+		.tupleItem1
+			db TYPE_STR, $0c
+			db "wait_vblank", $ff
+	.const3:
+		db TYPE_STR, $0a
+		db "crypt.pal", $ff
+	.const4:
+		db TYPE_STR, $0b
+		db "crypt.2bpp", $ff
+	.const5:
+		db TYPE_STR, $0a
+		db "room1.bin", $ff
+	.const6:
+		db TYPE_STR, $11
+		db "crypt_mtiles.bin", $ff
+	.const7:
+		db TYPE_STR, $11
+		db "crypt_mattrs.bin", $ff
+	.const8:
+		db TYPE_STR, $08
+		db "orc.pal", $ff
+	.const9:
+		db TYPE_STR, $09
+		db "orc.2bpp", $ff
+	.const10:
+		db TYPE_INT
+		db $05
+	.const11:
+		db TYPE_STR, $0f
+		db "orc_mtiles.bin", $ff
+	.const12:
+		db TYPE_STR, $0f
+		db "orc_mattrs.bin", $ff
 .names:
 	dw .name0
 	dw .name1
@@ -197,72 +199,85 @@ PyBlock_main:
 	dw .name7
 	dw .name8
 	dw .name9
-	db $b1
+	dw .name10
+	db $b9
 	.name0:
-		db $11, "load_bg_palettes", $ff
+		db $05, "gbpy", $ff
 	.name1:
-		db $0e, "load_bg_tiles", $ff
-	.name2:
-		db $0f, "load_metatiles", $ff
-	.name3:
-		db $0a, "load_room", $ff
-	.name4:
-		db $12, "load_obj_palettes", $ff
-	.name5:
-		db $0f, "load_obj_tiles", $ff
-	.name6:
-		db $0b, "add_entity", $ff
-	.name7:
-		db $12, "cutscene_movement", $ff
-	.name8:
 		db $10, "update_entities", $ff
-	.name9:
+	.name2:
 		db $0c, "wait_vblank", $ff
+	.name3:
+		db $11, "load_bg_palettes", $ff
+	.name4:
+		db $0e, "load_bg_tiles", $ff
+	.name5:
+		db $0f, "load_metatiles", $ff
+	.name6:
+		db $0a, "load_room", $ff
+	.name7:
+		db $12, "load_obj_palettes", $ff
+	.name8:
+		db $0f, "load_obj_tiles", $ff
+	.name9:
+		db $0b, "add_entity", $ff
+	.name10:
+		db $12, "cutscene_movement", $ff
 .bytecode:
-	db $74, $00
 	db $64, $01
-	db $83, $01
-	db $7d, $00
-	db $74, $01
 	db $64, $02
-	db $83, $01
+	db $6c, $00
+	db $6d, $01
+	db $7d, $00
+	db $6d, $02
 	db $7d, $01
-	db $74, $02
-	db $64, $03
-	db $83, $01
 	db $01, $00
 	db $74, $03
-	db $64, $04
-	db $64, $05
-	db $7c, $01
-	db $7c, $00
-	db $83, $04
-	db $01, $00
-	db $74, $04
-	db $64, $06
+	db $64, $03
 	db $83, $01
 	db $7d, $02
-	db $74, $05
-	db $64, $07
+	db $74, $04
+	db $64, $04
 	db $83, $01
 	db $7d, $03
+	db $74, $05
+	db $64, $05
+	db $83, $01
+	db $01, $00
 	db $74, $06
-	db $64, $08
-	db $64, $08
-	db $74, $07
-	db $64, $09
-	db $7c, $02
+	db $64, $06
+	db $64, $07
 	db $7c, $03
-	db $83, $06
+	db $7c, $02
+	db $83, $04
+	db $01, $00
+	db $74, $07
+	db $64, $08
+	db $83, $01
 	db $7d, $04
-	db $09, $00
 	db $74, $08
-	db $83, $00
-	db $01, $00
+	db $64, $09
+	db $83, $01
+	db $7d, $05
 	db $74, $09
+	db $64, $0a
+	db $64, $0a
+	db $74, $0a
+	db $64, $01
+	db $7c, $04
+	db $7c, $05
+	db $64, $0b
+	db $64, $0c
+	db $83, $08
+	db $7d, $06
+	db $09, $00
+	db $7c, $00
 	db $83, $00
 	db $01, $00
-	db $71, $25
+	db $7c, $01
+	db $83, $00
+	db $01, $00
+	db $71, $2f
 
 
 PyBlock_cutscene_movement:

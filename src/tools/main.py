@@ -1,6 +1,5 @@
 from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
-    load_obj_tiles, load_room, load_metatiles, add_entity, update_entities, \
-    wait_vblank
+    load_obj_tiles, load_room, load_metatiles, add_entity
 
 
 def cutscene_movement():
@@ -13,6 +12,8 @@ def cutscene_movement():
 
 
 def main():
+    from gbpy import update_entities, wait_vblank
+
     cryptPals = load_bg_palettes("crypt.pal")
     cryptTiles = load_bg_tiles("crypt.2bpp")
     load_metatiles("room1.bin")
@@ -20,9 +21,11 @@ def main():
 
     orcPals = load_obj_palettes("orc.pal")
     orcTiles = load_obj_tiles("orc.2bpp")
-    # tile x, tile y, script, anim def idx, pal ptr, tiles ptr
+    # tile x, tile y, script, anim def idx, pal ptr, tiles ptr, metatile tiles/attrs
     # Keep `player =` to keep the data in the heap
-    player = add_entity(5, 5, cutscene_movement, 0, orcPals, orcTiles)
+    player = add_entity(
+        5, 5, cutscene_movement, 0, orcPals, orcTiles, "orc_mtiles.bin", "orc_mattrs.bin",
+    )
 
     while 1:
         update_entities()

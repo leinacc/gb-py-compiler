@@ -7,6 +7,7 @@ InitEntites::
     ld bc, (wEntity01-wEntity00)*NUM_ENTITIES
     xor a
     rst Memset
+    ld [wCurrOamIdxToFill], a
     ret
 
 
@@ -16,6 +17,8 @@ InitEntites::
 ; DE - addr of script (bank is the current one)
 ; H - pals base idx
 ; L - tiles base idx
+; wTempEntityMtilesAddr.w
+; wTempEntityMattrsAddr.w
 AddEntity::
     push hl
     push af
@@ -88,88 +91,178 @@ AddEntity::
     ld c, 3
     rst MemcpySmall
 
+; PalBaseIdx and TilesBaseIdx
     pop de
     ld a, d
     ld [hl+], a
-    ld [hl], e
+    ld a, e
+    ld [hl+], a
+
+; MetatilesTilesSrc
+    ld a, [wTempEntityMtilesAddr]
+    ld [hl+], a
+    ld a, [wTempEntityMtilesAddr+1]
+    ld [hl+], a
+    ldh a, [hCurROMBank]
+    ld [hl+], a
+
+; MetatilesAttrsSrc
+    ld a, [wTempEntityMattrsAddr]
+    ld [hl+], a
+    ld a, [wTempEntityMattrsAddr+1]
+    ld [hl+], a
+    ldh a, [hCurROMBank]
+    ld [hl+], a
 
     ret
 
 
 UpdateEntities::
-    ld hl, wEntity00_InUse
+    ld de, wEntity00_InUse
     ld b, NUM_ENTITIES
-    ld de, wEntity01-wEntity00
-    .nextEntity
-        push hl
+    .nextEntity:
+        push de
         push bc
 
-        ld a, [hl]
+    ; Proceed only if slot is in use
+        ld a, [de]
         and a
         jr z, .toNextEntity
 
-        ld a, l
-        add wEntity00_ScreenX-wEntity00
-        ld l, a
-        jr nc, :+
-        inc h
-    :   ld a, [hl+]
-        add 8
-        ld b, a
-        ld a, [hl]
-        add 16
-        ld c, a
+    ; Store entity details in a way where we can get it faster
+        push de
+        ld hl, wCurrEntity
+        ld bc, wEntity01-wEntity00
+        call Memcpy
 
-        ld hl, wShadowOAM
-        ld a, c
-        ld [hl+], a
-        ld a, b
-        ld [hl+], a
-        ld a, $00
-        ld [hl+], a
-        ld a, $00
-        ld [hl+], a
+        call UpdateAnimation
+        call SendEntityDataToShadowOam
 
-        ld a, c
-        ld [hl+], a
-        ld a, b
-        add 8
-        ld [hl+], a
-        ld a, $00
-        ld [hl+], a
-        ld a, $20
-        ld [hl+], a
-
-        ld a, c
-        add 8
-        ld [hl+], a
-        ld a, b
-        ld [hl+], a
-        ld a, $04
-        ld [hl+], a
-        ld a, $00
-        ld [hl+], a
-
-        ld a, c
-        add 8
-        ld [hl+], a
-        ld a, b
-        add 8
-        ld [hl+], a
-        ld a, $04
-        ld [hl+], a
-        ld a, $20
-        ld [hl+], a
+    ; Save updated details
+        ld de, wCurrEntity
+        pop hl
+        ld bc, wEntity01-wEntity00
+        call Memcpy
 
     .toNextEntity:
         pop bc
-        pop hl
+        pop de
+        ld hl, wEntity01-wEntity00
         add hl, de
+        ld e, l
+        ld d, h
         dec b
         jr nz, .nextEntity
 
     ld a, HIGH(wShadowOAM)
     ldh [hOAMHigh], a
+    xor a
+    ld [wCurrOamIdxToFill], a
+    ret
+
+
+; Trashes everything
+UpdateAnimation:
+; todo: init anim in AddEntity?
+    ld a, [wCurrEntity_AnimCtr]
+    and a
+    jr z, .initAnim
+
+    dec a
+    jr z, .nextAnim
+
+    ld [wCurrEntity_AnimCtr], a
+    ret
+
+.initAnim:
+; HL = table of direction ptrs
+    ld a, [wCurrEntity_AnimDef]
+    ld l, a
+    ld a, [wCurrEntity_AnimDef+1]
+    ld h, a
+
+; HL = anim dirs table
+    ld a, [wCurrEntity_Dir]
+    add a
+    add l
+    ld l, a
+    jr nc, :+
+    inc h
+:   ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+
+; Save it
+    ld a, l
+    ld [wCurrEntity_AnimDirsTable], a
+    ld a, h
+    ld [wCurrEntity_AnimDirsTable+1], a
+
+; Save the metatile idx and frame counter
+    ld a, [hl+]
+    ld [wCurrEntity_MetatileIdx], a
+    ld a, [hl]
+    ld [wCurrEntity_AnimCtr], a
+    ret
+
+.nextAnim:
+; HL = anim dirs table
+    ld a, [wCurrEntity_AnimDirsTable]
+    ld l, a
+    ld a, [wCurrEntity_AnimDirsTable+1]
+    ld h, a
+    ld c, l
+    ld b, h
+
+; Increase and add on the anim idx
+    ld a, [wCurrEntity_AnimIdx]
+    inc a
+    ld [wCurrEntity_AnimIdx], a
+
+.setNewAnim:
+    add a
+    add l
+    ld l, a
+    jr nc, :+
+    inc h
+
+; HL points next metatile idx
+:   ld a, [hl+]
+    cp $fe
+    jr z, .jumpAnim
+
+    ld [wCurrEntity_MetatileIdx], a
+    ld a, [hl]
+    ld [wCurrEntity_AnimCtr], a
+    ret
+
+.jumpAnim:
+    ld a, [hl]
+    ld [wCurrEntity_AnimIdx], a
+    ld l, c
+    ld h, b
+    jr .setNewAnim
+
+
+; wCurrEntity - entity struct
+SendEntityDataToShadowOam:
+    ld hl, wCurrEntity_ScreenX
+    ld a, [hl+]
+    add 8
+    ld b, a
+    ld a, [hl]
+    add 16
+    ld c, a
+
+    ld a, [wCurrOamIdxToFill]
+    ld l, a
+    ld h, HIGH(wShadowOAM)
+
+    call AddSprite
+
+    ld a, l
+    ld [wCurrOamIdxToFill], a
+
     ret
 
 
@@ -178,10 +271,138 @@ AnimTable:
 
 
 AnimDefSimple:
-    db 0
+    dw .up
+    dw .right
+    dw .down
+    dw .left
+
+.up:
+    db $06, $0c
+    db $07, $0c
+    db $08, $0c
+    db $09, $0c
+    db $fe, $00
+
+.right:
+    db $0b, $0c
+    db $0c, $0c
+    db $0d, $0c
+    db $0e, $0c
+    db $fe, $00
+
+.down:
+    db $01, $0c
+    db $02, $0c
+    db $03, $0c
+    db $04, $0c
+    db $fe, $00
+
+.left:
+    db $10, $0c
+    db $11, $0c
+    db $12, $0c
+    db $13, $0c
+    db $fe, $00
+
+
+; B - starting screen X (pre-plus 8)
+; C - starting screen Y (pre-plus 16)
+; HL - dest addr in shadow oam
+; Returns HL = next oam slot to fill
+; Trashes all
+AddSprite:
+; DE = addr of metatile tile src
+    ld a, [wCurrEntity_MetatilesTilesSrc]
+    ld e, a
+    ld a, [wCurrEntity_MetatilesTilesSrc+1]
+    ld d, a
+    ld a, [wCurrEntity_MetatileIdx]
+    add a
+    add a
+    push af
+    add e
+    ld e, a
+    jr nc, :+
+    inc d
+
+; Populate 4 tile idxes
+:   ld a, c
+    ld [hl+], a
+    ld a, b
+    ld [hl+], a
+    ld a, [de]
+    inc de
+    ld [hl+], a
+    push hl
+    inc hl
+
+    ld a, c
+    ld [hl+], a
+    ld a, b
+    add 8
+    ld [hl+], a
+    ld a, [de]
+    inc de
+    ld [hl+], a
+    inc hl
+
+    ld a, c
+    add 8
+    ld [hl+], a
+    ld a, b
+    ld [hl+], a
+    ld a, [de]
+    inc de
+    ld [hl+], a
+    inc hl
+
+    ld a, c
+    add 8
+    ld [hl+], a
+    ld a, b
+    add 8
+    ld [hl+], a
+    ld a, [de]
+    ld [hl], a
+
+; DE = addr of metatile attr src
+    pop hl
+    ld a, [wCurrEntity_MetatilesAttrsSrc]
+    ld e, a
+    ld a, [wCurrEntity_MetatilesAttrsSrc+1]
+    ld d, a
+    pop af
+    add e
+    ld e, a
+    jr nc, :+
+    inc d
+
+; Populate 4 tile attrs
+:   ld b, 4
+    .nextAttr:
+        ld a, [de]
+        inc de
+        ld [hl], a
+        ld a, l
+        add 4
+        ld l, a
+        jr nc, :+
+        inc h
+
+    :   dec b
+        jr nz, .nextAttr
+
+    dec hl
+    dec hl
+    dec hl
+    ret
 
 
 SECTION "Entities ram", WRAM0
 FOR N, NUM_ENTITIES
     dstruct Entity, wEntity{02x:N}
 ENDR
+
+    dstruct Entity, wCurrEntity
+
+wCurrOamIdxToFill: db

@@ -124,9 +124,13 @@ CALL_STACK_LEN equ 8
 	bytes 3, AnimDef ; ptr to animation definition
 	bytes 1, PalBaseIdx
 	bytes 1, TilesBaseIdx
+	bytes 3, MetatilesTilesSrc
+	bytes 3, MetatilesAttrsSrc
 
+	bytes 2, AnimDirsTable
 	bytes 1, AnimIdx ; which cel is being displayed
 	bytes 1, AnimCtr ; num frames until next cel is displayed
+	bytes 1, MetatileIdx
 	bytes 1, State
 	bytes 1, Dir
 	end_struct
