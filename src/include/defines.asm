@@ -126,6 +126,7 @@ CALL_STACK_LEN equ 8
 	bytes 1, TilesBaseIdx
 	bytes 3, MetatilesTilesSrc
 	bytes 3, MetatilesAttrsSrc
+	bytes 1, CallStackIdx
 
 	bytes 2, AnimDirsTable
 	bytes 1, AnimIdx ; which cel is being displayed
@@ -133,6 +134,9 @@ CALL_STACK_LEN equ 8
 	bytes 1, MetatileIdx
 	bytes 1, State
 	bytes 1, Dir
+	bytes 1, XSpeed
+	bytes 1, YSpeed
+	bytes 1, MoveCtr
 	end_struct
 
 NUM_ENTITIES equ $10

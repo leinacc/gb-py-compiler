@@ -24,13 +24,13 @@ GbpyModule::
 	db $0b, "add_entity", $ff
 		dw AsmAddEntity
 	db $0a, "move_left", $ff
-		dw AsmStub
+		dw AsmMoveLeft
 	db $0b, "move_right", $ff
-		dw AsmStub
+		dw AsmMoveRight
 	db $08, "move_up", $ff
-		dw AsmStub
+		dw AsmMoveUp
 	db $0a, "move_down", $ff
-		dw AsmStub
+		dw AsmMoveDown
 	db $10, "update_entities", $ff
 		dw AsmUpdateEntities
 	db $ff
@@ -397,6 +397,158 @@ AsmAddEntity:
 ; todo: this should be the entity idx
 	ld b, 0
 	jp PushNewInt
+
+
+AsmMoveLeft:
+	db TYPE_ASM
+
+	xor a
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+; Set movement details
+	ld a, [hl]
+	swap a
+	ld [wCurrEntity_MoveCtr], a
+
+	ld a, $ff
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+
+	ld a, 3
+	ld [wCurrEntity_Dir], a
+	call PushNewNone
+
+; HL = return address
+	pop hl
+
+; HL = address of bytecode where the asm was
+	pop hl
+	ld a, l
+	ldh [hSavedBytecodeAddr], a
+	ld a, h
+	ldh [hSavedBytecodeAddr+1], a
+
+	ret
+
+
+AsmMoveRight:
+	db TYPE_ASM
+
+	xor a
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+; Set movement details
+	ld a, [hl]
+	swap a
+	ld [wCurrEntity_MoveCtr], a
+
+	ld a, 1
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+
+	inc a
+	ld [wCurrEntity_Dir], a
+	call PushNewNone
+
+; HL = return address
+	pop hl
+
+; HL = address of bytecode where the asm was
+	pop hl
+	ld a, l
+	ldh [hSavedBytecodeAddr], a
+	ld a, h
+	ldh [hSavedBytecodeAddr+1], a
+
+	ret
+
+
+AsmMoveUp:
+	db TYPE_ASM
+
+	xor a
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+; Set movement details
+	ld a, [hl]
+	swap a
+	ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+	dec a
+	ld [wCurrEntity_YSpeed], a
+
+	xor a
+	ld [wCurrEntity_Dir], a
+	call PushNewNone
+
+; HL = return address
+	pop hl
+
+; HL = address of bytecode where the asm was
+	pop hl
+	ld a, l
+	ldh [hSavedBytecodeAddr], a
+	ld a, h
+	ldh [hSavedBytecodeAddr+1], a
+
+	ret
+
+
+AsmMoveDown:
+	db TYPE_ASM
+
+	xor a
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+; Set movement details
+	ld a, [hl]
+	swap a
+	ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+	inc a
+	ld [wCurrEntity_YSpeed], a
+
+	inc a
+	ld [wCurrEntity_Dir], a
+	call PushNewNone
+
+; HL = return address
+	pop hl
+
+; HL = address of bytecode where the asm was
+	pop hl
+	ld a, l
+	ldh [hSavedBytecodeAddr], a
+	ld a, h
+	ldh [hSavedBytecodeAddr+1], a
+
+	ret
 
 
 AsmUpdateEntities:

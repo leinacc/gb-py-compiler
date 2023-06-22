@@ -38,8 +38,7 @@ HLequCurrFrameStackPtrs::
 
 
 HLequCurrReturnCallStackIdx::
-	ldh a, [hPyStackTop]
-	ld l, a
+	ld l, LOW(wReturnCallStackIdx)
 	ldh a, [hCurrCallStackIdx]
 	add HIGH(wReturnCallStackIdx)
 	ld h, a

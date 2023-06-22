@@ -20,6 +20,7 @@ InitEntites::
 ; wTempEntityMtilesAddr.w
 ; wTempEntityMattrsAddr.w
 AddEntity::
+    push de
     push hl
     push af
     push de
@@ -113,8 +114,37 @@ AddEntity::
     ld [hl+], a
     ldh a, [hCurROMBank]
     ld [hl+], a
+    push hl
 
-    ret
+; Start its script on a new frame
+	ld c, 1
+	ld b, CALL_STACK_LEN
+	ld h, HIGH(wCurrCallStackIdx)+1
+	ld l, LOW(wCurrCallStackIdx)
+	.nextCallStackToTryUsing:
+		ld a, [hl]
+		cp $ff
+		jr z, .foundCallStack
+
+		inc h
+		inc c
+		dec b
+		jp z, Debug
+		jr .nextCallStackToTryUsing
+
+.foundCallStack:
+    ld [hl], c
+
+; Save Entity.CallStackIdx
+    pop hl
+    ld [hl], c
+
+    pop hl
+    ld a, [hl+]
+    cp TYPE_FUNCTION
+    jp nz, Debug
+
+    jp StartEntityFrameStack
 
 
 UpdateEntities::
@@ -135,6 +165,8 @@ UpdateEntities::
         ld bc, wEntity01-wEntity00
         call Memcpy
 
+        call MoveEntity
+        call RunEntityScript
         call UpdateAnimation
         call SendEntityDataToShadowOam
 
@@ -158,6 +190,49 @@ UpdateEntities::
     ldh [hOAMHigh], a
     xor a
     ld [wCurrOamIdxToFill], a
+    ret
+
+
+RunEntityScript:
+    ld a, [wCurrEntity_MoveCtr]
+    and a
+    ret nz
+
+; HL = curr script definition
+    ld a, [wCurrEntity_ScriptDef]
+    ld l, a
+    ld a, [wCurrEntity_ScriptDef+1]
+    ld h, a
+
+    ld a, [hl+]
+    cp TYPE_FUNCTION
+    jp nz, Debug
+
+    xor a
+    ldh [hPyParam], a
+    call ContEntityFrameStack
+    ret
+
+
+MoveEntity:
+    ld a, [wCurrEntity_MoveCtr]
+    and a
+    ret z
+
+    dec a
+    ld [wCurrEntity_MoveCtr], a
+
+    ld a, [wCurrEntity_ScreenX]
+    ld b, a
+    ld a, [wCurrEntity_XSpeed]
+    add b
+    ld [wCurrEntity_ScreenX], a
+
+    ld a, [wCurrEntity_ScreenY]
+    ld b, a
+    ld a, [wCurrEntity_YSpeed]
+    add b
+    ld [wCurrEntity_ScreenY], a
     ret
 
 
@@ -269,6 +344,7 @@ SendEntityDataToShadowOam:
 AnimTable:
     dl AnimDefSimple
 
+WALK_CTR equ $04
 
 AnimDefSimple:
     dw .up
@@ -277,31 +353,31 @@ AnimDefSimple:
     dw .left
 
 .up:
-    db $06, $0c
-    db $07, $0c
-    db $08, $0c
-    db $09, $0c
+    db $06, WALK_CTR
+    db $07, WALK_CTR
+    db $08, WALK_CTR
+    db $09, WALK_CTR
     db $fe, $00
 
 .right:
-    db $0b, $0c
-    db $0c, $0c
-    db $0d, $0c
-    db $0e, $0c
+    db $0b, WALK_CTR
+    db $0c, WALK_CTR
+    db $0d, WALK_CTR
+    db $0e, WALK_CTR
     db $fe, $00
 
 .down:
-    db $01, $0c
-    db $02, $0c
-    db $03, $0c
-    db $04, $0c
+    db $01, WALK_CTR
+    db $02, WALK_CTR
+    db $03, WALK_CTR
+    db $04, WALK_CTR
     db $fe, $00
 
 .left:
-    db $10, $0c
-    db $11, $0c
-    db $12, $0c
-    db $13, $0c
+    db $10, WALK_CTR
+    db $11, WALK_CTR
+    db $12, WALK_CTR
+    db $13, WALK_CTR
     db $fe, $00
 
 
