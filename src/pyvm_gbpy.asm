@@ -403,14 +403,9 @@ AsmMoveLeft:
 	db TYPE_ASM
 
 	xor a
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
+	call AequIntParam
 
 ; Set movement details
-	ld a, [hl]
 	swap a
 	ld [wCurrEntity_MoveCtr], a
 
@@ -424,31 +419,16 @@ AsmMoveLeft:
 	ld [wCurrEntity_Dir], a
 	call PushNewNone
 
-; HL = return address
-	pop hl
-
-; HL = address of bytecode where the asm was
-	pop hl
-	ld a, l
-	ldh [hSavedBytecodeAddr], a
-	ld a, h
-	ldh [hSavedBytecodeAddr+1], a
-
-	ret
+	jp EndEntitysScript
 
 
 AsmMoveRight:
 	db TYPE_ASM
 
 	xor a
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
+	call AequIntParam
 
 ; Set movement details
-	ld a, [hl]
 	swap a
 	ld [wCurrEntity_MoveCtr], a
 
@@ -462,31 +442,16 @@ AsmMoveRight:
 	ld [wCurrEntity_Dir], a
 	call PushNewNone
 
-; HL = return address
-	pop hl
-
-; HL = address of bytecode where the asm was
-	pop hl
-	ld a, l
-	ldh [hSavedBytecodeAddr], a
-	ld a, h
-	ldh [hSavedBytecodeAddr+1], a
-
-	ret
+	jp EndEntitysScript
 
 
 AsmMoveUp:
 	db TYPE_ASM
 
 	xor a
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
+	call AequIntParam
 
 ; Set movement details
-	ld a, [hl]
 	swap a
 	ld [wCurrEntity_MoveCtr], a
 
@@ -500,31 +465,16 @@ AsmMoveUp:
 	ld [wCurrEntity_Dir], a
 	call PushNewNone
 
-; HL = return address
-	pop hl
-
-; HL = address of bytecode where the asm was
-	pop hl
-	ld a, l
-	ldh [hSavedBytecodeAddr], a
-	ld a, h
-	ldh [hSavedBytecodeAddr+1], a
-
-	ret
+	jp EndEntitysScript
 
 
 AsmMoveDown:
 	db TYPE_ASM
 
 	xor a
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
+	call AequIntParam
 
 ; Set movement details
-	ld a, [hl]
 	swap a
 	ld [wCurrEntity_MoveCtr], a
 
@@ -538,17 +488,7 @@ AsmMoveDown:
 	ld [wCurrEntity_Dir], a
 	call PushNewNone
 
-; HL = return address
-	pop hl
-
-; HL = address of bytecode where the asm was
-	pop hl
-	ld a, l
-	ldh [hSavedBytecodeAddr], a
-	ld a, h
-	ldh [hSavedBytecodeAddr+1], a
-
-	ret
+	jp EndEntitysScript
 
 
 AsmUpdateEntities:

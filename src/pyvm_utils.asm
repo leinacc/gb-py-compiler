@@ -242,5 +242,33 @@ HLequAddrOfFuncParam::
 	ret
 
 
+; A - param idx starting 0
+; Trashes A, B
+AequIntParam::
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+	ld a, [hl]
+	ret
+
+
+EndEntitysScript::
+; HL = return address (to CallFunction handler)
+	pop hl
+
+; HL = address of bytecode after the CallFunction that got here
+	pop hl
+	ld a, l
+	ldh [hSavedBytecodeAddr], a
+	ld a, h
+	ldh [hSavedBytecodeAddr+1], a
+
+; Return to the ContEntityFrameStack's .return
+	ret
+
+
 Debug::
 	jr @

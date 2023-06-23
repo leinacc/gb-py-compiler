@@ -11,7 +11,6 @@ LoadModule::
 	ld [rROMB0], a
 
 	xor a
-	ldh [hPyStackTop], a
 	ldh [hCurrCallStackIdx], a
 	
 ; Allow use of all function call stacks...
@@ -35,27 +34,7 @@ LoadModule::
 
 ; Python code address in hram
 	pop hl
-	ld a, l
-	ldh [hPyCodeAddr], a
-	ld a, h
-	ldh [hPyCodeAddr+1], a
-
-; Save ptrs addr
-	ld a, [hl+]
-	ldh [hPyConstAddr], a
-	ld a, [hl+]
-	ldh [hPyConstAddr+1], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr+1], a
-	ld a, [hl+]
-	ldh [hBytecodeAddr], a
-	ldh [hSavedBytecodeAddr], a
-	ld a, [hl]
-	ldh [hBytecodeAddr+1], a
-	ldh [hSavedBytecodeAddr+1], a
-
+	call InitFrame
     call HeapifyNames
 
 ; Get bytecode addr
@@ -295,17 +274,64 @@ CallFunction:
 	jp ExecBytecodes
 
 
+SaveCurrCallStackVars:
+    ldh a, [hCurrCallStackIdx]
+    swap a
+    add LOW(wCallStackSavedVars)
+    ld l, a
+    ld h, HIGH(wCallStackSavedVars)
+    ld de, hPyCodeAddr
+    ld c, hPyOpcode-hPyCodeAddr
+    rst MemcpySmall
+	ret
+
+
+; HL - addr of module/function block
+InitFrame:
+    xor a
+    ldh [hPyStackTop], a
+
+; Python code address in hram
+	ld a, l
+	ldh [hPyCodeAddr], a
+	ld a, h
+	ldh [hPyCodeAddr+1], a
+
+; Save ptrs addr
+	ld a, [hl+]
+	ldh [hPyConstAddr], a
+	ld a, [hl+]
+	ldh [hPyConstAddr+1], a
+	ld a, [hl+]
+	ldh [hPyNamesAddr], a
+	ld a, [hl+]
+	ldh [hPyNamesAddr+1], a
+	ld a, [hl+]
+	ldh [hBytecodeAddr], a
+	ldh [hSavedBytecodeAddr], a
+	ld a, [hl]
+	ldh [hBytecodeAddr+1], a
+	ldh [hSavedBytecodeAddr+1], a
+	ret
+
+
+; A - call stack idx
+LoadCallStackSavedVars:
+    ldh [hCurrCallStackIdx], a
+
+; Restore prev stack
+    swap a
+    ld e, a
+    ld d, HIGH(wCallStackSavedVars)
+    ld hl, hPyCodeAddr
+    ld c, hPyOpcode-hPyCodeAddr
+    rst MemcpySmall
+	ret
+
+
 ; HL - points to the address of a function block
 ; This routine allows pushing a frame stack, that will return to the current one
 CallNewFrameStack:
-	ldh a, [hCurrCallStackIdx]
-	ld b, a
-	jr _StartNewFrameStack
-
-
-; B - return call stack idx
-; HL - points to the address of a function block
-_StartNewFrameStack:
 ; Push curr call stack, and stack top, to get the addr for new function's fast vars
 	ldh a, [hCurrCallStackIdx]
 	ld d, a
@@ -315,21 +341,11 @@ _StartNewFrameStack:
 	ld e, a
     push de
 
-; Push curr call stack idx to set the next one's 'return'
-	push bc
-
 ; Push addr of function block to store later
     push hl
 
 ; Save prev stack
-    ldh a, [hCurrCallStackIdx]
-    swap a
-    add LOW(wCallStackSavedVars)
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+    call SaveCurrCallStackVars
 
 ; Start on a new frame
 	ld c, 1
@@ -358,41 +374,15 @@ _StartNewFrameStack:
     ld h, [hl]
     ld l, a
 
-; Init frame
-    xor a
-    ldh [hPyStackTop], a
-
-; Python code address in hram
-	ld a, l
-	ldh [hPyCodeAddr], a
-	ld a, h
-	ldh [hPyCodeAddr+1], a
-
-; Save ptrs addr
-	ld a, [hl+]
-	ldh [hPyConstAddr], a
-	ld a, [hl+]
-	ldh [hPyConstAddr+1], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr+1], a
-	ld a, [hl+]
-	ldh [hBytecodeAddr], a
-	ldh [hSavedBytecodeAddr], a
-	ld a, [hl]
-	ldh [hBytecodeAddr+1], a
-	ldh [hSavedBytecodeAddr+1], a
+	call InitFrame
 
 ; Save prev and curr call stack idx
 	call HLequCurrReturnCallStackIdx
-	pop af
+	pop de
+	ld a, d
 	ld [hl+], a
 	ldh a, [hCurrCallStackIdx]
 	ld [hl], a
-
-; E = prev stack top
-    pop de
 
 ; Store fast values, DE = prev frame's stack where the fast values are
 	ldh a, [hPyParam]
@@ -412,8 +402,8 @@ _StartNewFrameStack:
     rst MemcpySmall
 
 .afterFast:
-; Return to .return
-    ld bc, .execBytecode
+; Continue exec'ing bytecodes for the previous stack
+    ld bc, ExecBytecodes
     push bc
 
 ; Get bytecode addr
@@ -423,7 +413,6 @@ _StartNewFrameStack:
 	ld h, a
 	push hl
 
-.execBytecode:
     jp ExecBytecodes
 
 
@@ -443,14 +432,7 @@ StartEntityFrameStack::
 	push af
 
 ; Save prev stack
-    ldh a, [hCurrCallStackIdx]
-    swap a
-    add LOW(wCallStackSavedVars)
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+    call SaveCurrCallStackVars
 
 ; Find the relevant frame
 	pop af
@@ -462,40 +444,8 @@ StartEntityFrameStack::
     ld h, [hl]
     ld l, a
 
-; Init frame
-    xor a
-    ldh [hPyStackTop], a
-
-; Python code address in hram
-	ld a, l
-	ldh [hPyCodeAddr], a
-	ld a, h
-	ldh [hPyCodeAddr+1], a
-
-; Save ptrs addr
-	ld a, [hl+]
-	ldh [hPyConstAddr], a
-	ld a, [hl+]
-	ldh [hPyConstAddr+1], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr], a
-	ld a, [hl+]
-	ldh [hPyNamesAddr+1], a
-	ld a, [hl+]
-	ldh [hBytecodeAddr], a
-	ldh [hSavedBytecodeAddr], a
-	ld a, [hl]
-	ldh [hBytecodeAddr+1], a
-	ldh [hSavedBytecodeAddr+1], a
-
-; Save the ptrs in wram
-	ldh a, [hCurrCallStackIdx]
-    swap a
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+	call InitFrame
+	call SaveCurrCallStackVars
 
 ; Save prev call stack idx
 	call HLequCurrReturnCallStackIdx
@@ -503,64 +453,23 @@ StartEntityFrameStack::
 	ld [hl], a
 
 ; Restore prev frame
-    ldh [hCurrCallStackIdx], a
-
-; Restore prev stack
-    swap a
-    ld e, a
-    ld d, HIGH(wCallStackSavedVars)
-    ld hl, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
-
-; Return from the function
-    ret
+	jp LoadCallStackSavedVars
 
 
-; HL - points to the address of a function block
-; This routine allows starting a new python routine from outside the VM
+; This routine allows continuing a python routine from outside the VM
 ContEntityFrameStack::
-; Push curr call stack idx to set the next one's 'return'
-	ldh a, [hCurrCallStackIdx]
-	ld b, a
-	push bc
-
-; Push addr of function block to store later
-    push hl
-
 ; Save prev stack
-    ldh a, [hCurrCallStackIdx]
-    swap a
-    add LOW(wCallStackSavedVars)
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+    call SaveCurrCallStackVars
 
-; Find the relevant frame
+; Get vars for the entity's script's frame
 	ld a, [wCurrEntity_CallStackIdx]
-	ldh [hCurrCallStackIdx], a
-
-; Restore the continued stack
-    swap a
-    ld e, a
-    ld d, HIGH(wCallStackSavedVars)
-    ld hl, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
-
-; HL = address of the function block
-    pop hl
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
+	call LoadCallStackSavedVars
 
 ; Return to .return
     ld bc, .return
     push bc
 
-; Get bytecode addr
+; Get bytecode addr, and continue executing them
 	ldh a, [hSavedBytecodeAddr]
 	ld l, a
 	ldh a, [hSavedBytecodeAddr+1]
@@ -570,31 +479,13 @@ ContEntityFrameStack::
     jp ExecBytecodes
 
 .return:
-; Save the ptrs in wram
-	ldh a, [hCurrCallStackIdx]
-    swap a
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+; Save the entity's script's frame in wram
+	call SaveCurrCallStackVars
 
 ; Restore prev frame
 	call HLequCurrReturnCallStackIdx
 	ld a, [hl]
-    ldh [hCurrCallStackIdx], a
-
-; Restore prev stack
-    swap a
-    ld e, a
-    ld d, HIGH(wCallStackSavedVars)
-    ld hl, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
-
-; Return from the function
-    pop hl
-    ret
+	jp LoadCallStackSavedVars
 
 
 MakeFunction:
@@ -1017,6 +908,7 @@ wFrameStackPtrs:: ds $80 ; word-sized (low, then high)
 wPyFastNames:: ds $7e ; word-sized ptrs to 'fast' data rather than names
 wReturnCallStackIdx:: db
 wCurrCallStackIdx:: db
+; No usage, but keep
 wLocalFrameIgnore: ds (CALL_STACK_LEN-1) * $100 ; per frame
 
 

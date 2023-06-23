@@ -6,9 +6,9 @@ def cutscene_movement():
     from gbpy import move_left, move_right, move_up, move_down
     while 1:
         move_left(1)
-        move_up(1)
+        move_up(4)
         move_right(1)
-        move_down(1)
+        move_down(4)
 
 
 def main():
@@ -22,9 +22,8 @@ def main():
     orcPals = load_obj_palettes("orc.pal")
     orcTiles = load_obj_tiles("orc.2bpp")
     # tile x, tile y, script, anim def idx, pal ptr, tiles ptr, metatile tiles/attrs
-    # Keep `player =` to keep the data in the heap
-    player = add_entity(
-        5, 5, cutscene_movement, 0, orcPals, orcTiles, "orc_mtiles.bin", "orc_mattrs.bin",
+    add_entity(
+        5, 6, cutscene_movement, 0, orcPals, orcTiles, "orc_mtiles.bin", "orc_mattrs.bin",
     )
 
     while 1:

@@ -142,6 +142,7 @@ PyBlock_main:
 		dw .const10
 		dw .const11
 		dw .const12
+		dw .const13
 	.const0:
 		db TYPE_NONE
 	.const1:
@@ -183,9 +184,12 @@ PyBlock_main:
 		db TYPE_INT
 		db $05
 	.const11:
+		db TYPE_INT
+		db $06
+	.const12:
 		db TYPE_STR, $0f
 		db "orc_mtiles.bin", $ff
-	.const12:
+	.const13:
 		db TYPE_STR, $0f
 		db "orc_mattrs.bin", $ff
 .names:
@@ -261,15 +265,15 @@ PyBlock_main:
 	db $7d, $05
 	db $74, $09
 	db $64, $0a
-	db $64, $0a
+	db $64, $0b
 	db $74, $0a
 	db $64, $01
 	db $7c, $04
 	db $7c, $05
-	db $64, $0b
 	db $64, $0c
+	db $64, $0d
 	db $83, $08
-	db $7d, $06
+	db $01, $00
 	db $09, $00
 	db $7c, $00
 	db $83, $00
@@ -289,6 +293,7 @@ PyBlock_cutscene_movement:
 		dw .const1
 		dw .const2
 		dw .const3
+		dw .const4
 	.const0:
 		db TYPE_NONE
 	.const1:
@@ -316,6 +321,9 @@ PyBlock_cutscene_movement:
 	.const3:
 		db TYPE_INT
 		db $01
+	.const4:
+		db TYPE_INT
+		db $04
 .names:
 	dw .name0
 	dw .name1
@@ -352,7 +360,7 @@ PyBlock_cutscene_movement:
 	db $83, $01
 	db $01, $00
 	db $7c, $02
-	db $64, $03
+	db $64, $04
 	db $83, $01
 	db $01, $00
 	db $7c, $01
@@ -360,7 +368,7 @@ PyBlock_cutscene_movement:
 	db $83, $01
 	db $01, $00
 	db $7c, $03
-	db $64, $03
+	db $64, $04
 	db $83, $01
 	db $01, $00
 	db $71, $0d

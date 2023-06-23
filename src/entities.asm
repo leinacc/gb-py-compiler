@@ -198,20 +198,7 @@ RunEntityScript:
     and a
     ret nz
 
-; HL = curr script definition
-    ld a, [wCurrEntity_ScriptDef]
-    ld l, a
-    ld a, [wCurrEntity_ScriptDef+1]
-    ld h, a
-
-    ld a, [hl+]
-    cp TYPE_FUNCTION
-    jp nz, Debug
-
-    xor a
-    ldh [hPyParam], a
-    call ContEntityFrameStack
-    ret
+    jp ContEntityFrameStack
 
 
 MoveEntity:
