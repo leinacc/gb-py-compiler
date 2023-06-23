@@ -4,8 +4,7 @@ SECTION "Intro", ROMX
 
 Intro::
 ; todo: use hConsoleType to display a CGB-only screen
-; todo: set hOAMHigh = HIGH(wShadowOAM) so that vblank can transfer oam
-; todo: use hHeldKeys and hPressedKeys
+
 	ld a, $01
 	ldh [hCanSoftReset], a
 

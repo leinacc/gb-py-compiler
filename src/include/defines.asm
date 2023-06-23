@@ -137,6 +137,7 @@ CALL_STACK_LEN equ 8
 	bytes 1, XSpeed
 	bytes 1, YSpeed
 	bytes 1, MoveCtr
+	bytes 1, PlayerMoved
 	end_struct
 
 NUM_ENTITIES equ $10

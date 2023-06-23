@@ -42,6 +42,12 @@ AddEntity::
     jp Debug
 
 .foundSlot
+    push hl
+    xor a
+    ld bc, wEntity01-wEntity00
+    rst Memset
+    pop hl
+
 ; InUse
     inc a
     ld [hl+], a
@@ -165,6 +171,7 @@ UpdateEntities::
         ld bc, wEntity01-wEntity00
         call Memcpy
 
+        call MoveEntFromInput
         call MoveEntity
         call RunEntityScript
         call UpdateAnimation
@@ -193,12 +200,98 @@ UpdateEntities::
     ret
 
 
-RunEntityScript:
+; B - num tiles
+MoveDown::
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+	inc a
+	ld [wCurrEntity_YSpeed], a
+
+	inc a
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
+MoveUp::
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+	dec a
+	ld [wCurrEntity_YSpeed], a
+
+	xor a
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
+MoveLeft::
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	ld a, $ff
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+
+	ld a, 3
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
+MoveRight::
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	ld a, 1
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+	ld [wCurrEntity_AnimCtr], a
+
+	inc a
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+MoveEntFromInput:
+    ld a, [wCurrEntity_PlayerMoved]
+    and a
+    ret z
+
     ld a, [wCurrEntity_MoveCtr]
     and a
     ret nz
 
-    jp ContEntityFrameStack
+    ldh a, [hHeldKeys]
+    ld b, 1
+    bit PADB_DOWN, a
+    jr nz, MoveDown
+
+    bit PADB_UP, a
+    jr nz, MoveUp
+
+    bit PADB_LEFT, a
+    jr nz, MoveLeft
+
+    bit PADB_RIGHT, a
+    jr nz, MoveRight
+
+    ret
 
 
 MoveEntity:
@@ -221,6 +314,14 @@ MoveEntity:
     add b
     ld [wCurrEntity_ScreenY], a
     ret
+
+
+RunEntityScript:
+    ld a, [wCurrEntity_MoveCtr]
+    and a
+    ret nz
+
+    jp ContEntityFrameStack
 
 
 ; Trashes everything
@@ -331,7 +432,7 @@ SendEntityDataToShadowOam:
 AnimTable:
     dl AnimDefSimple
 
-WALK_CTR equ $04
+WALK_CTR equ $0c
 
 AnimDefSimple:
     dw .up

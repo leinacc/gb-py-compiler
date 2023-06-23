@@ -292,8 +292,6 @@ PyBlock_cutscene_movement:
 		dw .const0
 		dw .const1
 		dw .const2
-		dw .const3
-		dw .const4
 	.const0:
 		db TYPE_NONE
 	.const1:
@@ -301,46 +299,26 @@ PyBlock_cutscene_movement:
 		db $00
 	.const2:
 		db TYPE_TUPLE
-		db $04
+		db $02
 		dw .tupleItem0
 		dw .tupleItem1
-		dw .tupleItem2
-		dw .tupleItem3
 		.tupleItem0
-			db TYPE_STR, $0a
-			db "move_left", $ff
+			db TYPE_STR, $10
+			db "enable_movement", $ff
 		.tupleItem1
-			db TYPE_STR, $0b
-			db "move_right", $ff
-		.tupleItem2
-			db TYPE_STR, $08
-			db "move_up", $ff
-		.tupleItem3
-			db TYPE_STR, $0a
-			db "move_down", $ff
-	.const3:
-		db TYPE_INT
-		db $01
-	.const4:
-		db TYPE_INT
-		db $04
+			db TYPE_STR, $0c
+			db "entity_noop", $ff
 .names:
 	dw .name0
 	dw .name1
 	dw .name2
-	dw .name3
-	dw .name4
-	db $3c
+	db $2b
 	.name0:
 		db $05, "gbpy", $ff
 	.name1:
-		db $0a, "move_left", $ff
+		db $10, "enable_movement", $ff
 	.name2:
-		db $0b, "move_right", $ff
-	.name3:
-		db $08, "move_up", $ff
-	.name4:
-		db $0a, "move_down", $ff
+		db $0c, "entity_noop", $ff
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -349,29 +327,15 @@ PyBlock_cutscene_movement:
 	db $7d, $00
 	db $6d, $02
 	db $7d, $01
-	db $6d, $03
-	db $7d, $02
-	db $6d, $04
-	db $7d, $03
+	db $01, $00
+	db $7c, $00
+	db $83, $00
 	db $01, $00
 	db $09, $00
-	db $7c, $00
-	db $64, $03
-	db $83, $01
-	db $01, $00
-	db $7c, $02
-	db $64, $04
-	db $83, $01
-	db $01, $00
 	db $7c, $01
-	db $64, $03
-	db $83, $01
+	db $83, $00
 	db $01, $00
-	db $7c, $03
-	db $64, $04
-	db $83, $01
-	db $01, $00
-	db $71, $0d
+	db $71, $0c
 
 
 FileSystem::

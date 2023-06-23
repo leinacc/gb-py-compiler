@@ -3,12 +3,15 @@ from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
 
 
 def cutscene_movement():
-    from gbpy import move_left, move_right, move_up, move_down
+    # from gbpy import move_left, move_right, move_up, move_down
+    from gbpy import enable_movement, entity_noop
+    enable_movement()
     while 1:
-        move_left(1)
-        move_up(4)
-        move_right(1)
-        move_down(4)
+        entity_noop()
+        # move_left(1)
+        # move_up(4)
+        # move_right(1)
+        # move_down(4)
 
 
 def main():

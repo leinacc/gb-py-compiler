@@ -33,6 +33,10 @@ GbpyModule::
 		dw AsmMoveDown
 	db $10, "update_entities", $ff
 		dw AsmUpdateEntities
+	db $10, "enable_movement", $ff
+		dw AsmEnableMovement
+	db $0c, "entity_noop", $ff
+		dw AsmEntityNoop
 	db $ff
 
 
@@ -406,19 +410,10 @@ AsmMoveLeft:
 	call AequIntParam
 
 ; Set movement details
-	swap a
-	ld [wCurrEntity_MoveCtr], a
+	ld b, a
+	call MoveLeft
 
-	ld a, $ff
-	ld [wCurrEntity_XSpeed], a
-	xor a
-	ld [wCurrEntity_YSpeed], a
-	ld [wCurrEntity_AnimCtr], a
-
-	ld a, 3
-	ld [wCurrEntity_Dir], a
 	call PushNewNone
-
 	jp EndEntitysScript
 
 
@@ -429,19 +424,10 @@ AsmMoveRight:
 	call AequIntParam
 
 ; Set movement details
-	swap a
-	ld [wCurrEntity_MoveCtr], a
+	ld b, a
+	call MoveRight
 
-	ld a, 1
-	ld [wCurrEntity_XSpeed], a
-	xor a
-	ld [wCurrEntity_YSpeed], a
-	ld [wCurrEntity_AnimCtr], a
-
-	inc a
-	ld [wCurrEntity_Dir], a
 	call PushNewNone
-
 	jp EndEntitysScript
 
 
@@ -452,19 +438,10 @@ AsmMoveUp:
 	call AequIntParam
 
 ; Set movement details
-	swap a
-	ld [wCurrEntity_MoveCtr], a
+	ld b, a
+	call MoveUp
 
-	xor a
-	ld [wCurrEntity_XSpeed], a
-	ld [wCurrEntity_AnimCtr], a
-	dec a
-	ld [wCurrEntity_YSpeed], a
-
-	xor a
-	ld [wCurrEntity_Dir], a
 	call PushNewNone
-
 	jp EndEntitysScript
 
 
@@ -475,19 +452,10 @@ AsmMoveDown:
 	call AequIntParam
 
 ; Set movement details
-	swap a
-	ld [wCurrEntity_MoveCtr], a
+	ld b, a
+	call MoveDown
 
-	xor a
-	ld [wCurrEntity_XSpeed], a
-	ld [wCurrEntity_AnimCtr], a
-	inc a
-	ld [wCurrEntity_YSpeed], a
-
-	inc a
-	ld [wCurrEntity_Dir], a
 	call PushNewNone
-
 	jp EndEntitysScript
 
 
@@ -495,6 +463,19 @@ AsmUpdateEntities:
 	db TYPE_ASM
 	call UpdateEntities
 	jp PushNewNone
+
+
+AsmEnableMovement:
+	db TYPE_ASM
+	ld a, 1
+	ld [wCurrEntity_PlayerMoved], a
+	jp PushNewNone
+
+
+AsmEntityNoop:
+	db TYPE_ASM
+	call PushNewNone
+	jp EndEntitysScript
 
 
 AsmPrintString:

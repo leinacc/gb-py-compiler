@@ -138,12 +138,12 @@ VBlankHandler:
 	ldh [rSCY], a
 	ldh a, [hSCX]
 	ldh [rSCX], a
-	ldh a, [hBGP]
-	ldh [rBGP], a
-	ldh a, [hOBP0]
-	ldh [rOBP0], a
-	ldh a, [hOBP1]
-	ldh [rOBP1], a
+	; ldh a, [hBGP]
+	; ldh [rBGP], a
+	; ldh a, [hOBP0]
+	; ldh [rOBP0], a
+	; ldh a, [hOBP1]
+	; ldh [rOBP1], a
 
 	; OAM DMA can occur late in the handler, because it will still work even
 	; outside of VBlank. Sprites just will not appear on the scanline(s)
