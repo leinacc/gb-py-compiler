@@ -587,7 +587,7 @@ wPrintTileRow: db
 
 
 SECTION "Room loading", WRAM0
-wRoomMetatiles: ds 16*16
+wRoomMetatiles:: ds 16*16
 wMetatileTableAddr: dw
 wTempEntityMtilesAddr:: dw
 wTempEntityMattrsAddr:: dw

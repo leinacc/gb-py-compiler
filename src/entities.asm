@@ -225,42 +225,105 @@ UpdateEntities::
     ret
 
 
+; Trashes A and C
+HLequAddrInMetatiles:
+; A = offset based on tile X and Y
+    ld a, [wCurrEntity_TileY]
+    swap a
+    ld c, a
+    ld a, [wCurrEntity_TileX]
+    or c
+
+; Offset into shadow metatiles
+    add LOW(wRoomMetatiles)
+    ld l, a
+    ld h, HIGH(wRoomMetatiles)
+    ret nc
+    inc h
+    ret
+
+
+; Returns zflag set if the metatile is walkable
+IsAaWalkableMetatile:
+    cp $11
+    ret z
+
+    cp $14
+    ret
+
+
 ; B - num tiles
 MoveDown::
+    call HLequAddrInMetatiles
+    ld de, $10
+    add hl, de
+    ld a, [hl+]
+    call IsAaWalkableMetatile
+    jr nz, .setDir
+
+    ld a, [wCurrEntity_TileY]
+    inc a
+    ld [wCurrEntity_TileY],a
+
     ld a, b
     swap a
     ld [wCurrEntity_MoveCtr], a
 
 	xor a
 	ld [wCurrEntity_XSpeed], a
-	ld [wCurrEntity_AnimCtr], a
 	inc a
 	ld [wCurrEntity_YSpeed], a
 
-	inc a
+.setDir:
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ld a, 2
 	ld [wCurrEntity_Dir], a
     ret
 
 
 ; B - num tiles
 MoveUp::
+    call HLequAddrInMetatiles
+    ld de, -$10
+    add hl, de
+    ld a, [hl+]
+    call IsAaWalkableMetatile
+    jr nz, .setDir
+
+    ld a, [wCurrEntity_TileY]
+    dec a
+    ld [wCurrEntity_TileY],a
+
     ld a, b
     swap a
     ld [wCurrEntity_MoveCtr], a
 
 	xor a
 	ld [wCurrEntity_XSpeed], a
-	ld [wCurrEntity_AnimCtr], a
 	dec a
 	ld [wCurrEntity_YSpeed], a
 
-	xor a
+.setDir:
+    xor a
+    ld [wCurrEntity_AnimCtr], a
 	ld [wCurrEntity_Dir], a
     ret
 
 
 ; B - num tiles
 MoveLeft::
+    call HLequAddrInMetatiles
+    ld de, -1
+    add hl, de
+    ld a, [hl+]
+    call IsAaWalkableMetatile
+    jr nz, .setDir
+
+    ld a, [wCurrEntity_TileX]
+    dec a
+    ld [wCurrEntity_TileX],a
+
     ld a, b
     swap a
     ld [wCurrEntity_MoveCtr], a
@@ -269,8 +332,10 @@ MoveLeft::
 	ld [wCurrEntity_XSpeed], a
 	xor a
 	ld [wCurrEntity_YSpeed], a
-	ld [wCurrEntity_AnimCtr], a
 
+.setDir:
+    xor a
+    ld [wCurrEntity_AnimCtr], a
 	ld a, 3
 	ld [wCurrEntity_Dir], a
     ret
@@ -278,6 +343,17 @@ MoveLeft::
 
 ; B - num tiles
 MoveRight::
+    call HLequAddrInMetatiles
+    ld de, 1
+    add hl, de
+    ld a, [hl+]
+    call IsAaWalkableMetatile
+    jr nz, .setDir
+
+    ld a, [wCurrEntity_TileX]
+    inc a
+    ld [wCurrEntity_TileX],a
+
     ld a, b
     swap a
     ld [wCurrEntity_MoveCtr], a
@@ -286,15 +362,16 @@ MoveRight::
 	ld [wCurrEntity_XSpeed], a
 	xor a
 	ld [wCurrEntity_YSpeed], a
-	ld [wCurrEntity_AnimCtr], a
 
-	inc a
+.setDir:
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+	ld a, 1
 	ld [wCurrEntity_Dir], a
     ret
 
 
 MoveEntFromInput:
-; todo: check collision (eg crypt walkable tiles are metatiles $11 and $14)
     ld a, [wCurrEntity_PlayerMoved]
     and a
     ret z
@@ -306,16 +383,16 @@ MoveEntFromInput:
     ldh a, [hHeldKeys]
     ld b, 1
     bit PADB_DOWN, a
-    jr nz, MoveDown
+    jp nz, MoveDown
 
     bit PADB_UP, a
-    jr nz, MoveUp
+    jp nz, MoveUp
 
     bit PADB_LEFT, a
-    jr nz, MoveLeft
+    jp nz, MoveLeft
 
     bit PADB_RIGHT, a
-    jr nz, MoveRight
+    jp nz, MoveRight
 
     ret
 
