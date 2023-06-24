@@ -184,12 +184,13 @@ AsmLoadMetatiles:
 	ld e, a
 	ld a, [hl+]
 	ld d, a
-; C = len of data
-	ld a, [hl]
+; BC = len of data
+	ld a, [hl+]
 	ld c, a
+	ld b, [hl]
 
 	ld hl, wRoomMetatiles
-	rst MemcpySmall
+	call Memcpy
 
 	jp PushNewNone
 
@@ -228,20 +229,18 @@ AsmLoadRoom:
 
 
 LoadRoomMetatiles:
-	ld c, 9
+	ld c, $10
 	ld hl, wRoomMetatiles
 	ld de, $9800
 	.nextMetatileRow:
-		ld b, 10
-		push de
+		ld b, $10
 		.nextMetatileCol:
 			ld a, [hl+]
 			call StoreMetatileTilesOrAttrs
 			dec b
 			jr nz, .nextMetatileCol
 
-		pop de
-		ld a, $40
+		ld a, $20
 		add e
 		ld e, a
 		jr nc, :+
@@ -588,7 +587,7 @@ wPrintTileRow: db
 
 
 SECTION "Room loading", WRAM0
-wRoomMetatiles: ds 10*9
+wRoomMetatiles: ds 16*16
 wMetatileTableAddr: dw
 wTempEntityMtilesAddr:: dw
 wTempEntityMattrsAddr:: dw

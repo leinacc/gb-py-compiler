@@ -44,8 +44,8 @@ AddEntity::
 .foundSlot
     push hl
     xor a
-    ld bc, wEntity01-wEntity00
-    rst Memset
+    ld c, wEntity01-wEntity00
+    rst MemsetSmall
     pop hl
 
 ; InUse
@@ -154,6 +154,31 @@ AddEntity::
 
 
 UpdateEntities::
+; todo: put camera code in its own python-called routine
+    ld hl, wCurrEntity
+    ld de, wEntity00_InUse
+    ld c, wEntity01-wEntity00
+    rst MemcpySmall
+
+    ld a, [wCurrEntity_ScreenX]
+    sub $a0/2
+    jr nc, :+
+    xor a
+:   cp $100-$a0
+    jr c, :+
+    ld a, $100-$a0
+:   ldh [hSCX], a
+
+    ld a, [wCurrEntity_ScreenY]
+    sub $90/2
+    jr nc, :+
+    xor a
+:   cp $100-$90
+    jr c, :+
+    ld a, $100-$90
+:   ldh [hSCY], a
+
+; actual entity update code
     ld de, wEntity00_InUse
     ld b, NUM_ENTITIES
     .nextEntity:
@@ -168,8 +193,8 @@ UpdateEntities::
     ; Store entity details in a way where we can get it faster
         push de
         ld hl, wCurrEntity
-        ld bc, wEntity01-wEntity00
-        call Memcpy
+        ld c, wEntity01-wEntity00
+        rst MemcpySmall
 
         call MoveEntFromInput
         call MoveEntity
@@ -180,8 +205,8 @@ UpdateEntities::
     ; Save updated details
         ld de, wCurrEntity
         pop hl
-        ld bc, wEntity01-wEntity00
-        call Memcpy
+        ld c, wEntity01-wEntity00
+        rst MemcpySmall
 
     .toNextEntity:
         pop bc
@@ -269,6 +294,7 @@ MoveRight::
 
 
 MoveEntFromInput:
+; todo: check collision (eg crypt walkable tiles are metatiles $11 and $14)
     ld a, [wCurrEntity_PlayerMoved]
     and a
     ret z
@@ -410,11 +436,18 @@ UpdateAnimation:
 ; wCurrEntity - entity struct
 SendEntityDataToShadowOam:
     ld hl, wCurrEntity_ScreenX
+    ldh a, [hSCX]
+    ld b, a
     ld a, [hl+]
     add 8
+    sub b
     ld b, a
+
+    ldh a, [hSCY]
+    ld c, a
     ld a, [hl]
     add 16
+    sub c
     ld c, a
 
     ld a, [wCurrOamIdxToFill]
