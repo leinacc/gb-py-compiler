@@ -15,7 +15,7 @@ def cutscene_movement():
 
 
 def main():
-    from gbpy import update_entities, wait_vblank
+    from gbpy import update_entities, wait_vblank, load_vwf#, camera_follow
 
     cryptPals = load_bg_palettes("crypt.pal")
     cryptTiles = load_bg_tiles("crypt.2bpp")
@@ -25,9 +25,13 @@ def main():
     orcPals = load_obj_palettes("orc.pal")
     orcTiles = load_obj_tiles("orc.2bpp")
     # tile x, tile y, script, anim def idx, pal ptr, tiles ptr, metatile tiles/attrs
-    add_entity(
+    # todo: player = entity id
+    player = add_entity(
         5, 6, cutscene_movement, 0, orcPals, orcTiles, "orc_mtiles.bin", "orc_mattrs.bin",
     )
+    # camera_follow(player)
+
+    load_vwf("My \t1r\t2a\t3i\t4n\t5b\t6o\t7w\t0 VWF")
 
     while 1:
         update_entities()

@@ -37,6 +37,8 @@ GbpyModule::
 		dw AsmEnableMovement
 	db $0c, "entity_noop", $ff
 		dw AsmEntityNoop
+	db $09, "load_vwf", $ff
+		dw AsmLoadVwf
 	db $ff
 
 
@@ -475,6 +477,12 @@ AsmEntityNoop:
 	db TYPE_ASM
 	call PushNewNone
 	jp EndEntitysScript
+
+
+AsmLoadVwf:
+	db TYPE_ASM
+	call LoadVwf
+	jp PushNewNone
 
 
 AsmPrintString:
