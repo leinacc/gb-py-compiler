@@ -9,8 +9,6 @@ GbpyModule::
 		dw AsmLoadBGTiles
 	db $0f, "load_obj_tiles", $ff
 		dw AsmLoadOBJTiles
-	db $0d, "print_string", $ff
-		dw AsmPrintString
 	db $0c, "wait_vblank", $ff
 		dw AsmWaitVBlank
 	db $11, "load_bg_palettes", $ff
@@ -49,8 +47,8 @@ AsmStub:
 
 InitGbpyModule::
     xor a
-    ld [wPrintTileCol], a
-	ld [wPrintTileCol+1], a
+	ld [wCurrBGTile], a
+	ld [wCurrOBJTile], a
     ret
 
 
@@ -70,13 +68,65 @@ AsmLoadBGTiles:
 	ld a, [hl+]
 	ld c, a
 	ld b, [hl]
-; todo: this is auto-allocated
-	ld hl, $9000
-; todo: files should have a size
-	call LCDMemcpy
 
-; todo: this is going to be the 1st tile idx from the auto-allocation
-	ld b, 0
+; HL = dest
+	ld a, [wCurrBGTile]
+	push af
+
+	swap a
+	ld l, a
+	and $0f
+	or $90
+	cp $98
+	jr c, :+
+	sub $10
+:	ld h, a
+	ld a, l
+	and $f0
+	ld l, a
+
+; Copy LCDMemcpy, keeping track of next bg tile
+; Increment B if C is non-zero
+	dec bc
+	inc b
+	inc c
+.loop
+	wait_vram
+	ld a, [de]
+	ld [hli], a
+	inc de
+
+	ld a, l
+	and $0f
+	jr nz, .toNextLoop
+
+	ld a, [wCurrBGTile]
+	inc a
+	ld [wCurrBGTile], a
+
+	ld a, l
+	and a
+	jr nz, .toNextLoop
+
+	ld a, h
+	cp $98
+	jr nz, .toNextLoop
+
+	ld h, $88
+
+.toNextLoop:
+	dec c
+	jr nz, .loop
+	dec b
+	jr nz, .loop
+
+	ld a, l
+	swap a
+	ld l, a
+	ld a, h
+
+; Return the 1st tile idx from the auto-allocation
+	pop bc
 	jp PushNewInt
 
 
@@ -96,13 +146,62 @@ AsmLoadOBJTiles:
 	ld a, [hl+]
 	ld c, a
 	ld b, [hl]
-; todo: this is auto-allocated
-	ld hl, $8000
-; todo: files should have a size
-	call LCDMemcpy
 
-; todo: this is going to be the 1st tile idx from the auto-allocation
-	ld b, 0
+; HL = dest
+	ld a, [wCurrOBJTile]
+	push af
+
+	swap a
+	ld l, a
+	and $0f
+	or $80
+	ld h, a
+	ld a, l
+	and $f0
+	ld l, a
+
+; Copy LCDMemcpy, keeping track of next bg tile
+; Increment B if C is non-zero
+	dec bc
+	inc b
+	inc c
+.loop
+	wait_vram
+	ld a, [de]
+	ld [hli], a
+	inc de
+
+	ld a, l
+	and $0f
+	jr nz, .toNextLoop
+
+	ld a, [wCurrOBJTile]
+	inc a
+	ld [wCurrOBJTile], a
+
+	ld a, l
+	and a
+	jr nz, .toNextLoop
+
+	ld a, h
+	cp $90
+	jr nz, .toNextLoop
+
+	ld h, $80
+
+.toNextLoop:
+	dec c
+	jr nz, .loop
+	dec b
+	jr nz, .loop
+
+	ld a, l
+	swap a
+	ld l, a
+	ld a, h
+
+; Return the 1st tile idx from the auto-allocation
+	pop bc
 	jp PushNewInt
 
 
@@ -485,113 +584,10 @@ AsmLoadVwf:
 	jp PushNewNone
 
 
-AsmPrintString:
-	db TYPE_ASM
-
-; 2nd param = starting tile idx
-	ld a, 1
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jr nz, .debug
-
-	ld a, [hl]
-	ld [wPrintStartingTileIdx], a
-
-; 1st param = string to print
-	ld a, 0
-	call HLequAddrOfFuncParam
-
-; Check type
-; todo: like python, should be able to print non-strs?
-.startPrint:
-	ld a, [hl+]
-	cp TYPE_STR
-	jr nz, .debug
-
-; Skip past length byte
-	inc hl
-
-	.nextChar:
-		ld a, [hl+]
-		cp $ff
-		jr z, .done
-
-	; todo: more control codes?
-		cp $0a
-		jr z, .newLine
-
-	; Must not be below $20 (ascii tilesets' starting tile)
-		cp $20
-		jr c, .debug
-
-	; After sub, $5f is invalid, and no other chars past it
-		sub $20
-		cp $5f
-		jr nc, .debug
-
-		push hl
-		push af
-
-	; HL points to dest for tile row
-		ld a, [wPrintTileRow]
-		ld h, HIGH(TileRowTilemapStarts)
-		add a
-		add LOW(TileRowTilemapStarts)
-		ld l, a
-
-	; HL = dest for tile row
-		ld a, [hl+]
-		ld h, [hl]
-		ld l, a
-
-	; Add tile col
-		ld a, [wPrintTileCol]
-		inc a
-		ld [wPrintTileCol], a
-		dec a
-		add l
-		ld l, a
-
-	; Print tile
-		wait_vram
-		pop af
-		ld [hl], a
-		pop hl
-		jr .nextChar
-
-	.newLine:
-		ld a, [wPrintTileRow]
-		inc a
-		ld [wPrintTileRow], a
-		xor a
-		ld [wPrintTileCol], a
-		jr .nextChar
-
-.done:
-	jp PushNewNone
-
-.debug:
-	ret
-
-
-TileRowTilemapStarts:
-FOR N, SCRN_Y_B
-	dw _SCRN0+N*$20
-ENDR
-
-
 AsmWaitVBlank:
 	db TYPE_ASM
 	rst WaitVBlank
 	jp PushNewNone
-
-
-SECTION "PYVM Wram Print", WRAM0
-wPrintStartingTileIdx: db
-wPrintTileCol: db
-wPrintTileRow: db
 
 
 SECTION "Room loading", WRAM0
@@ -599,3 +595,8 @@ wRoomMetatiles:: ds 16*16
 wMetatileTableAddr: dw
 wTempEntityMtilesAddr:: dw
 wTempEntityMattrsAddr:: dw
+
+
+SECTION "Dynamic allocation", WRAM0
+wCurrBGTile: db
+wCurrOBJTile: db

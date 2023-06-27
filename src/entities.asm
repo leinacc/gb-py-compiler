@@ -160,8 +160,9 @@ UpdateEntities::
     ld c, wEntity01-wEntity00
     rst MemcpySmall
 
+; todo: fix camera
     ld a, [wCurrEntity_ScreenX]
-    sub $a0/2
+    sub $a0/2-8
     jr nc, :+
     xor a
 :   cp $100-$a0
@@ -170,7 +171,7 @@ UpdateEntities::
 :   ldh [hSCX], a
 
     ld a, [wCurrEntity_ScreenY]
-    sub $90/2
+    sub $90/2-8
     jr nc, :+
     xor a
 :   cp $100-$90

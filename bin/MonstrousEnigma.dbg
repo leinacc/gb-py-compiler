@@ -3,6 +3,5 @@
 Crash x:break
 Debug x:break
 
-AsmPrintString.debug x:break
 ExecBytecodes+1 x:
     message "Exec bytecodes src: ${hl,4$}"
