@@ -276,6 +276,10 @@ MoveDown::
 	ld [wCurrEntity_YSpeed], a
 
 .setDir:
+    ld a, [wCurrEntity_Dir]
+    cp 2
+    ret z
+
     xor a
     ld [wCurrEntity_AnimCtr], a
     ld a, 2
@@ -306,6 +310,10 @@ MoveUp::
 	ld [wCurrEntity_YSpeed], a
 
 .setDir:
+    ld a, [wCurrEntity_Dir]
+    and a
+    ret z
+
     xor a
     ld [wCurrEntity_AnimCtr], a
 	ld [wCurrEntity_Dir], a
@@ -335,6 +343,10 @@ MoveLeft::
 	ld [wCurrEntity_YSpeed], a
 
 .setDir:
+    ld a, [wCurrEntity_Dir]
+    cp 3
+    ret z
+
     xor a
     ld [wCurrEntity_AnimCtr], a
 	ld a, 3
@@ -365,6 +377,10 @@ MoveRight::
 	ld [wCurrEntity_YSpeed], a
 
 .setDir:
+    ld a, [wCurrEntity_Dir]
+    cp 1
+    ret z
+
     xor a
     ld [wCurrEntity_AnimCtr], a
 	ld a, 1

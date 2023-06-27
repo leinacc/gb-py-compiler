@@ -3,7 +3,7 @@ INCLUDE "defines.asm"
 SECTION "Text Engine Code", ROMX
 
 NUM_VWF_PALS equ 4
-COL_DARK_SLATE_GREY equ $2525
+COL_VWF_TEXT_BG_COL equ $2525
 
 LoadVwf::
 ; todo: this hardware setup should sit elsewhere
@@ -36,6 +36,12 @@ LoadVwf::
     ld hl, $8800
     ld bc, $10*(SCRN_X_B-2)*2
     rst Memset
+
+; Clear shadow bg pals in use
+; todo: should only be those that get dynamically allocated based on need
+    ld hl, wVWFShadowBGPals
+    ld c, 2*4*NUM_VWF_PALS
+    rst MemsetSmall
 
 ; Init text engine and set HL = addr of text data
     xor a
@@ -147,9 +153,9 @@ VWFcreateShadowPals:
 
     .nextPalette:
     ; 1st color of each palette is dark slate grey
-        ld a, LOW(COL_DARK_SLATE_GREY)
+        ld a, LOW(COL_VWF_TEXT_BG_COL)
         ld [hl+], a
-        ld a, HIGH(COL_DARK_SLATE_GREY)
+        ld a, HIGH(COL_VWF_TEXT_BG_COL)
         ld [hl+], a
 
     ; Fill the other 3 based on bits used
