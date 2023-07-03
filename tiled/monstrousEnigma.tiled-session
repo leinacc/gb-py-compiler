@@ -10,7 +10,7 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "crypt.tsx": {
-            "scaleInDock": 4,
+            "scaleInDock": 5.5,
             "scaleInEditor": 23
         },
         "crypt_a4.tsx": {
@@ -45,31 +45,40 @@
             "scale": 5.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 82.36363636363636,
-                "y": 43.81818181818183
+                "x": 82.00000000000001,
+                "y": 77.63636363636364
+            }
+        },
+        "example3.json": {
+            "scale": 4.40859375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 127.93195108984585,
+                "y": 128.15878079035977
             }
         }
     },
     "last.exportedFilePath": "/home/danj/Documents/Projects/gb-py-compiler/tiled",
     "last.imagePath": "/home/danj/Documents/Projects/gb-py-compiler/tiled",
-    "map.height": 9,
+    "map.height": 16,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
-    "map.lastUsedFormat": "tmx",
+    "map.lastUsedFormat": "json",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 10,
+    "map.width": 16,
     "openFiles": [
         "crypt.tsx",
         "example2.tmx"
     ],
     "project": "monstrousEnigma.tiled-project",
     "recentFiles": [
-        "crypt_b.tsx",
-        "crypt_a4.tsx",
-        "crypt_a5.tsx",
+        "example3.json",
         "crypt.tsx",
         "example2.tmx",
         "example.tmx",
+        "crypt_b.tsx",
+        "crypt_a5.tsx",
+        "crypt_a4.tsx",
         "crypt_b5.tsx",
         "crypt_b4.tsx"
     ],

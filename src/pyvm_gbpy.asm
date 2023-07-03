@@ -5,28 +5,49 @@ SECTION "Python VM gbpy module asm routines", ROM0
 
 GbpyModule::
 	db TYPE_GBPY_MODULE
+	; arg0: filename
 	db $0e, "load_bg_tiles", $ff
 		dw AsmLoadBGTiles
+	; arg0: filename
 	db $0f, "load_obj_tiles", $ff
 		dw AsmLoadOBJTiles
 	db $0c, "wait_vblank", $ff
 		dw AsmWaitVBlank
+	; arg0: filename
 	db $11, "load_bg_palettes", $ff
 		dw AsmLoadBGPalettes
+	; arg0: filename
 	db $12, "load_obj_palettes", $ff
 		dw AsmLoadOBJPalettes
+	; arg0: metatile tiles filename
+	; arg1: metatile attrs filename
+	; arg2: tile data ptr for the tiles arg0 refers to
+	; arg3: palettes ptr for the palettes arg1 refers to
 	db $0a, "load_room", $ff
 		dw AsmLoadRoom
+	; arg0: room's metatiles filename
 	db $0f, "load_metatiles", $ff
 		dw AsmLoadMetatiles
+	; arg0: metatile x
+	; arg1: metatile y
+	; arg2: script function ptr
+	; arg3: animation definition index
+	; arg4: palettes ptr for the palettes arg7 refers to
+	; arg5: tile data ptr for the tiles arg6 refers to
+	; arg6: metatile tiles filename
+	; arg7: metatile attrs filename
 	db $0b, "add_entity", $ff
 		dw AsmAddEntity
+	; arg0: num metatiles to move
 	db $0a, "move_left", $ff
 		dw AsmMoveLeft
+	; arg0: num metatiles to move
 	db $0b, "move_right", $ff
 		dw AsmMoveRight
+	; arg0: num metatiles to move
 	db $08, "move_up", $ff
 		dw AsmMoveUp
+	; arg0: num metatiles to move
 	db $0a, "move_down", $ff
 		dw AsmMoveDown
 	db $10, "update_entities", $ff
@@ -35,6 +56,8 @@ GbpyModule::
 		dw AsmEnableMovement
 	db $0c, "entity_noop", $ff
 		dw AsmEntityNoop
+	; arg0: the text to print
+	;       \0 to \7 change the text to 1 of 8 pre-defined colors
 	db $09, "load_vwf", $ff
 		dw AsmLoadVwf
 	db $ff

@@ -6,15 +6,6 @@ NUM_VWF_PALS equ 4
 COL_VWF_TEXT_BG_COL equ $2525
 
 LoadVwf::
-; todo: this hardware setup should sit elsewhere
-    ld a, 7
-    ldh [rWX], a
-    ld a, $90-(8*4)
-    ldh [rWY], a
-    ldh a, [hLCDC]
-    or LCDCF_WIN9C00|LCDCF_WINON
-    ldh [hLCDC], a
-
 ; Set all pixel column colors as unused
     ld hl, wVWFPixelCurrColors
     ld a, $ff
@@ -48,6 +39,27 @@ LoadVwf::
     ldh [hTextPalIdx], a
     ldh [hVWFPixelColIdx], a
     ld [wVWFIs2ndRow], a
+
+    call VwfloadString
+    call VWFassociatePalettes
+    call VWFcreateShadowPals
+    call VWFfillTiles
+    call VwfsetupTilemap
+
+; todo: this hardware setup should sit elsewhere
+    ld a, 7
+    ldh [rWX], a
+    ld a, $90-(8*4)
+    ldh [rWY], a
+    ldh a, [hLCDC]
+    or LCDCF_WIN9C00|LCDCF_WINON
+    ldh [hLCDC], a
+
+    ret
+
+
+
+VwfloadString:
     call HLequAddrOfFuncParam
 
     ld a, [hl+]
@@ -64,7 +76,7 @@ LoadVwf::
         cp $09
         jr z, .setPalette
         cp $ff
-        jr z, VWFassociatePalettes
+        ret z
 
         push hl
         sub $20
@@ -87,6 +99,7 @@ LoadVwf::
         sub $30
         ldh [hTextPalIdx], a
         jr .nextChar
+
 
 VWFassociatePalettes:
 ; Step 2: understand what colors each tile uses
@@ -145,6 +158,9 @@ VWFassociatePalettes:
         pop bc
         dec c
         jr nz, .nextTile
+
+    ret
+
 
 VWFcreateShadowPals:
     ld hl, wVWFShadowBGPals
@@ -206,6 +222,9 @@ VWFcreateShadowPals:
 		ldh [c], a
 		dec b
 		jr nz, .nextColByte
+
+    ret
+
 
 VWFfillTiles:
     ld hl, wTileToPalsMap
@@ -269,13 +288,39 @@ VWFfillTiles:
         dec b
         jr nz, .nextTile
 
-; Copy final results to vram
-    call SetupVwfTilemap
-
     ret
 
 
-SetupVwfTilemap:
+VwfsetupTilemap:
+; Palettes (todo: it's just 1 row atm)
+    ld a, 1
+    ldh [rVBK], a
+
+; Clear palettes
+    ld hl, $9c00
+    ld a, 4 ; todo: not hard-coded base palette
+    ld c, SCRN_VX_B*4
+    call LCDMemsetSmall
+
+    ld hl, $9c21
+    ld de, wTileToPalsMap
+    ld b, (SCRN_X_B-2)
+
+    .nextTile:
+        ld a, [de]
+        inc de
+        add 4 ; todo: not hard-coded base palette
+        push af
+        wait_vram
+        pop af
+        ld [hl+], a
+
+        dec b
+        jr nz, .nextTile
+
+    xor a
+    ldh [rVBK], a
+
 ; Clear tilemap
     ld hl, $9c00
     ld a, $ff
@@ -310,35 +355,6 @@ SetupVwfTilemap:
 
         dec b
         jr nz, .nextCol2
-
-; Palettes (todo: it's just 1 row atm)
-    ld a, 1
-    ldh [rVBK], a
-
-; Clear palettes
-    ld hl, $9c00
-    ld a, 4 ; todo: not hard-coded base palette
-    ld c, SCRN_VX_B*4
-    call LCDMemsetSmall
-
-    ld hl, $9c21
-    ld de, wTileToPalsMap
-    ld b, (SCRN_X_B-2)
-
-    .nextTile:
-        ld a, [de]
-        inc de
-        add 4 ; todo: not hard-coded base palette
-        push af
-        wait_vram
-        pop af
-        ld [hl+], a
-
-        dec b
-        jr nz, .nextTile
-
-    xor a
-    ldh [rVBK], a
 
     ret
 
@@ -463,7 +479,7 @@ FillPixelColArray:
 
 
 ; Trashes A and B
-SetNextColPixel::
+SetNextColPixel:
     ldh a, [hVWFPixelColIdx]
     ld b, a
     ldh a, [hCurrCharPxWidth]
