@@ -98,7 +98,6 @@ ENDM
 
 
 ; Python VM
-
 rsreset
 def TYPE_NONE rb 1
 def TYPE_INT rb 1
@@ -112,6 +111,11 @@ CALL_STACK_LEN equ 8
 
 
 ; Entities
+DIR_UP equ 0
+DIR_RIGHT equ 1
+DIR_DOWN equ 2
+DIR_LEFT equ 3
+
 	struct Entity
 	; Keep the following in order (before the new line)
 	; For init and resetting
@@ -137,7 +141,18 @@ CALL_STACK_LEN equ 8
 	bytes 1, XSpeed
 	bytes 1, YSpeed
 	bytes 1, MoveCtr
-	bytes 1, PlayerMoved
+	; bit 0: is the entity movable with direction buttons?
+	; bit 1: is the entity able to use abilities?
+	bytes 1, InputCtrl
 	end_struct
 
 NUM_ENTITIES equ $10
+
+rsreset
+def ENTCTRL_DIR_MOVABLE rb 1
+def ENTCTRL_USES_ABILITIES rb 1
+
+rsreset
+def ENTSTATE_STILL rb 1
+def ENTSTATE_MOVING rb 1
+def ENTSTATE_USING_ABILITY rb 1

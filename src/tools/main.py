@@ -3,8 +3,9 @@ from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
 
 
 def cutscene_movement():
-    from gbpy import enable_movement, entity_noop
+    from gbpy import enable_movement, enable_abilities, entity_noop
     enable_movement()
+    enable_abilities()
     while 1:
         entity_noop()
 

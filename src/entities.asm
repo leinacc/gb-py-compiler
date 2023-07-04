@@ -197,8 +197,7 @@ UpdateEntities::
         ld c, wEntity01-wEntity00
         rst MemcpySmall
 
-        call MoveEntFromInput
-        call MoveEntity
+        call UpdateEntity
         call RunEntityScript
         call UpdateAnimation
         call SendEntityDataToShadowOam
@@ -253,6 +252,54 @@ IsAaWalkableMetatile:
     ret
 
 
+UpdateEntity:
+    ld a, [wCurrEntity_State]
+    add a
+    ld hl, EntityStateTable
+    add l
+    ld l, a
+    jr nc, :+
+    inc h
+:   ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+    jp hl
+
+
+EntityStateTable:
+    dw .still
+    dw .moving
+    dw .usingAbility
+
+.still:
+    call ProcessEntDirectionsInput
+    call ProcessEntActionsInput
+    ret
+
+.moving:
+    call ProcessEntDirectionsInput
+    call MoveEntity
+    ret
+
+.usingAbility:
+    ret
+
+
+; B - new state
+; Trashes A
+SetEntityState:
+    ld a, [wCurrEntity_State]
+    cp b
+    ret z
+
+    ld a, b
+    ld [wCurrEntity_State], a
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ret
+
+
+
 ; B - num tiles
 MoveDown::
     call HLequAddrInMetatiles
@@ -274,15 +321,17 @@ MoveDown::
 	ld [wCurrEntity_XSpeed], a
 	inc a
 	ld [wCurrEntity_YSpeed], a
+    ld b, ENTSTATE_MOVING
+    call SetEntityState
 
 .setDir:
     ld a, [wCurrEntity_Dir]
-    cp 2
+    cp DIR_DOWN
     ret z
 
     xor a
     ld [wCurrEntity_AnimCtr], a
-    ld a, 2
+    ld a, DIR_DOWN
 	ld [wCurrEntity_Dir], a
     ret
 
@@ -308,8 +357,11 @@ MoveUp::
 	ld [wCurrEntity_XSpeed], a
 	dec a
 	ld [wCurrEntity_YSpeed], a
+    ld b, ENTSTATE_MOVING
+    call SetEntityState
 
 .setDir:
+assert DIR_UP == 0
     ld a, [wCurrEntity_Dir]
     and a
     ret z
@@ -341,15 +393,17 @@ MoveLeft::
 	ld [wCurrEntity_XSpeed], a
 	xor a
 	ld [wCurrEntity_YSpeed], a
+    ld b, ENTSTATE_MOVING
+    call SetEntityState
 
 .setDir:
     ld a, [wCurrEntity_Dir]
-    cp 3
+    cp DIR_LEFT
     ret z
 
     xor a
     ld [wCurrEntity_AnimCtr], a
-	ld a, 3
+	ld a, DIR_LEFT
 	ld [wCurrEntity_Dir], a
     ret
 
@@ -376,26 +430,32 @@ MoveRight::
 	xor a
 	ld [wCurrEntity_YSpeed], a
 
+    ld b, ENTSTATE_MOVING
+    call SetEntityState
+
 .setDir:
     ld a, [wCurrEntity_Dir]
-    cp 1
+    cp DIR_RIGHT
     ret z
 
     xor a
     ld [wCurrEntity_AnimCtr], a
-	ld a, 1
+	ld a, DIR_RIGHT
 	ld [wCurrEntity_Dir], a
     ret
 
 
-MoveEntFromInput:
-    ld a, [wCurrEntity_PlayerMoved]
-    and a
+ProcessEntDirectionsInput:
+    ld a, [wCurrEntity_InputCtrl]
+    bit ENTCTRL_DIR_MOVABLE, a
     ret z
 
+; Entity can't be moving already
     ld a, [wCurrEntity_MoveCtr]
     and a
     ret nz
+
+; todo: check in still or moving state
 
     ldh a, [hHeldKeys]
     ld b, 1
@@ -410,6 +470,25 @@ MoveEntFromInput:
 
     bit PADB_RIGHT, a
     jp nz, MoveRight
+
+    ld b, ENTSTATE_STILL
+    jp SetEntityState
+
+
+ProcessEntActionsInput:
+    ld a, [wCurrEntity_InputCtrl]
+    bit ENTCTRL_USES_ABILITIES, a
+    ret z
+
+    ldh a, [hHeldKeys]
+    cp $ff
+    ret z
+
+    bit PADB_B, a
+    ret z
+
+    ld b, ENTSTATE_USING_ABILITY
+    call SetEntityState
 
     ret
 
@@ -437,8 +516,9 @@ MoveEntity:
 
 
 RunEntityScript:
-    ld a, [wCurrEntity_MoveCtr]
-    and a
+; Entity must not be moving
+    ld a, [wCurrEntity_State]
+    cp ENTSTATE_STILL
     ret nz
 
     jp ContEntityFrameStack
@@ -458,13 +538,27 @@ UpdateAnimation:
     ret
 
 .initAnim:
-; HL = table of direction ptrs
+    xor a
+    ld [wCurrEntity_AnimIdx], a
+
+; HL = table of state ptrs, eg AnimDefSimple
     ld a, [wCurrEntity_AnimDef]
     ld l, a
     ld a, [wCurrEntity_AnimDef+1]
     ld h, a
 
-; HL = anim dirs table
+; HL = state table of direction ptrs, eg AnimDefSimple_still
+    ld a, [wCurrEntity_State]
+    add a
+    add l
+    ld l, a
+    jr nc, :+
+    inc h
+:   ld a, [hl+]
+    ld h, [hl]
+    ld l, a
+
+; HL = anim dirs table, eg AnimDefSimple_still.up
     ld a, [wCurrEntity_Dir]
     add a
     add l
@@ -562,6 +656,36 @@ AnimTable:
 WALK_CTR equ $0c
 
 AnimDefSimple:
+    dw AnimDefSimple_still
+    dw AnimDefSimple_moving
+    dw AnimDefSimple_usingAbilities
+
+
+AnimDefSimple_usingAbilities:
+AnimDefSimple_still:
+    dw .up
+    dw .right
+    dw .down
+    dw .left
+
+.up:
+    db $05, $ff
+    db $fe, $00
+
+.right:
+    db $0a, $ff
+    db $fe, $00
+
+.down:
+    db $00, $ff
+    db $fe, $00
+
+.left:
+    db $0f, $ff
+    db $fe, $00
+
+
+AnimDefSimple_moving:
     dw .up
     dw .right
     dw .down

@@ -54,6 +54,8 @@ GbpyModule::
 		dw AsmUpdateEntities
 	db $10, "enable_movement", $ff
 		dw AsmEnableMovement
+	db $11, "enable_abilities", $ff
+		dw AsmEnableAbilities
 	db $0c, "entity_noop", $ff
 		dw AsmEntityNoop
 	; arg0: the text to print
@@ -590,8 +592,17 @@ AsmUpdateEntities:
 
 AsmEnableMovement:
 	db TYPE_ASM
-	ld a, 1
-	ld [wCurrEntity_PlayerMoved], a
+	ld a, [wCurrEntity_InputCtrl]
+	set ENTCTRL_DIR_MOVABLE, a
+	ld [wCurrEntity_InputCtrl], a
+	jp PushNewNone
+
+
+AsmEnableAbilities:
+	db TYPE_ASM
+	ld a, [wCurrEntity_InputCtrl]
+	set ENTCTRL_USES_ABILITIES, a
+	ld [wCurrEntity_InputCtrl], a
 	jp PushNewNone
 
 
