@@ -624,8 +624,10 @@ AsmWaitVBlank:
 	jp PushNewNone
 
 
+SECTION "Room metatiles", WRAM0, ALIGN[8]
+wRoomMetatiles:: ds 16*16 ; do not change
+
 SECTION "Room loading", WRAM0
-wRoomMetatiles:: ds 16*16
 wMetatileTableAddr: dw
 wTempEntityMtilesAddr:: dw
 wTempEntityMattrsAddr:: dw

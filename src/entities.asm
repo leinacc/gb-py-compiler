@@ -269,20 +269,174 @@ UpdateEntity:
 EntityStateTable:
     dw .still
     dw .moving
-    dw .usingAbility
+    dw EntityStateUsingAbility
 
 .still:
     call ProcessEntDirectionsInput
-    call ProcessEntActionsInput
-    ret
+
+    ld a, [wCurrEntity_InputCtrl]
+    bit ENTCTRL_USES_ABILITIES, a
+    ret z
+
+; This is the initial value when polling input
+    ldh a, [hHeldKeys]
+    cp $ff
+    ret z
+
+; Return if action btn not pressed
+    bit PADB_B, a
+    ret z
+
+    ld b, ENTSTATE_USING_ABILITY
+    jp SetEntityState
 
 .moving:
     call ProcessEntDirectionsInput
-    call MoveEntity
+
+    ld a, [wCurrEntity_MoveCtr]
+    and a
+    ret z
+
+    dec a
+    ld [wCurrEntity_MoveCtr], a
+
+    ld a, [wCurrEntity_ScreenX]
+    ld b, a
+    ld a, [wCurrEntity_XSpeed]
+    add b
+    ld [wCurrEntity_ScreenX], a
+
+    ld a, [wCurrEntity_ScreenY]
+    ld b, a
+    ld a, [wCurrEntity_YSpeed]
+    add b
+    ld [wCurrEntity_ScreenY], a
     ret
 
-.usingAbility:
-    ret
+
+EntityStateUsingAbility:
+    call HLequAddrInMetatiles
+
+; Check direction pressed
+    ldh a, [hHeldKeys]
+    bit PADB_DOWN, a
+    ld de, $10
+    jr nz, .checkVert
+
+    bit PADB_UP, a
+    ld de, -$10
+    jr nz, .checkVert
+
+    bit PADB_LEFT, a
+    ld de, -1
+    jr nz, .checkHoriz
+
+    bit PADB_RIGHT, a
+    ld de, 1
+    jr nz, .checkHoriz
+
+; Return if action btn not pressed
+    bit PADB_B, a
+    ret z
+
+    ld b, ENTSTATE_STILL
+    jp SetEntityState
+
+.checkVert:
+    ld a, h
+    add hl, de
+
+; Must be on the same page
+    cp h
+    ret nz
+
+; Must not be walkable
+    ld a, [hl]
+    call IsAaWalkableMetatile
+    ret z
+
+    ld c, 1
+
+    .nextVert:
+        ld a, h
+        add hl, de
+        cp h
+        ret nz
+
+    ; Keep looping until walkable
+        ld a, [hl]
+        inc c
+        call IsAaWalkableMetatile
+        jr nz, .nextVert
+
+; We can move into the spot
+    ld a, e
+    cp $10
+
+    ld b, c
+    jr z, .moveDown
+
+    call ForceMoveUp    
+    jr .walkWall
+
+.moveDown:
+    call ForceMoveDown
+    jr .walkWall
+
+.checkHoriz:
+; Save the row we're on
+    ld a, l
+    and $f0
+    ld b, a
+    add hl, de
+
+; Must be on the same row
+    ld a, l
+    and $f0
+    cp b
+    ret nz
+
+; Must not be walkable
+    ld a, [hl]
+    call IsAaWalkableMetatile
+    ret z
+
+    ld c, 1
+
+    .nextHoriz:
+        add hl, de
+        ld a, l
+        and $f0
+        cp b
+        ret nz
+
+    ; Keep looping until walkable
+        ld a, [hl]
+        inc c
+        call IsAaWalkableMetatile
+        jr nz, .nextHoriz
+
+; We can move into the spot
+    ld a, e
+    cp 1
+
+    ld b, c
+    jr z, .moveRight
+
+    call ForceMoveLeft
+    jr .walkWall
+
+.moveRight:
+    call ForceMoveRight
+
+.walkWall:
+    ld a, [wCurrEntity_InputCtrl]
+    res ENTCTRL_DIR_MOVABLE, a
+    set ENTCTRL_WALL_WALKING, a
+    ld [wCurrEntity_InputCtrl], a
+
+    ld b, ENTSTATE_MOVING
+    jp SetEntityState
 
 
 ; B - new state
@@ -299,6 +453,27 @@ SetEntityState:
     ret
 
 
+; B - num tiles
+ForceMoveDown:
+    ld a, [wCurrEntity_TileY]
+    add b
+    ld [wCurrEntity_TileY],a
+
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	inc a
+	ld [wCurrEntity_YSpeed], a
+
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ld a, DIR_DOWN
+	ld [wCurrEntity_Dir], a
+    ret
+
 
 ; B - num tiles
 MoveDown::
@@ -310,7 +485,7 @@ MoveDown::
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileY]
-    inc a
+    add b
     ld [wCurrEntity_TileY],a
 
     ld a, b
@@ -337,6 +512,28 @@ MoveDown::
 
 
 ; B - num tiles
+ForceMoveUp:
+    ld a, [wCurrEntity_TileY]
+    sub b
+    ld [wCurrEntity_TileY],a
+
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	xor a
+	ld [wCurrEntity_XSpeed], a
+	dec a
+	ld [wCurrEntity_YSpeed], a
+
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ld a, DIR_UP
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
 MoveUp::
     call HLequAddrInMetatiles
     ld de, -$10
@@ -346,7 +543,7 @@ MoveUp::
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileY]
-    dec a
+    sub b
     ld [wCurrEntity_TileY],a
 
     ld a, b
@@ -373,6 +570,28 @@ assert DIR_UP == 0
 
 
 ; B - num tiles
+ForceMoveLeft:
+    ld a, [wCurrEntity_TileX]
+    sub b
+    ld [wCurrEntity_TileX],a
+
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	ld a, $ff
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ld a, DIR_LEFT
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
 MoveLeft::
     call HLequAddrInMetatiles
     ld de, -1
@@ -382,7 +601,7 @@ MoveLeft::
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileX]
-    dec a
+    sub b
     ld [wCurrEntity_TileX],a
 
     ld a, b
@@ -409,6 +628,28 @@ MoveLeft::
 
 
 ; B - num tiles
+ForceMoveRight:
+    ld a, [wCurrEntity_TileX]
+    add b
+    ld [wCurrEntity_TileX],a
+
+    ld a, b
+    swap a
+    ld [wCurrEntity_MoveCtr], a
+
+	ld a, 1
+	ld [wCurrEntity_XSpeed], a
+	xor a
+	ld [wCurrEntity_YSpeed], a
+
+    xor a
+    ld [wCurrEntity_AnimCtr], a
+    ld a, DIR_RIGHT
+	ld [wCurrEntity_Dir], a
+    ret
+
+
+; B - num tiles
 MoveRight::
     call HLequAddrInMetatiles
     ld de, 1
@@ -418,7 +659,7 @@ MoveRight::
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileX]
-    inc a
+    add b
     ld [wCurrEntity_TileX],a
 
     ld a, b
@@ -447,6 +688,9 @@ MoveRight::
 
 ProcessEntDirectionsInput:
     ld a, [wCurrEntity_InputCtrl]
+    bit ENTCTRL_WALL_WALKING, a
+    jr nz, .wallWalk
+
     bit ENTCTRL_DIR_MOVABLE, a
     ret z
 
@@ -474,45 +718,19 @@ ProcessEntDirectionsInput:
     ld b, ENTSTATE_STILL
     jp SetEntityState
 
-
-ProcessEntActionsInput:
-    ld a, [wCurrEntity_InputCtrl]
-    bit ENTCTRL_USES_ABILITIES, a
-    ret z
-
-    ldh a, [hHeldKeys]
-    cp $ff
-    ret z
-
-    bit PADB_B, a
-    ret z
-
-    ld b, ENTSTATE_USING_ABILITY
-    call SetEntityState
-
-    ret
-
-
-MoveEntity:
+.wallWalk:
+; Entity can't be moving already
     ld a, [wCurrEntity_MoveCtr]
     and a
-    ret z
+    ret nz
 
-    dec a
-    ld [wCurrEntity_MoveCtr], a
+    ld a, [wCurrEntity_InputCtrl]
+    set ENTCTRL_DIR_MOVABLE, a
+    res ENTCTRL_WALL_WALKING, a
+    ld [wCurrEntity_InputCtrl], a
 
-    ld a, [wCurrEntity_ScreenX]
-    ld b, a
-    ld a, [wCurrEntity_XSpeed]
-    add b
-    ld [wCurrEntity_ScreenX], a
-
-    ld a, [wCurrEntity_ScreenY]
-    ld b, a
-    ld a, [wCurrEntity_YSpeed]
-    add b
-    ld [wCurrEntity_ScreenY], a
-    ret
+    ld b, ENTSTATE_STILL
+    jp SetEntityState
 
 
 RunEntityScript:
