@@ -279,7 +279,7 @@ EntityStateTable:
     ret z
 
 ; This is the initial value when polling input
-    ldh a, [hHeldKeys]
+    ldh a, [hPressedKeys]
     cp $ff
     ret z
 
@@ -336,6 +336,7 @@ EntityStateUsingAbility:
     jr nz, .checkHoriz
 
 ; Return if action btn not pressed
+    ldh a, [hPressedKeys]
     bit PADB_B, a
     ret z
 
@@ -698,8 +699,6 @@ ProcessEntDirectionsInput:
     ld a, [wCurrEntity_MoveCtr]
     and a
     ret nz
-
-; todo: check in still or moving state
 
     ldh a, [hHeldKeys]
     ld b, 1
