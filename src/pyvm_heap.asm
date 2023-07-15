@@ -188,5 +188,6 @@ Free::
 SECTION "PyVM Heap Hram", HRAM
 hHeapMainPtr: dw
 
-SECTION "PyVM Heap Wram", WRAMX[$d000]
-wHeapData:: ds $1000
+SECTION "PyVM Heap Wram", WRAMX[$dc00] ; ALIGN[8]
+wHeapData:: ds $400
+.end::

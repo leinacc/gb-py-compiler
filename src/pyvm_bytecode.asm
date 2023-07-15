@@ -202,7 +202,7 @@ PopTop:
 	cp HIGH(wHeapData)
 	jr c, .afterFree
 
-	cp HIGH(wHeapData+$1000)
+	cp HIGH(wHeapData.end)
 	jr nc, .afterFree
 
 ; If so, go from user data to chunk header, and Free the chunk
@@ -900,7 +900,7 @@ hCurrCallStackIdx:: db
 hGlobalNamesPtr:: dw
 
 
-SECTION "PYVM Wram Frame data", WRAM0, ALIGN[8]
+SECTION "PYVM Wram Frame data", WRAMX[$d000] ; ALIGN[8]
 ; Local to a single block frame
 
 ; This should be 1st so we can use HIGH(wFrameStackPtrs)
