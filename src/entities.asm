@@ -30,6 +30,7 @@ AddEntity::
     ld hl, wEntity00_InUse
     ld b, NUM_ENTITIES
     ld de, wEntity01-wEntity00
+    ld c, 0
 
     .nextSlot:
         ld a, [hl]
@@ -37,12 +38,16 @@ AddEntity::
         jr z, .foundSlot
 
         add hl, de
+        inc c
         dec b
         jr nz, .nextSlot
 
     jp Debug
 
 .foundSlot
+    ld a, c
+    ld [wChosenEntitySlot], a
+
     push hl
     xor a
     ld c, wEntity01-wEntity00

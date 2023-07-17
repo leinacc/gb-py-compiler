@@ -459,7 +459,9 @@ PyBlock_pplate_script:
 	dw .name1
 	dw .name2
 	dw .name3
-	db $40
+	dw .name4
+	dw .name5
+	db $52
 	.name0:
 		db $05, "gbpy", $ff
 	.name1:
@@ -468,6 +470,10 @@ PyBlock_pplate_script:
 		db $14, "disable_other_solid", $ff
 	.name3:
 		db $0c, "entity_noop", $ff
+	.name4:
+		db $07, "player", $ff
+	.name5:
+		db $05, "door", $ff
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -480,9 +486,30 @@ PyBlock_pplate_script:
 	db $7d, $02
 	db $01, $00
 	db $09, $00
+	db $09, $00
+	db $7c, $00
+	db $74, $04
+	db $83, $01
+	db $72, $15
+	db $7c, $01
+	db $74, $05
+	db $83, $01
+	db $01, $00
+	db $6e, $04
 	db $7c, $02
 	db $83, $00
 	db $01, $00
+	db $71, $0c
+	db $09, $00
+	db $7c, $00
+	db $74, $04
+	db $83, $01
+	db $73, $1f
+	db $6e, $04
+	db $7c, $02
+	db $83, $00
+	db $01, $00
+	db $71, $1a
 	db $71, $0b
 
 

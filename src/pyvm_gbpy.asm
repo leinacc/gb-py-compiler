@@ -66,10 +66,12 @@ GbpyModule::
 		dw AsmAllow1Move
 	db $0d, "enable_solid", $ff
 		dw AsmEnableSolid
+	; arg0: id of an entity to check collision with
 	db $0e, "collides_with", $ff
-		dw AsmStub
+		dw AsmCollidesWith
+	; arg0: id of an entity to remove the 'solid' state from
 	db $14, "disable_other_solid", $ff
-		dw AsmStub
+		dw AsmDisableOtherSolid
 	db $ff
 
 
@@ -550,8 +552,9 @@ AsmAddEntity:
 	pop bc
 
 	call AddEntity
-; todo: this should be the entity idx
-	ld b, 0
+; Return the entity idx
+	ld a, [wChosenEntitySlot]
+	ld b, a
 	jp PushNewInt
 
 
@@ -655,6 +658,69 @@ AsmEnableSolid:
 	jp PushNewNone
 
 
+AsmCollidesWith:
+	db TYPE_ASM
+
+; Arg 0 is the entity id to check against the current
+	xor a
+	call AequIntParam
+
+; todo: verify the slot is in-user
+	ld hl, wEntity00_TileX
+	and a
+	jr z, .foundEntity
+
+	ld de, wEntity01-wEntity00
+	:	add hl, de
+		dec a
+		jr nz, :-
+
+.foundEntity:
+	ld a, [hl+]
+	ld b, a
+	ld a, [wCurrEntity_TileX]
+	cp b
+	jr nz, .noCollide
+
+	ld b, [hl]
+	ld a, [wCurrEntity_TileY]
+	cp b
+	jr nz, .noCollide
+
+; We collided
+	ld b, BOOL_TRUE
+	jp PushNewBool
+
+.noCollide:
+	ld b, BOOL_FALSE
+	jp PushNewBool
+
+
+AsmDisableOtherSolid:
+	db TYPE_ASM
+
+; Arg 0 is the entity id to disable
+	xor a
+	call AequIntParam
+
+; todo: verify the slot is in-user
+	ld hl, wEntity00_InputCtrl
+	and a
+	jr z, .foundEntity
+
+	ld de, wEntity01-wEntity00
+	:	add hl, de
+		dec a
+		jr nz, :-
+
+.foundEntity:
+	ld a, [hl]
+	res ENTCTRL_IS_SOLID, a
+	ld [hl], a
+
+	jp PushNewNone
+
+
 AsmLoadVwf:
 	db TYPE_ASM
 	call LoadVwf
@@ -681,3 +747,4 @@ wCurrBGTile: db
 wCurrOBJTile: db
 wCurrBGPalette: db
 wCurrOBJPalette: db
+wChosenEntitySlot:: db

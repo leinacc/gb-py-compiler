@@ -100,12 +100,16 @@ ENDM
 ; Python VM
 rsreset
 def TYPE_NONE rb 1
-def TYPE_INT rb 1
+def TYPE_INT rb 1 ; 1 byte for the int
 def TYPE_TUPLE rb 1
 def TYPE_STR rb 1
 def TYPE_GBPY_MODULE rb 1
 def TYPE_ASM rb 1
 def TYPE_FUNCTION rb 1
+def TYPE_BOOL rb 1 ; 1 byte, 1 if True, 0 if False
+
+BOOL_TRUE equ 1
+BOOL_FALSE equ 0
 
 CALL_STACK_LEN equ 8
 

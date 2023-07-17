@@ -72,8 +72,14 @@ ExecBytecodes:
 	jp z, ImportName
 	cp $6d
 	jp z, ImportFrom
+	cp $6e
+	jp z, JumpForward
     cp $71
 	jp z, JumpAbsolute
+	cp $72
+	jp z, PopJumpIfFalse
+	cp $73
+	jp z, PopJumpIfTrue
     cp $74
     jp z, LoadGlobal
 	cp $7c
@@ -92,8 +98,6 @@ ExecBytecodes:
 	pop hl
 	jp Debug
 
-; POP_JUMP_IF_FALSE
-; JUMP_FORWARD
 ; POP_JUMP_IF_TRUE
 
 LoadConst:
@@ -603,6 +607,21 @@ StoreGlobal:
 	jp ExecBytecodes
 
 
+JumpForward:
+; Get current ptr (points to next instruction)
+	pop hl
+
+; Add param*2 to get next addr
+	ldh a, [hPyParam]
+	add a
+	add l
+	ld l, a
+	jr nc, :+
+	inc h
+:	push hl
+	jp ExecBytecodes
+
+
 JumpAbsolute:
 ; Ignore current ptr
 	pop hl
@@ -619,6 +638,36 @@ JumpAbsolute:
 	jr nc, :+
 	inc h
 :	push hl
+	jp ExecBytecodes
+
+
+PopJumpIfFalse:
+	call PopStack
+
+	ld a, [hl+]
+	cp TYPE_BOOL
+	jp nz, Debug
+
+; If 0 (False), jump
+	ld a, [hl]
+	and a
+	jp z, JumpAbsolute
+
+	jp ExecBytecodes
+
+
+PopJumpIfTrue:
+	call PopStack
+
+	ld a, [hl+]
+	cp TYPE_BOOL
+	jp nz, Debug
+
+; If 1 (True), jump
+	ld a, [hl]
+	and a
+	jp nz, JumpAbsolute
+
 	jp ExecBytecodes
 
 

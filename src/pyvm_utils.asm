@@ -121,6 +121,22 @@ PushNewInt::
 	jp PushStack
 
 
+; B - 1 if True, 0 if False
+; Returns HL pointing to the newly-pushed bool
+PushNewBool::
+	push bc
+	ld bc, 2
+	call Malloc
+	pop bc
+
+; Store an BOOL:B there
+	ld a, TYPE_BOOL
+	ld [hl+], a
+	ld a, b
+	ld [hl-], a
+	jp PushStack
+
+
 ; DE - 1 string (the 1st byte being length, the last being $ff)
 ; HL - 1 string (same as above)
 ; Return Z flag set if strings match
