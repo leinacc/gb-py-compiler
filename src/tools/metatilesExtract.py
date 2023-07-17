@@ -6,7 +6,7 @@ numMRows = int(sys.argv[3])
 
 
 # Load superfamiconv output
-with open(f"{name}.map", "rb") as f:
+with open(f"images/{name}.map", "rb") as f:
     sfcData = f.read()
 
 # Data is interwoven tile idxes + tile attrs

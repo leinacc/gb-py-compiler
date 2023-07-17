@@ -91,7 +91,6 @@ AddEntity::
     ld hl, AnimTable
     add hl, de
     add hl, de
-    add hl, de
     ld e, l
     ld d, h
     pop hl
@@ -910,7 +909,23 @@ SendEntityDataToShadowOam:
 
 
 AnimTable:
-    dl AnimDefSimple
+    dw AnimDefSimple
+    dw AnimDefStatic
+
+
+AnimDefStatic:
+    dw .still
+
+.still:
+    dw .common
+    dw .common
+    dw .common
+    dw .common
+
+.common:
+    db $00, $ff
+    db $fe, $00
+
 
 WALK_CTR equ $04
 
@@ -999,7 +1014,7 @@ AddSprite:
     jr nc, :+
     inc d
 
-; Populate 4 tile idxes
+; Populate 4 tile Y, X and tile idxes
 :   ld a, c
     ld [hl+], a
     ld a, b
@@ -1007,7 +1022,8 @@ AddSprite:
     ld a, [de]
     inc de
     ld [hl+], a
-    push hl
+    push hl ; push ptr to tile attr, to -1 for tile idx (to add tile offset)
+    push hl ; push ptr to tile attr
     inc hl
 
     ld a, c
@@ -1039,6 +1055,24 @@ AddSprite:
     ld a, [de]
     ld [hl], a
 
+; Add offset to tile idxes
+    ld a, [wCurrEntity_TilesBaseIdx]
+    ld b, 4
+    ld c, a
+    pop hl
+    dec hl
+
+    .nextTileIdx:
+        ld a, [hl]
+        add c
+        ld [hl+], a
+        inc hl
+        inc hl
+        inc hl
+
+        dec b
+        jr nz, .nextTileIdx
+
 ; DE = addr of metatile attr src
     pop hl
     ld a, [wCurrEntity_MetatilesAttrsSrc]
@@ -1052,10 +1086,13 @@ AddSprite:
     inc d
 
 ; Populate 4 tile attrs
-:   ld b, 4
+:   ld a, [wCurrEntity_PalBaseIdx]
+    ld c, a
+    ld b, 4
     .nextAttr:
         ld a, [de]
         inc de
+        or c
         ld [hl], a
         ld a, l
         add 4

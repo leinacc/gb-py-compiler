@@ -62,6 +62,14 @@ GbpyModule::
 	;       \0 to \7 change the text to 1 of 8 pre-defined colors
 	db $09, "load_vwf", $ff
 		dw AsmLoadVwf
+	db $0d, "allow_1_move", $ff
+		dw AsmEntityNoop
+	db $0d, "enable_solid", $ff
+		dw AsmStub
+	db $0e, "collides_with", $ff
+		dw AsmStub
+	db $14, "disable_other_solid", $ff
+		dw AsmStub
 	db $ff
 
 
@@ -74,6 +82,8 @@ InitGbpyModule::
     xor a
 	ld [wCurrBGTile], a
 	ld [wCurrOBJTile], a
+	ld [wCurrBGPalette], a
+	ld [wCurrOBJPalette], a
     ret
 
 
@@ -115,35 +125,36 @@ AsmLoadBGTiles:
 	dec bc
 	inc b
 	inc c
-.loop
-	wait_vram
-	ld a, [de]
-	ld [hli], a
-	inc de
 
-	ld a, l
-	and $0f
-	jr nz, .toNextLoop
+	.loop
+		wait_vram
+		ld a, [de]
+		ld [hli], a
+		inc de
 
-	ld a, [wCurrBGTile]
-	inc a
-	ld [wCurrBGTile], a
+		ld a, l
+		and $0f
+		jr nz, .toNextLoop
 
-	ld a, l
-	and a
-	jr nz, .toNextLoop
+		ld a, [wCurrBGTile]
+		inc a
+		ld [wCurrBGTile], a
 
-	ld a, h
-	cp $98
-	jr nz, .toNextLoop
+		ld a, l
+		and a
+		jr nz, .toNextLoop
 
-	ld h, $88
+		ld a, h
+		cp $98
+		jr nz, .toNextLoop
 
-.toNextLoop:
-	dec c
-	jr nz, .loop
-	dec b
-	jr nz, .loop
+		ld h, $88
+
+	.toNextLoop:
+		dec c
+		jr nz, .loop
+		dec b
+		jr nz, .loop
 
 	ld a, l
 	swap a
@@ -190,35 +201,36 @@ AsmLoadOBJTiles:
 	dec bc
 	inc b
 	inc c
-.loop
-	wait_vram
-	ld a, [de]
-	ld [hli], a
-	inc de
 
-	ld a, l
-	and $0f
-	jr nz, .toNextLoop
+	.loop
+		wait_vram
+		ld a, [de]
+		ld [hli], a
+		inc de
 
-	ld a, [wCurrOBJTile]
-	inc a
-	ld [wCurrOBJTile], a
+		ld a, l
+		and $0f
+		jr nz, .toNextLoop
 
-	ld a, l
-	and a
-	jr nz, .toNextLoop
+		ld a, [wCurrOBJTile]
+		inc a
+		ld [wCurrOBJTile], a
 
-	ld a, h
-	cp $90
-	jr nz, .toNextLoop
+		ld a, l
+		and a
+		jr nz, .toNextLoop
 
-	ld h, $80
+		ld a, h
+		cp $90
+		jr nz, .toNextLoop
 
-.toNextLoop:
-	dec c
-	jr nz, .loop
-	dec b
-	jr nz, .loop
+		ld h, $80
+
+	.toNextLoop:
+		dec c
+		jr nz, .loop
+		dec b
+		jr nz, .loop
 
 	ld a, l
 	swap a
@@ -248,9 +260,13 @@ AsmLoadBGPalettes:
 	ld b, a
 	pop hl
 
-; todo: allow choosing a starting palette
-; todo: return the starting palette idx, save the next allocatable one, choose bg/spr
-	ld a, BCPSF_AUTOINC
+; Allow choosing a starting palette
+	ld a, [wCurrBGPalette]
+	push af
+	add a
+	add a
+	add a
+	add BCPSF_AUTOINC
 	ldh [rBCPS], a
 	ld c, LOW(rBCPD)
 	.nextColByte:
@@ -260,7 +276,11 @@ AsmLoadBGPalettes:
 		dec b
 		jr nz, .nextColByte
 
-	jp PushNewNone
+	pop af
+	ld b, a
+	inc a
+	ld [wCurrBGPalette], a
+	jp PushNewInt
 
 
 AsmLoadOBJPalettes:
@@ -281,9 +301,13 @@ AsmLoadOBJPalettes:
 	ld b, a
 	pop hl
 
-; todo: allow choosing a starting palette
-; todo: return the starting palette idx, save the next allocatable one, choose bg/spr
-	ld a, OCPSF_AUTOINC
+; Allow choosing a starting palette
+	ld a, [wCurrOBJPalette]
+	push af
+	add a
+	add a
+	add a
+	add OCPSF_AUTOINC
 	ldh [rOCPS], a
 	ld c, LOW(rOCPD)
 	.nextColByte:
@@ -293,8 +317,11 @@ AsmLoadOBJPalettes:
 		dec b
 		jr nz, .nextColByte
 
-; todo: this should dynamically allocate and return a palette
-	ld b, 0
+; Dynamically allocate and return a palette
+	pop af
+	ld b, a
+	inc a
+	ld [wCurrOBJPalette], a
 	jp PushNewInt
 
 
@@ -636,3 +663,5 @@ wTempEntityMattrsAddr:: dw
 SECTION "Dynamic allocation", WRAM0
 wCurrBGTile: db
 wCurrOBJTile: db
+wCurrBGPalette: db
+wCurrOBJPalette: db

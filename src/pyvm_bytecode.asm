@@ -62,6 +62,8 @@ ExecBytecodes:
     jp z, ReturnValue
     cp $5a
     jp z, StoreName
+	cp $61
+	jp z, StoreGlobal
     cp $64
 	jp z, LoadConst
     cp $65
@@ -90,6 +92,9 @@ ExecBytecodes:
 	pop hl
 	jp Debug
 
+; POP_JUMP_IF_FALSE
+; JUMP_FORWARD
+; POP_JUMP_IF_TRUE
 
 LoadConst:
 ; HL = address of const items
@@ -564,6 +569,7 @@ ReturnValue:
 
 
 StoreName:
+StoreGlobal:
 ; HL = address of names
 	ldh a, [hPyNamesAddr]
 	ld l, a
