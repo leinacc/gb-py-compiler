@@ -72,6 +72,11 @@ GbpyModule::
 	; arg0: id of an entity to remove the 'solid' state from
 	db $14, "disable_other_solid", $ff
 		dw AsmDisableOtherSolid
+	; arg0: id of an entity to change the dir of
+	db $10, "look_other_down", $ff
+		dw AsmLookOtherDown
+	db $0a, "look_down", $ff
+		dw AsmLookDown
 	db $ff
 
 
@@ -717,6 +722,50 @@ AsmDisableOtherSolid:
 	ld a, [hl]
 	res ENTCTRL_IS_SOLID, a
 	ld [hl], a
+
+	jp PushNewNone
+
+
+AsmLookOtherDown:
+	db TYPE_ASM
+
+; Arg 0 is the entity id to change direction of
+	xor a
+	call AequIntParam
+
+; todo: verify the slot is in-user
+	ld hl, wEntity00_AnimCtr
+	and a
+	jr z, .foundEntity
+
+	ld de, wEntity01-wEntity00
+	:	add hl, de
+		dec a
+		jr nz, :-
+
+.foundEntity:
+; Reset anim to update sprite
+	xor a
+    ld [hl], a
+
+; Set dir to down
+	ld a, l
+	add wCurrEntity_Dir-wCurrEntity_AnimCtr
+	ld l, a
+	jr nc, :+
+	inc h
+:	ld [hl], DIR_DOWN
+
+	jp PushNewNone
+
+
+AsmLookDown:
+	db TYPE_ASM
+
+	ld a, DIR_DOWN
+	ld [wCurrEntity_Dir], a
+	xor a
+    ld [wCurrEntity_AnimCtr], a
 
 	jp PushNewNone
 

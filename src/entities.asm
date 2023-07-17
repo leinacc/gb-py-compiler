@@ -1000,20 +1000,24 @@ SendEntityDataToShadowOam:
 
 AnimTable:
     dw AnimDefSimple
-    dw AnimDefStatic
+    dw AnimDef2State
 
 
-AnimDefStatic:
+AnimDef2State:
     dw .still
 
 .still:
-    dw .common
-    dw .common
-    dw .common
-    dw .common
+    dw .defaultUp
+    dw .defaultUp ; right
+    dw .down
+    dw .defaultUp ; left
 
-.common:
-    db $00, $ff
+.defaultUp:
+    db $01, $ff
+    db $fe, $00
+
+.down:
+    db $02, $ff
     db $fe, $00
 
 

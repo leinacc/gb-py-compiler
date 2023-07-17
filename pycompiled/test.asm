@@ -441,10 +441,12 @@ PyBlock_pplate_script:
 		db $00
 	.const2:
 		db TYPE_TUPLE
-		db $03
+		db $05
 		dw .tupleItem0
 		dw .tupleItem1
 		dw .tupleItem2
+		dw .tupleItem3
+		dw .tupleItem4
 		.tupleItem0
 			db TYPE_STR, $0e
 			db "collides_with", $ff
@@ -454,6 +456,12 @@ PyBlock_pplate_script:
 		.tupleItem2
 			db TYPE_STR, $0c
 			db "entity_noop", $ff
+		.tupleItem3
+			db TYPE_STR, $10
+			db "look_other_down", $ff
+		.tupleItem4
+			db TYPE_STR, $0a
+			db "look_down", $ff
 .names:
 	dw .name0
 	dw .name1
@@ -461,7 +469,9 @@ PyBlock_pplate_script:
 	dw .name3
 	dw .name4
 	dw .name5
-	db $52
+	dw .name6
+	dw .name7
+	db $72
 	.name0:
 		db $05, "gbpy", $ff
 	.name1:
@@ -471,8 +481,12 @@ PyBlock_pplate_script:
 	.name3:
 		db $0c, "entity_noop", $ff
 	.name4:
-		db $07, "player", $ff
+		db $10, "look_other_down", $ff
 	.name5:
+		db $0a, "look_down", $ff
+	.name6:
+		db $07, "player", $ff
+	.name7:
 		db $05, "door", $ff
 .bytecode:
 	db $64, $01
@@ -484,33 +498,44 @@ PyBlock_pplate_script:
 	db $7d, $01
 	db $6d, $03
 	db $7d, $02
+	db $6d, $04
+	db $7d, $03
+	db $6d, $05
+	db $7d, $04
 	db $01, $00
 	db $09, $00
 	db $09, $00
 	db $7c, $00
-	db $74, $04
+	db $74, $06
 	db $83, $01
-	db $72, $15
+	db $72, $20
 	db $7c, $01
-	db $74, $05
+	db $74, $07
 	db $83, $01
+	db $01, $00
+	db $7c, $03
+	db $74, $07
+	db $83, $01
+	db $01, $00
+	db $7c, $04
+	db $83, $00
 	db $01, $00
 	db $6e, $04
 	db $7c, $02
 	db $83, $00
 	db $01, $00
-	db $71, $0c
+	db $71, $10
 	db $09, $00
 	db $7c, $00
-	db $74, $04
+	db $74, $06
 	db $83, $01
-	db $73, $1f
+	db $73, $2a
 	db $6e, $04
 	db $7c, $02
 	db $83, $00
 	db $01, $00
-	db $71, $1a
-	db $71, $0b
+	db $71, $25
+	db $71, $0f
 
 
 PyBlock_door_script:

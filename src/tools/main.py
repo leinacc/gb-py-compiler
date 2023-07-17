@@ -9,7 +9,6 @@ def player_movement():
     enable_movement()
     enable_abilities()
     while 1:
-        # todo: end script once player moves to another square
         allow_1_move()
 
 
@@ -21,11 +20,14 @@ def door_script():
 
 
 def pplate_script():
-    from gbpy import collides_with, disable_other_solid, entity_noop
+    from gbpy import collides_with, disable_other_solid, entity_noop, \
+        look_other_down, look_down
     while 1:
         while 1:
             if collides_with(player):
                 disable_other_solid(door)
+                look_other_down(door)
+                look_down()
                 break
             entity_noop()
         while 1:
