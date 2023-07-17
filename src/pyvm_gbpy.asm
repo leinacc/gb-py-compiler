@@ -63,9 +63,9 @@ GbpyModule::
 	db $09, "load_vwf", $ff
 		dw AsmLoadVwf
 	db $0d, "allow_1_move", $ff
-		dw AsmEntityNoop
+		dw AsmAllow1Move
 	db $0d, "enable_solid", $ff
-		dw AsmStub
+		dw AsmEnableSolid
 	db $0e, "collides_with", $ff
 		dw AsmStub
 	db $14, "disable_other_solid", $ff
@@ -635,8 +635,24 @@ AsmEnableAbilities:
 
 AsmEntityNoop:
 	db TYPE_ASM
+	call PassTurnToNextEntity
 	call PushNewNone
 	jp EndEntitysScript
+
+
+AsmAllow1Move:
+	db TYPE_ASM
+	call UpdateEntity
+	call PushNewNone
+	jp EndEntitysScript
+
+
+AsmEnableSolid:
+	db TYPE_ASM
+	ld a, [wCurrEntity_InputCtrl]
+	set ENTCTRL_IS_SOLID, a
+	ld [wCurrEntity_InputCtrl], a
+	jp PushNewNone
 
 
 AsmLoadVwf:

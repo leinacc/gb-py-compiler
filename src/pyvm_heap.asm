@@ -180,6 +180,7 @@ Free::
 	ld [de], a
 	ld a, [hl+]
 	ld [bc], a
+	inc bc
 	ld a, [hl]
 	ld [bc], a
 	ret

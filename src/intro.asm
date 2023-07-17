@@ -5,6 +5,8 @@ SECTION "Intro", ROMX
 Intro::
 ; todo: use hConsoleType to display a CGB-only screen
 
+	rst WaitVBlank
+
 	ld a, $01
 	ldh [hCanSoftReset], a
 

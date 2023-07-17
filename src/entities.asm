@@ -205,8 +205,7 @@ UpdateEntities::
     ld c, wEntity01-wEntity00
     rst MemcpySmall
 
-    call UpdateEntity
-    call RunEntityScript
+    call ContEntityFrameStack
 
 ; Save updated details
     ld de, wCurrEntity
@@ -285,7 +284,7 @@ IsAaWalkableMetatile:
     ret
 
 
-UpdateEntity:
+UpdateEntity::
     ld a, [wCurrEntity_State]
     add a
     ld hl, EntityStateTable
@@ -312,12 +311,8 @@ EntityStateStill:
     bit ENTCTRL_USES_ABILITIES, a
     ret z
 
-; This is the initial value when polling input
-    ldh a, [hPressedKeys]
-    cp $ff
-    ret z
-
 ; Return if action btn not pressed
+    ldh a, [hPressedKeys]
     bit PADB_B, a
     ret z
 
@@ -349,8 +344,48 @@ EntityStateMoving:
     ret
 
 .setStill:
+    call PassTurnToNextEntity
     ld b, ENTSTATE_STILL
     jp SetEntityState
+
+
+PassTurnToNextEntity::
+; Find the next entity ID that can be processed
+    ld a, [wEntityIdToProcess]
+ 
+; HL = curr entity
+    ld hl, wEntity00_InUse
+    ld de, wEntity01-wEntity00
+    and a
+    jr z, .afterChosenEntity
+
+    :   add hl, de
+        dec a
+        jr nz, :-
+
+.afterChosenEntity:
+    .nextEntity:
+        add hl, de
+
+    ; +1 to entity ID, resetting the ID to process and struct ptr HL if
+    ; we've looped around all entities
+        ld a, [wEntityIdToProcess]
+        inc a
+        cp NUM_ENTITIES
+        jr nz, .setNextEntId
+
+        ld hl, wEntity00_InUse
+        xor a
+
+    .setNextEntId:
+        ld [wEntityIdToProcess], a
+
+        ld a, [hl]
+        and a
+        jr z, .nextEntity
+
+; We've found an entity ID to process and we've already saved it.. return
+    ret
 
 
 EntityStateUsingAbility:
@@ -771,15 +806,6 @@ ProcessEntWallWalk:
 
     ld b, ENTSTATE_STILL
     jp SetEntityState
-
-
-RunEntityScript:
-; Entity must not be moving
-    ld a, [wCurrEntity_State]
-    cp ENTSTATE_STILL
-    ret nz
-
-    jp ContEntityFrameStack
 
 
 ; Trashes everything
