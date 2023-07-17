@@ -130,7 +130,7 @@ GrayscalePals:
 
 ; FAST BOI
 SpeedUpCPU::
-	ld a, [rKEY1]
+	ldh a, [rKEY1]
 	rla ; Bit 7 goes into carry
 	ret c ; Already at double speed
 	
@@ -138,22 +138,22 @@ SpeedUpCPU::
 	
 ; Less power-consuming
 SlowDownCPU::
-	ld a, [rKEY1]
+	ldh a, [rKEY1]
 	rla
 	ret nc ; Not at double-speed
 	
 SwitchCPUSpeed:
 	ld a, P1F_GET_NONE ; Prevent misclicking...
-	ld [rP1], a
+	ldh [rP1], a
 	ld a, 1
-	ld [rKEY1], a ; Request speed switch
-	ld a, [rIE] ; Save interrupts
+	ldh [rKEY1], a ; Request speed switch
+	ldh a, [rIE] ; Save interrupts
 	ld b, a
 	xor a
-	ld [rIE], a ; Prevent any interrupt
+	ldh [rIE], a ; Prevent any interrupt
 	stop ; GO!!
 	ld a, b
-	ld [rIE], a ; Restore ints
+	ldh [rIE], a ; Restore ints
 	ret
 
 

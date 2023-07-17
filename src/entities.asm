@@ -8,6 +8,7 @@ InitEntites::
     xor a
     rst Memset
     ld [wCurrOamIdxToFill], a
+    ld [wEntityIdToProcess], a
     ret
 
 
@@ -180,6 +181,41 @@ UpdateEntities::
 :   ldh [hSCY], a
 
 ; actual entity update code
+    ld hl, wEntity00_InUse
+    ld a, [wEntityIdToProcess]
+    ld de, wEntity01-wEntity00
+    and a
+    jr z, .afterChoseEnt
+
+    :   add hl, de
+        dec a
+        jr nz, :-
+
+.afterChoseEnt:
+    ld d, h
+    ld e, l
+
+; Proceed only if slot is in use
+    ld a, [de]
+    and a
+    jr z, .displayEnts
+
+; Store entity details in a way where we can get it faster
+    push de
+    ld hl, wCurrEntity
+    ld c, wEntity01-wEntity00
+    rst MemcpySmall
+
+    call UpdateEntity
+    call RunEntityScript
+
+; Save updated details
+    ld de, wCurrEntity
+    pop hl
+    ld c, wEntity01-wEntity00
+    rst MemcpySmall
+
+.displayEnts:
     ld de, wEntity00_InUse
     ld b, NUM_ENTITIES
     .nextEntity:
@@ -197,8 +233,6 @@ UpdateEntities::
         ld c, wEntity01-wEntity00
         rst MemcpySmall
 
-        call UpdateEntity
-        call RunEntityScript
         call UpdateAnimation
         call SendEntityDataToShadowOam
 
@@ -267,11 +301,12 @@ UpdateEntity:
 
 
 EntityStateTable:
-    dw .still
-    dw .moving
+    dw EntityStateStill
+    dw EntityStateMoving
     dw EntityStateUsingAbility
 
-.still:
+
+EntityStateStill:
     call ProcessEntDirectionsInput
 
     ld a, [wCurrEntity_InputCtrl]
@@ -290,12 +325,13 @@ EntityStateTable:
     ld b, ENTSTATE_USING_ABILITY
     jp SetEntityState
 
-.moving:
-    call ProcessEntDirectionsInput
+
+EntityStateMoving:
+    call ProcessEntWallWalk
 
     ld a, [wCurrEntity_MoveCtr]
     and a
-    ret z
+    jr z, .setStill
 
     dec a
     ld [wCurrEntity_MoveCtr], a
@@ -312,6 +348,10 @@ EntityStateTable:
     add b
     ld [wCurrEntity_ScreenY], a
     ret
+
+.setStill:
+    ld b, ENTSTATE_STILL
+    jp SetEntityState
 
 
 EntityStateUsingAbility:
@@ -689,9 +729,6 @@ MoveRight::
 
 ProcessEntDirectionsInput:
     ld a, [wCurrEntity_InputCtrl]
-    bit ENTCTRL_WALL_WALKING, a
-    jr nz, .wallWalk
-
     bit ENTCTRL_DIR_MOVABLE, a
     ret z
 
@@ -717,7 +754,12 @@ ProcessEntDirectionsInput:
     ld b, ENTSTATE_STILL
     jp SetEntityState
 
-.wallWalk:
+
+ProcessEntWallWalk:
+    ld a, [wCurrEntity_InputCtrl]
+    bit ENTCTRL_WALL_WALKING, a
+    ret z
+
 ; Entity can't be moving already
     ld a, [wCurrEntity_MoveCtr]
     and a
@@ -870,7 +912,7 @@ SendEntityDataToShadowOam:
 AnimTable:
     dl AnimDefSimple
 
-WALK_CTR equ $0c
+WALK_CTR equ $04
 
 AnimDefSimple:
     dw AnimDefSimple_still
@@ -1038,3 +1080,6 @@ ENDR
     dstruct Entity, wCurrEntity
 
 wCurrOamIdxToFill: db
+; each entity runs code in their script til entity_noop,
+; or they don't if their script is None
+wEntityIdToProcess: db
