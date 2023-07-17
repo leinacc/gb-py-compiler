@@ -23,17 +23,15 @@ def door_script():
 def pplate_script():
     from gbpy import collides_with, disable_other_solid, entity_noop
     while 1:
-        entity_noop()
-    # while 1:
-    #     while 1:
-    #         if collides_with(player):
-    #             disable_other_solid(door)
-    #             break
-    #         entity_noop()
-    #     while 1:
-    #         if not collides_with(player):
-    #             break
-    #         entity_noop()
+        while 1:
+            if collides_with(player):
+                disable_other_solid(door)
+                break
+            entity_noop()
+        while 1:
+            if not collides_with(player):
+                break
+            entity_noop()
 
 
 def main():
