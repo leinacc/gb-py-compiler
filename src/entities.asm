@@ -275,13 +275,80 @@ HLequAddrInMetatiles:
     ret
 
 
+; HL - address within wRoomMetatiles
 ; Returns zflag set if the metatile is walkable
-IsAaWalkableMetatile:
+IsPosAWalkableMetatile:
+    push bc
+    push de
+
+    ld a, [hl]
     cp $11
-    ret z
+    jr z, .checkEnts
 
     cp $14
+    jr z, .checkEnts
+
+    pop de
+    pop bc
+    ret ; nz - cause solid
+
+.checkEnts:
+; Save the tile pos we're checking
+    ld a, l
+    ld [wMetatileYXtoCheck], a
+
+; Check for solid entities
+    ld hl, wEntity00_InUse
+    ld de, wEntity01-wEntity00
+    ld b, NUM_ENTITIES
+
+    .nextEntity:
+    ; Check if slot in use
+        push hl
+
+        ld a, [hl+]
+        and a
+        jr z, .toNextEntity
+
+    ; A = metatile YX of the entity
+        ld a, [hl+]
+        ld c, a
+        ld a, [hl]
+        swap a
+        or c
+        ld c, a
+
+        ld a, [wMetatileYXtoCheck]
+        cp c
+        jr nz, .toNextEntity
+
+        ld a, l
+        add wCurrEntity_InputCtrl-wCurrEntity_TileY
+        ld l, a
+        jr nc, :+
+        inc h
+    :   ld a, [hl]
+        bit ENTCTRL_IS_SOLID, a
+        jr nz, .isSolid
+
+    .toNextEntity:
+        pop hl
+
+        add hl, de
+        dec b
+        jr nz, .nextEntity
+
+; No solid tile found - it's walkable
+    xor a
+    pop de
+    pop bc
     ret
+
+.isSolid:
+    pop hl
+    pop de
+    pop bc
+    ret ; nz
 
 
 UpdateEntity::
@@ -426,8 +493,7 @@ EntityStateUsingAbility:
     ret nz
 
 ; Must not be walkable
-    ld a, [hl]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     ret z
 
     ld c, 1
@@ -439,9 +505,8 @@ EntityStateUsingAbility:
         ret nz
 
     ; Keep looping until walkable
-        ld a, [hl]
         inc c
-        call IsAaWalkableMetatile
+        call IsPosAWalkableMetatile
         jr nz, .nextVert
 
 ; We can move into the spot
@@ -472,8 +537,7 @@ EntityStateUsingAbility:
     ret nz
 
 ; Must not be walkable
-    ld a, [hl]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     ret z
 
     ld c, 1
@@ -486,9 +550,8 @@ EntityStateUsingAbility:
         ret nz
 
     ; Keep looping until walkable
-        ld a, [hl]
         inc c
-        call IsAaWalkableMetatile
+        call IsPosAWalkableMetatile
         jr nz, .nextHoriz
 
 ; We can move into the spot
@@ -555,8 +618,7 @@ MoveDown::
     call HLequAddrInMetatiles
     ld de, $10
     add hl, de
-    ld a, [hl+]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileY]
@@ -613,8 +675,7 @@ MoveUp::
     call HLequAddrInMetatiles
     ld de, -$10
     add hl, de
-    ld a, [hl+]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileY]
@@ -671,8 +732,7 @@ MoveLeft::
     call HLequAddrInMetatiles
     ld de, -1
     add hl, de
-    ld a, [hl+]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileX]
@@ -729,8 +789,7 @@ MoveRight::
     call HLequAddrInMetatiles
     ld de, 1
     add hl, de
-    ld a, [hl+]
-    call IsAaWalkableMetatile
+    call IsPosAWalkableMetatile
     jr nz, .setDir
 
     ld a, [wCurrEntity_TileX]
@@ -1146,3 +1205,6 @@ wCurrOamIdxToFill: db
 ; each entity runs code in their script til entity_noop,
 ; or they don't if their script is None
 wEntityIdToProcess: db
+
+; For checking solid entities
+wMetatileYXtoCheck: db
