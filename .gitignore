@@ -3,3 +3,4 @@
 /dep/
 /res/
 !/bin/*.dbg
+*.tiled-session
