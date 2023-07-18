@@ -286,5 +286,28 @@ EndEntitysScript::
 	ret
 
 
+; HL - points to high byte of potential heap addr
+; Returns HL pointing to the low byte of that address
+; Trashes A, DE
+FreeStackPoppedData::
+; Check if we need to free data
+	ld a, [hl-]
+	cp HIGH(wHeapData)
+	ret c
+
+	cp HIGH(wHeapData.end)
+	ret nc
+
+; If so, go from user data to chunk header, and Free the chunk
+	push hl
+	ld l, [hl]
+	ld h, a
+	ld de, -6
+	add hl, de
+	call Free
+	pop hl
+	ret
+
+
 Debug::
 	jr @

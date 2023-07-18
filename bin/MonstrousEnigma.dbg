@@ -5,3 +5,5 @@ Debug x:break
 
 ExecBytecodes+1 xd:
     message "Exec bytecodes src: ${hl,4$}"
+
+hHeapMainPtr+1 w (value<$dc || value>$df) && value!=$ff:break

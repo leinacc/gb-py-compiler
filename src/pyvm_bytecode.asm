@@ -203,27 +203,12 @@ StoreFast:
 
 
 PopTop:
+; The prev data will be ignored, so pop+free it
 	call HLequCurrFrameStackPtrs
 	dec hl
 
-; Check if we need to free data
-	ld a, [hl-]
-	cp HIGH(wHeapData)
-	jr c, .afterFree
+	call FreeStackPoppedData
 
-	cp HIGH(wHeapData.end)
-	jr nc, .afterFree
-
-; If so, go from user data to chunk header, and Free the chunk
-	push hl
-	ld l, [hl]
-	ld h, a
-	ld de, -6
-	add hl, de
-	call Free
-	pop hl
-
-.afterFree:
 	ld a, l
 	ldh [hPyStackTop], a
 	jp ExecBytecodes
@@ -643,7 +628,13 @@ JumpAbsolute:
 
 PopJumpIfFalse:
 	call PopStack
+	push hl
 
+	call HLequCurrFrameStackPtrs
+	inc hl
+	call FreeStackPoppedData
+
+	pop hl
 	ld a, [hl+]
 	cp TYPE_BOOL
 	jp nz, Debug
@@ -658,7 +649,13 @@ PopJumpIfFalse:
 
 PopJumpIfTrue:
 	call PopStack
+	push hl
 
+	call HLequCurrFrameStackPtrs
+	inc hl
+	call FreeStackPoppedData
+
+	pop hl
 	ld a, [hl+]
 	cp TYPE_BOOL
 	jp nz, Debug
