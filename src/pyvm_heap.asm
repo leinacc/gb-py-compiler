@@ -2,37 +2,32 @@
 ; Heap
 ;-----------------------------------------------------------------------------
 ;
-; * main ptr - reference to the last chunk, or $ffxx if heap not yet used
 ; * chunks:
-;   * backward_ptr - ptr to the prev chunk, or $ffxx if the 1st ($d000)
-;   * forward_ptr - ptr to the next chunk, or $ffxx if the last allocated data
-;   * size - size of chunk including the 6-byte header
-;   * user data - allocated data
+;   * 0:backward_ptr.w - ptr to the prev chunk, or $ffxx if the 1st (todo: seems useless)
+;   * 2:forward_ptr.w - ptr to the next chunk, or $ffxx if the last allocated data
+;   * 4:size.w - size of chunk including the 6-byte header
+;   * 6:is_free.b - if the chunk had been freed, and is ready for re-use
+;   * 7:user data - allocated data
+;   * are contiguous
 ; * allocate process:
-;   * use main_ptr to point to the last used chunk
-;   * use that chunk's size to find the next place to allocate data
+;   * loop through chunks, finding free chunks, or until we reach the last chunk
+;   * if the free chunk can accommodate our chunk, re-use it
+;   * else use the last chunk's size to find the next place to allocate data
 ;   * store chunk data
 ;   * update prev chunk's forward ptr to point to the new chunk
 ;   * update main_ptr to point to the new chunk
 ;   * return a pointer to the new chunk
 ; * free process:
 ;   * get a pointer to a chunk
-;   * get its backwards and forwards chunks
-;   * link them together
-;   * if backwards chunk missing (1st item was freed), set the forward chunk's backwards ptr to $ffff
-;   * if forwards chunk missing (last allocated item was freed), main ptr points to the backwards chunk
-; * defragment process (todo: when allocate can't find space):
-;   * loop through linked list of chunks, until backward_ptr == $ffxx
-;   * whenever forward_ptr - curr_chunk_addr > size, memcopy the forward chunk closer
+;   * mark it as free ($ff)
 ;
 ;-----------------------------------------------------------------------------
 
 SECTION "Python VM Heap Code", ROM0
 
 InitHeap::
-	ld a, $ff
-	ldh [hHeapMainPtr], a
-	ldh [hHeapMainPtr+1], a
+	xor a
+	ldh [hHeapInitd], a
 	ret
 
 
@@ -41,154 +36,123 @@ InitHeap::
 ; Trashes A, DE, HL
 Malloc::
 ; BC to include header
-	ld a, 6
+	ld a, 7
 	add c
 	ld c, a
 	jr nc, :+
 	inc b
-; Check main_ptr
-:	ldh a, [hHeapMainPtr]
-	ld e, a
-	ldh a, [hHeapMainPtr+1]
-	ld d, a
+
+; Start looping from the start of heap, until we get:
+; * a free chunk that can hold BC OR
+; * the last chunk (has forward_ptr of $ff)
+:	ld hl, wHeapData
+
+	ldh a, [hHeapInitd]
+	and a
+	jr nz, .checkChunk
+
+	inc a
+	ldh [hHeapInitd], a
+	ld de, $ffff
+	jr .alloc
+
+.checkChunk:
+	push hl
+	inc hl
+	inc hl
+	inc hl
+	ld a, [hl+] ; read from HIGH(forward_ptr)
 	cp $ff
-	jr nz, .heapInUse
+	jr z, .foundLastChunk
 
-; Init heap
-	ld a, LOW(wHeapData)
-	ldh [hHeapMainPtr], a
-	ld a, HIGH(wHeapData)
-	ldh [hHeapMainPtr+1], a
-	ld hl, wHeapData ; chunk to populate
+; DE = the curr chunk's size
+	ld a, [hl+]
+	ld e, a
+	ld a, [hl+]
+	ld d, a
+	ld a, [hl] ; is_free
+	and a
+	jr nz, .checkIfFreeChunkIsBigEnough
 
-; Fill backwards ptr
-	ld a, $ff
+.toNextChunk:
+; Not the last chunk, or free, so go to the next chunk
+	pop hl
+	add hl, de
+	jr .checkChunk
+
+.checkIfFreeChunkIsBigEnough:
+; This is not the last chunk, so we don't override the forwards_ptr
+	ld a, e
+	sub c
+	ld a, d
+	sbc b
+	jr nc, .chunkIsBigEnough
+
+	jr .toNextChunk
+
+.chunkIsBigEnough:
+; Set that it's no longer free
+	pop af
+	xor a
 	ld [hl+], a
-	ld [hl+], a
-; Forwards ptr
-	ld [hl+], a
-	ld [hl+], a
-; Size
-	ld [hl], c
-	inc hl
-	ld [hl], b
-; HL points to user data
-	inc hl
 	ret
 
-; DE = addr of curr chunk
-.heapInUse:
-; Deref size of chunk
-	ld h, d
-	ld a, e ; keep de = the next 'prev ptr'
-	add 4
-	ld l, a
-	jr nc, :+
-	inc h
-:	ld a, [hl+]
-	ld h, [hl]
-	ld l, a ; hl = size of chunk
-	add hl, de ; hl = chunk to populate
+.foundLastChunk:
+; DE = the curr chunk's size
+	ld a, [hl+]
+	ld e, a
+	ld a, [hl+]
+	ld d, a
 
-; Set backwards chunk's forwards ptr, and main_ptr
+; HL = the curr chunk, then the chunk to use, DE = the prev chunk
+	pop hl
+	push hl
+
+	add hl, de
+	pop de
+
+; Fill the prev chunk's forwards_ptr
 	inc de
 	inc de
 	ld a, l
 	ld [de], a
-	ldh [hHeapMainPtr], a
 	inc de
 	ld a, h
 	ld [de], a
-	ldh [hHeapMainPtr+1], a
 	dec de
 	dec de
 	dec de
 
-; Backwards ptr
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	inc hl
-; Forwards ptr
-	ld a, $ff
-	ld [hl+], a
-	ld [hl+], a
-; Size
-	ld [hl], c
-	inc hl
-	ld [hl], b
-	inc hl
-
-	ret
-
-
-; HL - ptr to chunk to free
-Free::
-; DE = backwards ptr
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-; BC = forwards ptr
-	ld a, [hl+]
-	ld c, a
-	ld a, [hl+]
-	ld b, a
-	cp $ff
-	jr nz, .hasForwardPtr
-
-; No forward ptr - move main_ptr, set backwards chunk's forward ptr to -1
+.alloc:
+; Fill the curr chunk's details (backwards_ptr=DE, forward_ptr=$ffff, size=BC, is_free=0)
 	ld a, e
-	ldh [hHeapMainPtr], a
+	ld [hl+], a
 	ld a, d
-	ldh [hHeapMainPtr+1], a
-; If backwards ptr is also $ff, return. Next Malloc will init heap
-	cp $ff
-	ret z
-
-	inc de
-	inc de
+	ld [hl+], a
 	ld a, $ff
-	ld [de], a
-	inc de
-	ld [de], a
-	ret
-
-.hasForwardPtr:
-	ld a, d
-	cp $ff
-	jr nz, .hasBothPtrs
-
-; No backwards ptr, but has forward ptr - set forward chunk's backward ptr to -1
-; A = $ff already
-	ld [bc], a
-	inc bc
-	ld [bc], a
-	ret
-
-.hasBothPtrs:
-	ld h, d
-	ld l, e
-	inc de
-	inc de
-; DE points to prev chunk's forward ptr
-; BC points to next chunk's backwards ptr
+	ld [hl+], a
+	ld [hl+], a
 	ld a, c
-	ld [de], a
-	inc de
+	ld [hl+], a
 	ld a, b
-	ld [de], a
-	ld a, [hl+]
-	ld [bc], a
-	inc bc
-	ld a, [hl]
-	ld [bc], a
+	ld [hl+], a
+	xor a
+	ld [hl+], a
+	ret
+
+
+; HL - ptr to a chunk's userdata to free
+Free::
+	dec hl
+	ld a, $ff
+	ld [hl], a
 	ret
 
 
 SECTION "PyVM Heap Hram", HRAM
-hHeapMainPtr: dw
+hHeapInitd: db
 
 SECTION "PyVM Heap Wram", WRAMX[$dc00] ; ALIGN[8]
 wHeapData:: ds $400
 .end::
+; todo: fix bug in that despite checking for wHeapData.end, we can still allocate over it

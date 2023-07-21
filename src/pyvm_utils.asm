@@ -302,8 +302,6 @@ FreeStackPoppedData::
 	push hl
 	ld l, [hl]
 	ld h, a
-	ld de, -6
-	add hl, de
 	call Free
 	pop hl
 	ret
