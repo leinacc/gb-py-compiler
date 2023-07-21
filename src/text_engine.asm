@@ -28,12 +28,6 @@ LoadVwf::
     ld bc, $10*(SCRN_X_B-2)*2
     rst Memset
 
-; Clear shadow bg pals in use
-; todo: should only be those that get dynamically allocated based on need
-    ld hl, wVWFShadowBGPals
-    ld c, 2*4*NUM_VWF_PALS
-    rst MemsetSmall
-
 ; Init text engine and set HL = addr of text data
     xor a
     ldh [hTextPalIdx], a
@@ -211,9 +205,12 @@ VWFcreateShadowPals:
 
 ; Load into palette registers
     ld hl, wVWFShadowBGPals
-    ld b, 2*4*NUM_VWF_PALS
-; todo: force-starts at palette 4
-    ld a, BCPSF_AUTOINC|(2*4*4)
+    ld b, 8*NUM_VWF_PALS
+    ld a, [wCurrBGPalette]
+    add a
+    add a
+    add a
+    or BCPSF_AUTOINC
 	ldh [rBCPS], a
 	ld c, LOW(rBCPD)
 	.nextColByte:
@@ -298,18 +295,19 @@ VwfsetupTilemap:
 
 ; Clear palettes
     ld hl, $9c00
-    ld a, 4 ; todo: not hard-coded base palette
+    ld a, [wCurrBGPalette]
     ld c, SCRN_VX_B*4
     call LCDMemsetSmall
 
     ld hl, $9c21
     ld de, wTileToPalsMap
     ld b, (SCRN_X_B-2)
+    ld c, a
 
     .nextTile:
         ld a, [de]
         inc de
-        add 4 ; todo: not hard-coded base palette
+        add c
         push af
         wait_vram
         pop af

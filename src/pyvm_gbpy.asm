@@ -266,6 +266,10 @@ AsmLoadBGPalettes:
 	ld a, [hl]
 	ld b, a
 	pop hl
+	srl a
+	srl a
+	srl a
+	push af
 
 ; Allow choosing a starting palette
 	ld a, [wCurrBGPalette]
@@ -285,7 +289,8 @@ AsmLoadBGPalettes:
 
 	pop af
 	ld b, a
-	inc a
+	pop de
+	add d
 	ld [wCurrBGPalette], a
 	jp PushNewInt
 
@@ -307,6 +312,10 @@ AsmLoadOBJPalettes:
 	ld a, [hl]
 	ld b, a
 	pop hl
+	srl a
+	srl a
+	srl a
+	push af
 
 ; Allow choosing a starting palette
 	ld a, [wCurrOBJPalette]
@@ -327,7 +336,8 @@ AsmLoadOBJPalettes:
 ; Dynamically allocate and return a palette
 	pop af
 	ld b, a
-	inc a
+	pop de
+	add d
 	ld [wCurrOBJPalette], a
 	jp PushNewInt
 
@@ -794,6 +804,6 @@ wTempEntityMattrsAddr:: dw
 SECTION "Dynamic allocation", WRAM0
 wCurrBGTile: db
 wCurrOBJTile: db
-wCurrBGPalette: db
+wCurrBGPalette:: db
 wCurrOBJPalette: db
 wChosenEntitySlot:: db
