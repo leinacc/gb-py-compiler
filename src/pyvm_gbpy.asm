@@ -86,12 +86,12 @@ AsmStub:
 
 
 InitGbpyModule::
-    xor a
+	xor a
 	ld [wCurrBGTile], a
 	ld [wCurrOBJTile], a
 	ld [wCurrBGPalette], a
 	ld [wCurrOBJPalette], a
-    ret
+	ret
 
 
 AsmLoadBGTiles:
@@ -756,7 +756,7 @@ AsmLookOtherDown:
 .foundEntity:
 ; Reset anim to update sprite
 	xor a
-    ld [hl], a
+	ld [hl], a
 
 ; Set dir to down
 	ld a, l
@@ -775,7 +775,7 @@ AsmLookDown:
 	ld a, DIR_DOWN
 	ld [wCurrEntity_Dir], a
 	xor a
-    ld [wCurrEntity_AnimCtr], a
+	ld [wCurrEntity_AnimCtr], a
 
 	jp PushNewNone
 

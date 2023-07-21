@@ -35,7 +35,7 @@ LoadModule::
 ; Python code address in hram
 	pop hl
 	call InitFrame
-    call HeapifyNames
+	call HeapifyNames
 
 ; Get bytecode addr
 	ld a, [hl-]
@@ -54,42 +54,42 @@ ExecBytecodes:
 	ld a, b
 	cp $01
 	jp z, PopTop
-    cp $09
+	cp $09
 	jp z, Nope
-    cp $17
-    jp z, BinaryAdd
-    cp $53
-    jp z, ReturnValue
-    cp $5a
-    jp z, StoreName
+	cp $17
+	jp z, BinaryAdd
+	cp $53
+	jp z, ReturnValue
+	cp $5a
+	jp z, StoreName
 	cp $61
 	jp z, StoreGlobal
-    cp $64
+	cp $64
 	jp z, LoadConst
-    cp $65
-    jp z, LoadName
+	cp $65
+	jp z, LoadName
 	cp $6c
 	jp z, ImportName
 	cp $6d
 	jp z, ImportFrom
 	cp $6e
 	jp z, JumpForward
-    cp $71
+	cp $71
 	jp z, JumpAbsolute
 	cp $72
 	jp z, PopJumpIfFalse
 	cp $73
 	jp z, PopJumpIfTrue
-    cp $74
-    jp z, LoadGlobal
+	cp $74
+	jp z, LoadGlobal
 	cp $7c
 	jp z, LoadFast
-    cp $7d
+	cp $7d
 	jp z, StoreFast
 	cp $83
 	jp z, CallFunction
-    cp $84
-    jp z, MakeFunction
+	cp $84
+	jp z, MakeFunction
 	cp $9b
 	jp z, FormatValue
 	cp $9d
@@ -143,11 +143,11 @@ ImportFrom:
 	call PeekStack
 
 ; todo: allow other types, like regular modules
-    ld a, [hl+]
-    cp TYPE_GBPY_MODULE
-    jp nz, Debug
+	ld a, [hl+]
+	cp TYPE_GBPY_MODULE
+	jp nz, Debug
 
-    push hl
+	push hl
 
 ; HL = address of names
 	ldh a, [hPyNamesAddr]
@@ -165,10 +165,10 @@ ImportFrom:
 
 ; DE = address of name string to find
 :   ld a, [hl+]
-    ld e, a
-    ld d, [hl]
+	ld e, a
+	ld d, [hl]
 
-    pop hl
+	pop hl
 
 ; Each name has a word ptr after it
 	ld a, 2
@@ -176,9 +176,9 @@ ImportFrom:
 	call HLequAfterMatchingNameInList
 
 ; Push ptr to asm type
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
 	call PushStack
 	jp ExecBytecodes
 
@@ -189,7 +189,7 @@ StoreFast:
 ; BC points to a varname ptr to data
 	ldh a, [hPyParam]
 	add a
-    add LOW(wPyFastNames)
+	add LOW(wPyFastNames)
 	ld c, a
 	call BequCurrFastNamesHi
 
@@ -218,7 +218,7 @@ LoadFast:
 ; HL points to a varname ptr to data
 	ldh a, [hPyParam]
 	add a
-    add LOW(wPyFastNames)
+	add LOW(wPyFastNames)
 	ld l, a
 	call HequCurrFastNamesHi
 
@@ -249,10 +249,10 @@ CallFunction:
 	call PopStack
 	ld a, [hl+]
 	cp TYPE_ASM
-    jr z, .doAsm
+	jr z, .doAsm
 
-    cp TYPE_FUNCTION
-    jr z, CallNewFrameStack
+	cp TYPE_FUNCTION
+	jr z, CallNewFrameStack
 
 	jp Debug
 
@@ -269,21 +269,21 @@ CallFunction:
 
 
 SaveCurrCallStackVars:
-    ldh a, [hCurrCallStackIdx]
-    swap a
-    add LOW(wCallStackSavedVars)
-    ld l, a
-    ld h, HIGH(wCallStackSavedVars)
-    ld de, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+	ldh a, [hCurrCallStackIdx]
+	swap a
+	add LOW(wCallStackSavedVars)
+	ld l, a
+	ld h, HIGH(wCallStackSavedVars)
+	ld de, hPyCodeAddr
+	ld c, hPyOpcode-hPyCodeAddr
+	rst MemcpySmall
 	ret
 
 
 ; HL - addr of module/function block
 InitFrame:
-    xor a
-    ldh [hPyStackTop], a
+	xor a
+	ldh [hPyStackTop], a
 
 ; Python code address in hram
 	ld a, l
@@ -311,15 +311,15 @@ InitFrame:
 
 ; A - call stack idx
 LoadCallStackSavedVars:
-    ldh [hCurrCallStackIdx], a
+	ldh [hCurrCallStackIdx], a
 
 ; Restore prev stack
-    swap a
-    ld e, a
-    ld d, HIGH(wCallStackSavedVars)
-    ld hl, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+	swap a
+	ld e, a
+	ld d, HIGH(wCallStackSavedVars)
+	ld hl, hPyCodeAddr
+	ld c, hPyOpcode-hPyCodeAddr
+	rst MemcpySmall
 	ret
 
 
@@ -330,16 +330,16 @@ CallNewFrameStack:
 	ldh a, [hCurrCallStackIdx]
 	ld d, a
 
-    ldh a, [hPyStackTop]
-    add 2
+	ldh a, [hPyStackTop]
+	add 2
 	ld e, a
-    push de
+	push de
 
 ; Push addr of function block to store later
-    push hl
+	push hl
 
 ; Save prev stack
-    call SaveCurrCallStackVars
+	call SaveCurrCallStackVars
 
 ; Start on a new frame
 	ld c, 1
@@ -363,10 +363,10 @@ CallNewFrameStack:
 	ldh [hCurrCallStackIdx], a
 
 ; HL = address of the function block
-    pop hl
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
+	pop hl
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
 
 	call InitFrame
 
@@ -380,25 +380,25 @@ CallNewFrameStack:
 
 ; Store fast values, DE = prev frame's stack where the fast values are
 	ldh a, [hPyParam]
-    add a
-    jr z, .afterFast
+	add a
+	jr z, .afterFast
 	ld c, a
 
 ; D = prev call stack idxes set of vars
-    ld a, d
+	ld a, d
 	add HIGH(wFrameStackPtrs)
 	ld d, a
 
 ; HL = where to store the fast names
-    ld l, LOW(wPyFastNames)
+	ld l, LOW(wPyFastNames)
 	call HequCurrFastNamesHi
 
-    rst MemcpySmall
+	rst MemcpySmall
 
 .afterFast:
 ; Continue exec'ing bytecodes for the previous stack
-    ld bc, ExecBytecodes
-    push bc
+	ld bc, ExecBytecodes
+	push bc
 
 ; Get bytecode addr
 	ldh a, [hSavedBytecodeAddr]
@@ -407,7 +407,7 @@ CallNewFrameStack:
 	ld h, a
 	push hl
 
-    jp ExecBytecodes
+	jp ExecBytecodes
 
 
 ; C - new call stack idx
@@ -420,23 +420,23 @@ StartEntityFrameStack::
 	push bc
 
 ; Push addr of function block to store later
-    push hl
+	push hl
 
 	ld a, c
 	push af
 
 ; Save prev stack
-    call SaveCurrCallStackVars
+	call SaveCurrCallStackVars
 
 ; Find the relevant frame
 	pop af
 	ldh [hCurrCallStackIdx], a
 
 ; HL = address of the function block
-    pop hl
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
+	pop hl
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
 
 	call InitFrame
 	call SaveCurrCallStackVars
@@ -453,15 +453,15 @@ StartEntityFrameStack::
 ; This routine allows continuing a python routine from outside the VM
 ContEntityFrameStack::
 ; Save prev stack
-    call SaveCurrCallStackVars
+	call SaveCurrCallStackVars
 
 ; Get vars for the entity's script's frame
 	ld a, [wCurrEntity_CallStackIdx]
 	call LoadCallStackSavedVars
 
 ; Return to .return
-    ld bc, .return
-    push bc
+	ld bc, .return
+	push bc
 
 ; Get bytecode addr, and continue executing them
 	ldh a, [hSavedBytecodeAddr]
@@ -470,7 +470,7 @@ ContEntityFrameStack::
 	ld h, a
 	push hl
 
-    jp ExecBytecodes
+	jp ExecBytecodes
 
 .return:
 ; Save the entity's script's frame in wram
@@ -486,13 +486,13 @@ MakeFunction:
 ; TOS - qualified name of function
 ; TOS1 - ptr to function block
 ; Keeps the address of the function object in TOS
-    call PopStack
-    call PeekStack
-    ld a, [hl]
-    cp TYPE_FUNCTION
-    jp nz, Debug
+	call PopStack
+	call PeekStack
+	ld a, [hl]
+	cp TYPE_FUNCTION
+	jp nz, Debug
 
-    jp ExecBytecodes
+	jp ExecBytecodes
 
 
 Nope:
@@ -502,59 +502,59 @@ Nope:
 BinaryAdd:
 ; Push TOS1 + TOS
 ; todo: allow other types
-    call PopStack
-    ld a, [hl+]
-    cp TYPE_INT
-    jp nz, Debug
+	call PopStack
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
 
-    ld b, [hl]
+	ld b, [hl]
 
-    call PopStack
-    ld a, [hl+]
-    cp TYPE_INT
-    jp nz, Debug
+	call PopStack
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
 
-    ld a, [hl]
-    add b
-    ld b, a
-    call PushNewInt
+	ld a, [hl]
+	add b
+	ld b, a
+	call PushNewInt
 
-    jp ExecBytecodes
+	jp ExecBytecodes
 
 
 ReturnValue:
 	call HLequCurrReturnCallStackIdx
 	ld a, [hl]
 	cp $ff
-    jr nz, .returnUpCallStack
+	jr nz, .returnUpCallStack
 
 ; Return from python vm
-    pop hl
-    ret
+	pop hl
+	ret
 
 .returnUpCallStack:
 	ld b, a
-    call PopStack
-    push hl
+	call PopStack
+	push hl
 
 ; Restore prev frame
 	ld a, b
-    ldh [hCurrCallStackIdx], a
+	ldh [hCurrCallStackIdx], a
 
 ; Restore prev stack
-    swap a
-    ld e, a
-    ld d, HIGH(wCallStackSavedVars)
-    ld hl, hPyCodeAddr
-    ld c, hPyOpcode-hPyCodeAddr
-    rst MemcpySmall
+	swap a
+	ld e, a
+	ld d, HIGH(wCallStackSavedVars)
+	ld hl, hPyCodeAddr
+	ld c, hPyOpcode-hPyCodeAddr
+	rst MemcpySmall
 
-    pop hl
-    call PushStack
+	pop hl
+	call PushStack
 
 ; Return from the function
-    pop hl
-    ret
+	pop hl
+	ret
 
 
 StoreName:
@@ -575,12 +575,12 @@ StoreGlobal:
 
 ; DE = address of name string to find
 :   ld a, [hl+]
-    ld e, a
-    ld d, [hl]
+	ld e, a
+	ld d, [hl]
 
-    call HLequGlobalNamePtrAddr
-    ld c, l
-    ld b, h
+	call HLequGlobalNamePtrAddr
+	ld c, l
+	ld b, h
 
 ; Store the stack word ptr to data in BC
 	call PopStack
@@ -688,16 +688,16 @@ LoadGlobal:
 
 ; DE = address of name string to find
 :   ld a, [hl+]
-    ld e, a
-    ld d, [hl]
+	ld e, a
+	ld d, [hl]
 
-    call HLequGlobalNamePtrAddr
+	call HLequGlobalNamePtrAddr
 ; Push address of function
-    ld a, [hl+]
-    ld h, [hl]
-    ld l, a
-    call PushStack
-    jp ExecBytecodes
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+	call PushStack
+	jp ExecBytecodes
 
 
 FormatValue:
@@ -726,14 +726,14 @@ FormatValue:
 	ld a, TYPE_STR
 	ld [hl+], a
 	ld a, b
-    ld c, 2
+	ld c, 2
 	cp 10
 	jr c, .digitOnly
 
 ; Store string length, including $ff
-    inc c
-    ld [hl], c
-    inc hl
+	inc c
+	ld [hl], c
+	inc hl
 
 ; Get 10s
 	ld c, 0
@@ -760,16 +760,16 @@ FormatValue:
 
 .digitOnly:
 ; Store string length, including $ff
-    ld [hl], c
-    inc hl
-    jr .doDigit
+	ld [hl], c
+	inc hl
+	jr .doDigit
 
 
 BuildString:
 ; Param is number of string components - build them into 1 string, and push
 ; C = malloc length - TYPE, length byte, string length, $ff
 ; 3 = all but string length
-    ld c, 3
+	ld c, 3
 
 ; Have stack point to 1st string, while saving hPyStackTop as if the strings were popped
 	ldh a, [hPyParam]
@@ -781,36 +781,36 @@ BuildString:
 		ld a, l
 		ldh [hPyStackTop], a
 
-    ; HL now points to a ptr to a string?
-        ld a, [hl+]
-        ld h, [hl]
-        ld l, a
+	; HL now points to a ptr to a string?
+	    ld a, [hl+]
+	    ld h, [hl]
+	    ld l, a
 
-        ld a, [hl+]
-        cp TYPE_STR
-        jp nz, Debug
+	    ld a, [hl+]
+	    cp TYPE_STR
+	    jp nz, Debug
 
-    ; Add the string length, excluding the $ff, onto C
-        ld a, [hl]
-        dec a
-        add c
-        ld c, a
+	; Add the string length, excluding the $ff, onto C
+	    ld a, [hl]
+	    dec a
+	    add c
+	    ld c, a
 
 		dec b
 		jr nz, .nextStringLen
 
 ; BC = $00<string length>
-    push bc
+	push bc
 	call Malloc
-    pop bc
+	pop bc
 	push hl
 
 	ld a, TYPE_STR
 	ld [hl+], a
-    ld a, c
-    dec a
-    dec a
-    ld [hl+], a
+	ld a, c
+	dec a
+	dec a
+	ld [hl+], a
 
 ; Combines strings
 	ldh a, [hPyParam]
@@ -834,8 +834,8 @@ BuildString:
 		cp TYPE_STR
 		jp nz, Debug
 
-    ; Skip length
-        inc bc
+	; Skip length
+	    inc bc
 
 	; Copy string into HL
 		.nextChar
@@ -873,10 +873,10 @@ HeapifyNames:
 	push hl
 
 ; HL = address of names
-    ldh a, [hPyNamesAddr]
-    ld l, a
-    ldh a, [hPyNamesAddr+1]
-    ld h, a
+	ldh a, [hPyNamesAddr]
+	ld l, a
+	ldh a, [hPyNamesAddr+1]
+	ld h, a
 
 ; HL = address of name 0 (end marker)
 ; HL-1 => ptr to heap length
@@ -890,41 +890,41 @@ HeapifyNames:
 	ld b, 0
 	ld c, [hl]
 	call Malloc
-    ld a, l
-    ldh [hGlobalNamesPtr], a
-    ld a, h
-    ldh [hGlobalNamesPtr+1], a
+	ld a, l
+	ldh [hGlobalNamesPtr], a
+	ld a, h
+	ldh [hGlobalNamesPtr+1], a
 
 ; Start storing string data here, DE = 1st name's address
-    pop de
+	pop de
 
 ; BC = bytecode addr - 1st name's address
-    ldh a, [hBytecodeAddr]
-    sub e
-    ld c, a
-    ldh a, [hBytecodeAddr+1]
-    sbc d
-    ld b, a
+	ldh a, [hBytecodeAddr]
+	sub e
+	ld c, a
+	ldh a, [hBytecodeAddr+1]
+	sbc d
+	ld b, a
 
 ; Copy data over, skipping 2 bytes after every $ff
 	dec bc
 	inc b
 	inc c
-    .loop
-        ld a, [de]
-        ld [hli], a
-        cp $ff
-        jr nz, :+
-        inc hl
-        inc hl
-    :   inc de
-        dec c
-        jr nz, .loop
-        dec b
-        jr nz, .loop
+	.loop
+	    ld a, [de]
+	    ld [hli], a
+	    cp $ff
+	    jr nz, :+
+	    inc hl
+	    inc hl
+	:   inc de
+	    dec c
+	    jr nz, .loop
+	    dec b
+	    jr nz, .loop
 
-    ld a, $ff
-    ld [hl+], a
+	ld a, $ff
+	ld [hl+], a
 
 	pop hl
 	ret

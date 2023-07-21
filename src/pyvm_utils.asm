@@ -160,7 +160,7 @@ CheckString::
 	jr .nextChar
 
 .match:
-    inc de
+	inc de
 	xor a
 	ret
 
@@ -173,10 +173,10 @@ CheckString::
 ; DE - address of name to find
 HLequGlobalNamePtrAddr::
 ; HL = global name list
-    ld a, [hGlobalNamesPtr]
-    ld l, a
-    ld a, [hGlobalNamesPtr+1]
-    ld h, a
+	ld a, [hGlobalNamesPtr]
+	ld l, a
+	ld a, [hGlobalNamesPtr+1]
+	ld h, a
 
 ; Each name has a word ptr after it
 	ld a, 2
@@ -213,7 +213,7 @@ HLequAfterMatchingNameInList::
 
 .foundName:
 ; Remove 'push hl'
-    pop de
+	pop de
 	ret
 
 
