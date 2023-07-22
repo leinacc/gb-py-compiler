@@ -1,0 +1,13 @@
+{
+    "patterns": [
+        {
+            "regexp": "crypt_(\\d+)_(\\d+)\\.json",
+            "multiplierX": 256,
+            "multiplierY": 256,
+            "offsetX": 0,
+            "offsetY": 0
+        }
+    ],
+    "onlyShowAdjacentMaps": false,
+    "type": "world"
+}
