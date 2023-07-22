@@ -219,8 +219,8 @@ PyBlock_main:
 		db TYPE_STR, $0b
 		db "crypt.2bpp", $ff
 	.const5:
-		db TYPE_STR, $0a
-		db "room1.bin", $ff
+		db TYPE_STR, $0f
+		db "crypt_5_5.room", $ff
 	.const6:
 		db TYPE_STR, $11
 		db "crypt_mtiles.bin", $ff
@@ -253,7 +253,7 @@ PyBlock_main:
 		db "door.2bpp", $ff
 	.const16:
 		db TYPE_INT
-		db $0c
+		db $07
 	.const17:
 		db TYPE_INT
 		db $08
@@ -683,36 +683,39 @@ FileSystem::
 	db $08, "orc.pal", $ff
 		dw File7
 		dw File7.end-File7
-	db $1a, "pressure_plate_mattrs.bin", $ff
+	db $0f, "crypt_4_5.room", $ff
 		dw File8
 		dw File8.end-File8
-	db $0f, "orc_mtiles.bin", $ff
+	db $0f, "crypt_5_5.room", $ff
 		dw File9
 		dw File9.end-File9
-	db $10, "door_mtiles.bin", $ff
+	db $1a, "pressure_plate_mattrs.bin", $ff
 		dw File10
 		dw File10.end-File10
-	db $0a, "room1.bin", $ff
+	db $0f, "orc_mtiles.bin", $ff
 		dw File11
 		dw File11.end-File11
-	db $0b, "crypt.2bpp", $ff
+	db $10, "door_mtiles.bin", $ff
 		dw File12
 		dw File12.end-File12
-	db $11, "crypt_mtiles.bin", $ff
+	db $0b, "crypt.2bpp", $ff
 		dw File13
 		dw File13.end-File13
-	db $0a, "door.2bpp", $ff
+	db $11, "crypt_mtiles.bin", $ff
 		dw File14
 		dw File14.end-File14
-	db $13, "pressure_plate.pal", $ff
+	db $0a, "door.2bpp", $ff
 		dw File15
 		dw File15.end-File15
-	db $0a, "crypt.pal", $ff
+	db $13, "pressure_plate.pal", $ff
 		dw File16
 		dw File16.end-File16
-	db $0f, "orc_mattrs.bin", $ff
+	db $0a, "crypt.pal", $ff
 		dw File17
 		dw File17.end-File17
+	db $0f, "orc_mattrs.bin", $ff
+		dw File18
+		dw File18.end-File18
 	db $ff
 
 File0:
@@ -748,41 +751,45 @@ File7:
 .end:
 
 File8:
-	INCBIN "data/pressure_plate_mattrs.bin"
+	INCBIN "data/crypt_4_5.room"
 .end:
 
 File9:
-	INCBIN "data/orc_mtiles.bin"
+	INCBIN "data/crypt_5_5.room"
 .end:
 
 File10:
-	INCBIN "data/door_mtiles.bin"
+	INCBIN "data/pressure_plate_mattrs.bin"
 .end:
 
 File11:
-	INCBIN "data/room1.bin"
+	INCBIN "data/orc_mtiles.bin"
 .end:
 
 File12:
-	INCBIN "data/crypt.2bpp"
+	INCBIN "data/door_mtiles.bin"
 .end:
 
 File13:
-	INCBIN "data/crypt_mtiles.bin"
+	INCBIN "data/crypt.2bpp"
 .end:
 
 File14:
-	INCBIN "data/door.2bpp"
+	INCBIN "data/crypt_mtiles.bin"
 .end:
 
 File15:
-	INCBIN "data/pressure_plate.pal"
+	INCBIN "data/door.2bpp"
 .end:
 
 File16:
-	INCBIN "data/crypt.pal"
+	INCBIN "data/pressure_plate.pal"
 .end:
 
 File17:
+	INCBIN "data/crypt.pal"
+.end:
+
+File18:
 	INCBIN "data/orc_mattrs.bin"
 .end:

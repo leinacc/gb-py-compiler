@@ -42,7 +42,7 @@ def main():
 
     cryptPals = load_bg_palettes("crypt.pal")
     cryptTiles = load_bg_tiles("crypt.2bpp")
-    load_metatiles("room1.bin")
+    load_metatiles("crypt_5_5.room")
     load_room("crypt_mtiles.bin", "crypt_mattrs.bin", cryptTiles, cryptPals)
 
     orcPals = load_obj_palettes("orc.pal")
@@ -57,7 +57,7 @@ def main():
     doorPals = load_obj_palettes("door.pal")
     doorTiles = load_obj_tiles("door.2bpp")
     door = add_entity(
-        12, 8, door_script, 1,
+        7, 8, door_script, 1,
         doorPals, doorTiles,
         "door_mtiles.bin", "door_mattrs.bin",
     )

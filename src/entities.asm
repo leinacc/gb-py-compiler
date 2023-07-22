@@ -159,13 +159,12 @@ AddEntity::
 
 
 UpdateEntities::
-; todo: put camera code in its own python-called routine
+; todo: put camera code in its own python-called routine, selecting an entity
 	ld hl, wCurrEntity
 	ld de, wEntity00_InUse
 	ld c, wEntity01-wEntity00
 	rst MemcpySmall
 
-; todo: fix camera
 	ld a, [wCurrEntity_ScreenX]
 	sub $a0/2-8
 	jr nc, :+
@@ -281,23 +280,59 @@ HLequAddrInMetatiles:
 
 
 ; HL - address within wRoomMetatiles
+; Returns zflag set if the metatile is solid
+; Trashes A
+IsPosASolidMetatile:
+; If a metatile is not solid, check for solid entities
+    ld a, [hl]
+    cp $11
+    jr z, .checkForSolidEntities
+
+    cp $14
+    jr z, .checkForSolidEntities
+
+; Else if the metatile is solid, return zflag set
+    xor a
+    ret
+
+.checkForSolidEntities:
+; This returns zflag set if the metatile has no solid entities, so invert it
+    call CheckForWalkableEntities
+    jr z, .clearZflag
+
+; Set zflag
+    xor a
+    ret
+
+.clearZflag:
+    ld a, 1
+    and a
+    ret
+
+
+; HL - address within wRoomMetatiles
 ; Returns zflag set if the metatile is walkable
+; Trashes A
 IsPosAWalkableMetatile:
+; Both the metatile AND entities on top must not be solid
+	ld a, [hl]
+	cp $11
+	jr z, CheckForWalkableEntities
+
+	cp $14
+	jr z, CheckForWalkableEntities
+
+	ret ; nz - cause solid
+
+
+; HL - address within wRoomMetatiles
+; Returns zflag set if the metatile has no solid entities
+; Trashes A
+CheckForWalkableEntities:
+    push hl
 	push bc
 	push de
 
-	ld a, [hl]
-	cp $11
-	jr z, .checkEnts
-
-	cp $14
-	jr z, .checkEnts
-
-	pop de
-	pop bc
-	ret ; nz - cause solid
-
-.checkEnts:
 ; Save the tile pos we're checking
 	ld a, l
 	ld [wMetatileYXtoCheck], a
@@ -347,12 +382,14 @@ IsPosAWalkableMetatile:
 	xor a
 	pop de
 	pop bc
+    pop hl
 	ret
 
 .isSolid:
 	pop hl
 	pop de
 	pop bc
+    pop hl
 	ret ; nz
 
 
@@ -498,8 +535,8 @@ EntityStateUsingAbility:
 	ret nz
 
 ; Must not be walkable
-	call IsPosAWalkableMetatile
-	ret z
+	call IsPosASolidMetatile
+	ret nz
 
 	ld c, 1
 
@@ -542,8 +579,8 @@ EntityStateUsingAbility:
 	ret nz
 
 ; Must not be walkable
-	call IsPosAWalkableMetatile
-	ret z
+	call IsPosASolidMetatile
+	ret nz
 
 	ld c, 1
 
@@ -874,7 +911,6 @@ ProcessEntWallWalk:
 
 ; Trashes everything
 UpdateAnimation:
-; todo: init anim in AddEntity?
 	ld a, [wCurrEntity_AnimCtr]
 	and a
 	jr z, .initAnim
