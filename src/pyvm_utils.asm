@@ -218,6 +218,7 @@ HLequAfterMatchingNameInList::
 
 
 ; A - param idx starting 0
+; Trashes DE
 HLequAfterFilenameInVMDir::
 	call HLequAddrOfFuncParam
 
@@ -229,6 +230,7 @@ HLequAfterFilenameInVMDir::
 	ld d, h
 	ld e, l
 
+HLequAddrOfFilenameInDE::
 	ld hl, FileSystem
 
 ; Each name has 2 word ptrs after it

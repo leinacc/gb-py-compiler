@@ -29,7 +29,6 @@ LoadModule::
 	ld hl, wCurrCallStackIdx
 	ld [hl], a
 
-	call InitGbpyModule
 	call InitHeap
 
 ; Python code address in hram

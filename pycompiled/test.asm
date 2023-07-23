@@ -28,52 +28,52 @@ PyBlock__module_:
 		dw .tupleItem5
 		dw .tupleItem6
 		.tupleItem0
-			db TYPE_STR, $11
-			db "load_bg_palettes", $ff
+			db TYPE_STR
+			Str "load_bg_palettes"
 		.tupleItem1
-			db TYPE_STR, $0e
-			db "load_bg_tiles", $ff
+			db TYPE_STR
+			Str "load_bg_tiles"
 		.tupleItem2
-			db TYPE_STR, $12
-			db "load_obj_palettes", $ff
+			db TYPE_STR
+			Str "load_obj_palettes"
 		.tupleItem3
-			db TYPE_STR, $0f
-			db "load_obj_tiles", $ff
+			db TYPE_STR
+			Str "load_obj_tiles"
 		.tupleItem4
-			db TYPE_STR, $0a
-			db "load_room", $ff
+			db TYPE_STR
+			Str "load_room"
 		.tupleItem5
-			db TYPE_STR, $0f
-			db "load_metatiles", $ff
+			db TYPE_STR
+			Str "load_metatiles"
 		.tupleItem6
-			db TYPE_STR, $0b
-			db "add_entity", $ff
+			db TYPE_STR
+			Str "add_entity"
 	.const2:
 		db TYPE_NONE
 	.const3:
 		db TYPE_FUNCTION
 		dw PyBlock_player_movement
 	.const4:
-		db TYPE_STR, $10
-		db "player_movement", $ff
+		db TYPE_STR
+		Str "player_movement"
 	.const5:
 		db TYPE_FUNCTION
 		dw PyBlock_door_script
 	.const6:
-		db TYPE_STR, $0c
-		db "door_script", $ff
+		db TYPE_STR
+		Str "door_script"
 	.const7:
 		db TYPE_FUNCTION
 		dw PyBlock_pplate_script
 	.const8:
-		db TYPE_STR, $0e
-		db "pplate_script", $ff
+		db TYPE_STR
+		Str "pplate_script"
 	.const9:
 		db TYPE_FUNCTION
 		dw PyBlock_main
 	.const10:
-		db TYPE_STR, $05
-		db "main", $ff
+		db TYPE_STR
+		Str "main"
 .names:
 	dw .name0
 	dw .name1
@@ -91,33 +91,33 @@ PyBlock__module_:
 	dw .name13
 	db $cf
 	.name0:
-		db $05, "gbpy", $ff
+		Str "gbpy"
 	.name1:
-		db $11, "load_bg_palettes", $ff
+		Str "load_bg_palettes"
 	.name2:
-		db $0e, "load_bg_tiles", $ff
+		Str "load_bg_tiles"
 	.name3:
-		db $12, "load_obj_palettes", $ff
+		Str "load_obj_palettes"
 	.name4:
-		db $0f, "load_obj_tiles", $ff
+		Str "load_obj_tiles"
 	.name5:
-		db $0a, "load_room", $ff
+		Str "load_room"
 	.name6:
-		db $0f, "load_metatiles", $ff
+		Str "load_metatiles"
 	.name7:
-		db $0b, "add_entity", $ff
+		Str "add_entity"
 	.name8:
-		db $07, "player", $ff
+		Str "player"
 	.name9:
-		db $05, "door", $ff
+		Str "door"
 	.name10:
-		db $10, "player_movement", $ff
+		Str "player_movement"
 	.name11:
-		db $0c, "door_script", $ff
+		Str "door_script"
 	.name12:
-		db $0e, "pplate_script", $ff
+		Str "pplate_script"
 	.name13:
-		db $05, "main", $ff
+		Str "main"
 .bytecode:
 	db $64, $00
 	db $64, $01
@@ -207,32 +207,32 @@ PyBlock_main:
 		dw .tupleItem0
 		dw .tupleItem1
 		.tupleItem0
-			db TYPE_STR, $10
-			db "update_entities", $ff
+			db TYPE_STR
+			Str "update_entities"
 		.tupleItem1
-			db TYPE_STR, $0c
-			db "wait_vblank", $ff
+			db TYPE_STR
+			Str "wait_vblank"
 	.const3:
-		db TYPE_STR, $0a
-		db "crypt.pal", $ff
+		db TYPE_STR
+		Str "crypt.pal"
 	.const4:
-		db TYPE_STR, $0b
-		db "crypt.2bpp", $ff
+		db TYPE_STR
+		Str "crypt.2bpp"
 	.const5:
-		db TYPE_STR, $0f
-		db "crypt_5_5.room", $ff
+		db TYPE_STR
+		Str "crypt_5_5.room"
 	.const6:
-		db TYPE_STR, $11
-		db "crypt_mtiles.bin", $ff
+		db TYPE_STR
+		Str "crypt_mtiles.bin"
 	.const7:
-		db TYPE_STR, $11
-		db "crypt_mattrs.bin", $ff
+		db TYPE_STR
+		Str "crypt_mattrs.bin"
 	.const8:
-		db TYPE_STR, $08
-		db "orc.pal", $ff
+		db TYPE_STR
+		Str "orc.pal"
 	.const9:
-		db TYPE_STR, $09
-		db "orc.2bpp", $ff
+		db TYPE_STR
+		Str "orc.2bpp"
 	.const10:
 		db TYPE_INT
 		db $05
@@ -240,17 +240,17 @@ PyBlock_main:
 		db TYPE_INT
 		db $06
 	.const12:
-		db TYPE_STR, $0f
-		db "orc_mtiles.bin", $ff
+		db TYPE_STR
+		Str "orc_mtiles.bin"
 	.const13:
-		db TYPE_STR, $0f
-		db "orc_mattrs.bin", $ff
+		db TYPE_STR
+		Str "orc_mattrs.bin"
 	.const14:
-		db TYPE_STR, $09
-		db "door.pal", $ff
+		db TYPE_STR
+		Str "door.pal"
 	.const15:
-		db TYPE_STR, $0a
-		db "door.2bpp", $ff
+		db TYPE_STR
+		Str "door.2bpp"
 	.const16:
 		db TYPE_INT
 		db $07
@@ -261,17 +261,17 @@ PyBlock_main:
 		db TYPE_INT
 		db $01
 	.const19:
-		db TYPE_STR, $10
-		db "door_mtiles.bin", $ff
+		db TYPE_STR
+		Str "door_mtiles.bin"
 	.const20:
-		db TYPE_STR, $10
-		db "door_mattrs.bin", $ff
+		db TYPE_STR
+		Str "door_mattrs.bin"
 	.const21:
-		db TYPE_STR, $13
-		db "pressure_plate.pal", $ff
+		db TYPE_STR
+		Str "pressure_plate.pal"
 	.const22:
-		db TYPE_STR, $14
-		db "pressure_plate.2bpp", $ff
+		db TYPE_STR
+		Str "pressure_plate.2bpp"
 	.const23:
 		db TYPE_INT
 		db $0a
@@ -279,11 +279,11 @@ PyBlock_main:
 		db TYPE_INT
 		db $04
 	.const25:
-		db TYPE_STR, $1a
-		db "pressure_plate_mtiles.bin", $ff
+		db TYPE_STR
+		Str "pressure_plate_mtiles.bin"
 	.const26:
-		db TYPE_STR, $1a
-		db "pressure_plate_mattrs.bin", $ff
+		db TYPE_STR
+		Str "pressure_plate_mattrs.bin"
 .names:
 	dw .name0
 	dw .name1
@@ -302,35 +302,35 @@ PyBlock_main:
 	dw .name14
 	db $e9
 	.name0:
-		db $05, "gbpy", $ff
+		Str "gbpy"
 	.name1:
-		db $10, "update_entities", $ff
+		Str "update_entities"
 	.name2:
-		db $0c, "wait_vblank", $ff
+		Str "wait_vblank"
 	.name3:
-		db $11, "load_bg_palettes", $ff
+		Str "load_bg_palettes"
 	.name4:
-		db $0e, "load_bg_tiles", $ff
+		Str "load_bg_tiles"
 	.name5:
-		db $0f, "load_metatiles", $ff
+		Str "load_metatiles"
 	.name6:
-		db $0a, "load_room", $ff
+		Str "load_room"
 	.name7:
-		db $12, "load_obj_palettes", $ff
+		Str "load_obj_palettes"
 	.name8:
-		db $0f, "load_obj_tiles", $ff
+		Str "load_obj_tiles"
 	.name9:
-		db $0b, "add_entity", $ff
+		Str "add_entity"
 	.name10:
-		db $10, "player_movement", $ff
+		Str "player_movement"
 	.name11:
-		db $07, "player", $ff
+		Str "player"
 	.name12:
-		db $0c, "door_script", $ff
+		Str "door_script"
 	.name13:
-		db $05, "door", $ff
+		Str "door"
 	.name14:
-		db $0e, "pplate_script", $ff
+		Str "pplate_script"
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -448,20 +448,20 @@ PyBlock_pplate_script:
 		dw .tupleItem3
 		dw .tupleItem4
 		.tupleItem0
-			db TYPE_STR, $0e
-			db "collides_with", $ff
+			db TYPE_STR
+			Str "collides_with"
 		.tupleItem1
-			db TYPE_STR, $14
-			db "disable_other_solid", $ff
+			db TYPE_STR
+			Str "disable_other_solid"
 		.tupleItem2
-			db TYPE_STR, $0c
-			db "entity_noop", $ff
+			db TYPE_STR
+			Str "entity_noop"
 		.tupleItem3
-			db TYPE_STR, $10
-			db "look_other_down", $ff
+			db TYPE_STR
+			Str "look_other_down"
 		.tupleItem4
-			db TYPE_STR, $0a
-			db "look_down", $ff
+			db TYPE_STR
+			Str "look_down"
 .names:
 	dw .name0
 	dw .name1
@@ -473,21 +473,21 @@ PyBlock_pplate_script:
 	dw .name7
 	db $72
 	.name0:
-		db $05, "gbpy", $ff
+		Str "gbpy"
 	.name1:
-		db $0e, "collides_with", $ff
+		Str "collides_with"
 	.name2:
-		db $14, "disable_other_solid", $ff
+		Str "disable_other_solid"
 	.name3:
-		db $0c, "entity_noop", $ff
+		Str "entity_noop"
 	.name4:
-		db $10, "look_other_down", $ff
+		Str "look_other_down"
 	.name5:
-		db $0a, "look_down", $ff
+		Str "look_down"
 	.name6:
-		db $07, "player", $ff
+		Str "player"
 	.name7:
-		db $05, "door", $ff
+		Str "door"
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -557,22 +557,22 @@ PyBlock_door_script:
 		dw .tupleItem0
 		dw .tupleItem1
 		.tupleItem0
-			db TYPE_STR, $0d
-			db "enable_solid", $ff
+			db TYPE_STR
+			Str "enable_solid"
 		.tupleItem1
-			db TYPE_STR, $0c
-			db "entity_noop", $ff
+			db TYPE_STR
+			Str "entity_noop"
 .names:
 	dw .name0
 	dw .name1
 	dw .name2
 	db $28
 	.name0:
-		db $05, "gbpy", $ff
+		Str "gbpy"
 	.name1:
-		db $0d, "enable_solid", $ff
+		Str "enable_solid"
 	.name2:
-		db $0c, "entity_noop", $ff
+		Str "entity_noop"
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -612,14 +612,14 @@ PyBlock_player_movement:
 		dw .tupleItem1
 		dw .tupleItem2
 		.tupleItem0
-			db TYPE_STR, $10
-			db "enable_movement", $ff
+			db TYPE_STR
+			Str "enable_movement"
 		.tupleItem1
-			db TYPE_STR, $11
-			db "enable_abilities", $ff
+			db TYPE_STR
+			Str "enable_abilities"
 		.tupleItem2
-			db TYPE_STR, $0d
-			db "allow_1_move", $ff
+			db TYPE_STR
+			Str "allow_1_move"
 .names:
 	dw .name0
 	dw .name1
@@ -627,13 +627,13 @@ PyBlock_player_movement:
 	dw .name3
 	db $40
 	.name0:
-		db $05, "gbpy", $ff
+		Str "gbpy"
 	.name1:
-		db $10, "enable_movement", $ff
+		Str "enable_movement"
 	.name2:
-		db $11, "enable_abilities", $ff
+		Str "enable_abilities"
 	.name3:
-		db $0d, "allow_1_move", $ff
+		Str "allow_1_move"
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -659,63 +659,75 @@ PyBlock_player_movement:
 
 
 FileSystem::
-	db $0b, "ascii.2bpp", $ff
+	Str "ascii.2bpp"
 		dw File0
 		dw File0.end-File0
-	db $10, "door_mattrs.bin", $ff
+	Str "door_mattrs.bin"
 		dw File1
 		dw File1.end-File1
-	db $09, "door.pal", $ff
+	Str "door.pal"
 		dw File2
 		dw File2.end-File2
-	db $09, "orc.2bpp", $ff
+	Str "orc.2bpp"
 		dw File3
 		dw File3.end-File3
-	db $14, "pressure_plate.2bpp", $ff
+	Str "pressure_plate.2bpp"
 		dw File4
 		dw File4.end-File4
-	db $11, "crypt_mattrs.bin", $ff
+	Str "crypt_mattrs.bin"
 		dw File5
 		dw File5.end-File5
-	db $1a, "pressure_plate_mtiles.bin", $ff
+	Str "pressure_plate_mtiles.bin"
 		dw File6
 		dw File6.end-File6
-	db $08, "orc.pal", $ff
+	Str "orc.pal"
 		dw File7
 		dw File7.end-File7
-	db $0f, "crypt_4_5.room", $ff
+	Str "power_icons.2bpp"
 		dw File8
 		dw File8.end-File8
-	db $0f, "crypt_5_5.room", $ff
+	Str "crypt_4_5.room"
 		dw File9
 		dw File9.end-File9
-	db $1a, "pressure_plate_mattrs.bin", $ff
+	Str "crypt_5_5.room"
 		dw File10
 		dw File10.end-File10
-	db $0f, "orc_mtiles.bin", $ff
+	Str "pressure_plate_mattrs.bin"
 		dw File11
 		dw File11.end-File11
-	db $10, "door_mtiles.bin", $ff
+	Str "orc_mtiles.bin"
 		dw File12
 		dw File12.end-File12
-	db $0b, "crypt.2bpp", $ff
+	Str "power_icons_mtiles.bin"
 		dw File13
 		dw File13.end-File13
-	db $11, "crypt_mtiles.bin", $ff
+	Str "door_mtiles.bin"
 		dw File14
 		dw File14.end-File14
-	db $0a, "door.2bpp", $ff
+	Str "crypt.2bpp"
 		dw File15
 		dw File15.end-File15
-	db $13, "pressure_plate.pal", $ff
+	Str "crypt_mtiles.bin"
 		dw File16
 		dw File16.end-File16
-	db $0a, "crypt.pal", $ff
+	Str "power_icons_mattrs.bin"
 		dw File17
 		dw File17.end-File17
-	db $0f, "orc_mattrs.bin", $ff
+	Str "door.2bpp"
 		dw File18
 		dw File18.end-File18
+	Str "power_icons.pal"
+		dw File19
+		dw File19.end-File19
+	Str "pressure_plate.pal"
+		dw File20
+		dw File20.end-File20
+	Str "crypt.pal"
+		dw File21
+		dw File21.end-File21
+	Str "orc_mattrs.bin"
+		dw File22
+		dw File22.end-File22
 	db $ff
 
 File0:
@@ -751,45 +763,61 @@ File7:
 .end:
 
 File8:
-	INCBIN "data/crypt_4_5.room"
+	INCBIN "data/power_icons.2bpp"
 .end:
 
 File9:
-	INCBIN "data/crypt_5_5.room"
+	INCBIN "data/crypt_4_5.room"
 .end:
 
 File10:
-	INCBIN "data/pressure_plate_mattrs.bin"
+	INCBIN "data/crypt_5_5.room"
 .end:
 
 File11:
-	INCBIN "data/orc_mtiles.bin"
+	INCBIN "data/pressure_plate_mattrs.bin"
 .end:
 
 File12:
-	INCBIN "data/door_mtiles.bin"
+	INCBIN "data/orc_mtiles.bin"
 .end:
 
 File13:
-	INCBIN "data/crypt.2bpp"
+	INCBIN "data/power_icons_mtiles.bin"
 .end:
 
 File14:
-	INCBIN "data/crypt_mtiles.bin"
+	INCBIN "data/door_mtiles.bin"
 .end:
 
 File15:
-	INCBIN "data/door.2bpp"
+	INCBIN "data/crypt.2bpp"
 .end:
 
 File16:
-	INCBIN "data/pressure_plate.pal"
+	INCBIN "data/crypt_mtiles.bin"
 .end:
 
 File17:
-	INCBIN "data/crypt.pal"
+	INCBIN "data/power_icons_mattrs.bin"
 .end:
 
 File18:
+	INCBIN "data/door.2bpp"
+.end:
+
+File19:
+	INCBIN "data/power_icons.pal"
+.end:
+
+File20:
+	INCBIN "data/pressure_plate.pal"
+.end:
+
+File21:
+	INCBIN "data/crypt.pal"
+.end:
+
+File22:
 	INCBIN "data/orc_mattrs.bin"
 .end:

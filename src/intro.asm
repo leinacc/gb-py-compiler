@@ -18,10 +18,21 @@ Intro::
 
 ; Init sub-engines
 	call InitEntites
+	call InitDynamicAllocation
 
 	ldh a, [hLCDC]
 	or LCDCF_OBJON
 	ldh [hLCDC], a
+
+; Show abilities
+	ld de, PowerIconsTileData
+	call HLequAddrOfFilenameInDE
+	call AllocateBGTileData
+
+	ld de, PowerIconsPalettes
+	call HLequAddrOfFilenameInDE
+	call AllocateBGPalettes
+; todo: display on 2nd screen
 
 ; test: load a sample room
 	ld a, BANK(PyBlock__module_)
@@ -30,6 +41,13 @@ Intro::
 
 :	rst WaitVBlank
 	jr :-
+
+
+PowerIconsTileData:
+	Str "power_icons.2bpp"
+
+PowerIconsPalettes:
+	Str "power_icons.pal"
 
 
 INCLUDE "pycompiled/test.asm"

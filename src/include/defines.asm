@@ -162,3 +162,7 @@ rsreset
 def ENTSTATE_STILL rb 1
 def ENTSTATE_MOVING rb 1
 def ENTSTATE_USING_ABILITY rb 1
+
+macro Str
+	db STRLEN(\1)+1, \1, $ff
+endm

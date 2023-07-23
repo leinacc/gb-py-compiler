@@ -6,27 +6,27 @@ SECTION "Python VM gbpy module asm routines", ROM0
 GbpyModule::
 	db TYPE_GBPY_MODULE
 	; arg0: filename
-	db $0e, "load_bg_tiles", $ff
+	Str "load_bg_tiles"
 		dw AsmLoadBGTiles
 	; arg0: filename
-	db $0f, "load_obj_tiles", $ff
+	Str "load_obj_tiles"
 		dw AsmLoadOBJTiles
-	db $0c, "wait_vblank", $ff
+	Str "wait_vblank"
 		dw AsmWaitVBlank
 	; arg0: filename
-	db $11, "load_bg_palettes", $ff
+	Str "load_bg_palettes"
 		dw AsmLoadBGPalettes
 	; arg0: filename
-	db $12, "load_obj_palettes", $ff
+	Str "load_obj_palettes"
 		dw AsmLoadOBJPalettes
 	; arg0: metatile tiles filename
 	; arg1: metatile attrs filename
 	; arg2: tile data ptr for the tiles arg0 refers to
 	; arg3: palettes ptr for the palettes arg1 refers to
-	db $0a, "load_room", $ff
+	Str "load_room"
 		dw AsmLoadRoom
 	; arg0: room's metatiles filename
-	db $0f, "load_metatiles", $ff
+	Str "load_metatiles"
 		dw AsmLoadMetatiles
 	; arg0: metatile x
 	; arg1: metatile y
@@ -36,46 +36,46 @@ GbpyModule::
 	; arg5: tile data ptr for the tiles arg6 refers to
 	; arg6: metatile tiles filename
 	; arg7: metatile attrs filename
-	db $0b, "add_entity", $ff
+	Str "add_entity"
 		dw AsmAddEntity
 	; arg0: num metatiles to move
-	db $0a, "move_left", $ff
+	Str "move_left"
 		dw AsmMoveLeft
 	; arg0: num metatiles to move
-	db $0b, "move_right", $ff
+	Str "move_right"
 		dw AsmMoveRight
 	; arg0: num metatiles to move
-	db $08, "move_up", $ff
+	Str "move_up"
 		dw AsmMoveUp
 	; arg0: num metatiles to move
-	db $0a, "move_down", $ff
+	Str "move_down"
 		dw AsmMoveDown
-	db $10, "update_entities", $ff
+	Str "update_entities"
 		dw AsmUpdateEntities
-	db $10, "enable_movement", $ff
+	Str "enable_movement"
 		dw AsmEnableMovement
-	db $11, "enable_abilities", $ff
+	Str "enable_abilities"
 		dw AsmEnableAbilities
-	db $0c, "entity_noop", $ff
+	Str "entity_noop"
 		dw AsmEntityNoop
 	; arg0: the text to print
 	;       \0 to \7 change the text to 1 of 8 pre-defined colors
-	db $09, "load_vwf", $ff
+	Str "load_vwf"
 		dw AsmLoadVwf
-	db $0d, "allow_1_move", $ff
+	Str "allow_1_move"
 		dw AsmAllow1Move
-	db $0d, "enable_solid", $ff
+	Str "enable_solid"
 		dw AsmEnableSolid
 	; arg0: id of an entity to check collision with
-	db $0e, "collides_with", $ff
+	Str "collides_with"
 		dw AsmCollidesWith
 	; arg0: id of an entity to remove the 'solid' state from
-	db $14, "disable_other_solid", $ff
+	Str "disable_other_solid"
 		dw AsmDisableOtherSolid
 	; arg0: id of an entity to change the dir of
-	db $10, "look_other_down", $ff
+	Str "look_other_down"
 		dw AsmLookOtherDown
-	db $0a, "look_down", $ff
+	Str "look_down"
 		dw AsmLookDown
 	db $ff
 
@@ -85,15 +85,6 @@ AsmStub:
 	jp Debug
 
 
-InitGbpyModule::
-	xor a
-	ld [wCurrBGTile], a
-	ld [wCurrOBJTile], a
-	ld [wCurrBGPalette], a
-	ld [wCurrOBJPalette], a
-	ret
-
-
 AsmLoadBGTiles:
 	db TYPE_ASM
 
@@ -101,75 +92,9 @@ AsmLoadBGTiles:
 	xor a
 	call HLequAfterFilenameInVMDir
 
-; DE = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-; BC = len of data
-	ld a, [hl+]
-	ld c, a
-	ld b, [hl]
-
-; HL = dest
-	ld a, [wCurrBGTile]
-	push af
-
-	swap a
-	ld l, a
-	and $0f
-	or $90
-	cp $98
-	jr c, :+
-	sub $10
-:	ld h, a
-	ld a, l
-	and $f0
-	ld l, a
-
-; Copy LCDMemcpy, keeping track of next bg tile
-; Increment B if C is non-zero
-	dec bc
-	inc b
-	inc c
-
-	.loop
-		wait_vram
-		ld a, [de]
-		ld [hli], a
-		inc de
-
-		ld a, l
-		and $0f
-		jr nz, .toNextLoop
-
-		ld a, [wCurrBGTile]
-		inc a
-		ld [wCurrBGTile], a
-
-		ld a, l
-		and a
-		jr nz, .toNextLoop
-
-		ld a, h
-		cp $98
-		jr nz, .toNextLoop
-
-		ld h, $88
-
-	.toNextLoop:
-		dec c
-		jr nz, .loop
-		dec b
-		jr nz, .loop
-
-	ld a, l
-	swap a
-	ld l, a
-	ld a, h
-
 ; Return the 1st tile idx from the auto-allocation
-	pop bc
+	call AllocateBGTileData
+	ld b, a
 	jp PushNewInt
 
 
@@ -180,72 +105,9 @@ AsmLoadOBJTiles:
 	xor a
 	call HLequAfterFilenameInVMDir
 
-; DE = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-; BC = len of data
-	ld a, [hl+]
-	ld c, a
-	ld b, [hl]
-
-; HL = dest
-	ld a, [wCurrOBJTile]
-	push af
-
-	swap a
-	ld l, a
-	and $0f
-	or $80
-	ld h, a
-	ld a, l
-	and $f0
-	ld l, a
-
-; Copy LCDMemcpy, keeping track of next bg tile
-; Increment B if C is non-zero
-	dec bc
-	inc b
-	inc c
-
-	.loop
-		wait_vram
-		ld a, [de]
-		ld [hli], a
-		inc de
-
-		ld a, l
-		and $0f
-		jr nz, .toNextLoop
-
-		ld a, [wCurrOBJTile]
-		inc a
-		ld [wCurrOBJTile], a
-
-		ld a, l
-		and a
-		jr nz, .toNextLoop
-
-		ld a, h
-		cp $90
-		jr nz, .toNextLoop
-
-		ld h, $80
-
-	.toNextLoop:
-		dec c
-		jr nz, .loop
-		dec b
-		jr nz, .loop
-
-	ld a, l
-	swap a
-	ld l, a
-	ld a, h
-
 ; Return the 1st tile idx from the auto-allocation
-	pop bc
+	call AllocateOBJTileData
+	ld b, a
 	jp PushNewInt
 
 
@@ -256,42 +118,7 @@ AsmLoadBGPalettes:
 	xor a
 	call HLequAfterFilenameInVMDir
 
-; DE (later HL) = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-	push de
-; B = len of data
-	ld a, [hl]
-	ld b, a
-	pop hl
-	srl a
-	srl a
-	srl a
-	push af
-
-; Allow choosing a starting palette
-	ld a, [wCurrBGPalette]
-	push af
-	add a
-	add a
-	add a
-	add BCPSF_AUTOINC
-	ldh [rBCPS], a
-	ld c, LOW(rBCPD)
-	.nextColByte:
-		wait_vram
-		ld a, [hl+]
-		ldh [c], a
-		dec b
-		jr nz, .nextColByte
-
-	pop af
-	ld b, a
-	pop de
-	add d
-	ld [wCurrBGPalette], a
+	call AllocateBGPalettes
 	jp PushNewInt
 
 
@@ -302,43 +129,7 @@ AsmLoadOBJPalettes:
 	xor a
 	call HLequAfterFilenameInVMDir
 
-; DE (later HL) = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-	push de
-; B = len of data
-	ld a, [hl]
-	ld b, a
-	pop hl
-	srl a
-	srl a
-	srl a
-	push af
-
-; Allow choosing a starting palette
-	ld a, [wCurrOBJPalette]
-	push af
-	add a
-	add a
-	add a
-	add OCPSF_AUTOINC
-	ldh [rOCPS], a
-	ld c, LOW(rOCPD)
-	.nextColByte:
-		wait_vram
-		ld a, [hl+]
-		ldh [c], a
-		dec b
-		jr nz, .nextColByte
-
-; Dynamically allocate and return a palette
-	pop af
-	ld b, a
-	pop de
-	add d
-	ld [wCurrOBJPalette], a
+	call AllocateOBJPalettes
 	jp PushNewInt
 
 
@@ -368,6 +159,11 @@ AsmLoadMetatiles:
 AsmLoadRoom:
 	db TYPE_ASM
 
+; 3rd param is the base tile idx
+	ld a, 2
+	call AequIntParam
+	ld [wTempRoomLoadBaseTileOrPalIdx], a
+
 ; 1st param file is the metatile tiles to load
 	xor a
 	call HLequAfterFilenameInVMDir
@@ -379,10 +175,14 @@ AsmLoadRoom:
 	ld [wMetatileTableAddr+1], a
 	call LoadRoomMetatiles
 
-	ld a, 1
-	ldh [rVBK], a
+; 4th param is the base palette idx
+	ld a, 3
+	call AequIntParam
+	ld [wTempRoomLoadBaseTileOrPalIdx], a
 
 ; 2nd param file is the metatile attrs to load
+	ld a, 1
+	ldh [rVBK], a
 	call HLequAfterFilenameInVMDir
 
 ; Store metatile table addr
@@ -444,13 +244,19 @@ StoreMetatileTilesOrAttrs:
 	jr nc, :+
 	inc h
 
+; B = the base tile/palette idx to add to the curr tile/attr
+:	ld a, [wTempRoomLoadBaseTileOrPalIdx]
+	ld b, a
+
 ; Copy TL, TR, BL, BR
-:	wait_vram
+	wait_vram
 	ld a, [hl+]
+	add b
 	ld [de], a
 	inc de
 	wait_vram
 	ld a, [hl+]
+	add b
 	ld [de], a
 	push de
 	ld a, $1f
@@ -460,10 +266,12 @@ StoreMetatileTilesOrAttrs:
 	inc d
 :	wait_vram
 	ld a, [hl+]
+	add b
 	ld [de], a
 	inc de
 	wait_vram
 	ld a, [hl+]
+	add b
 	ld [de], a
 
 	pop de
@@ -799,11 +607,4 @@ SECTION "Room loading", WRAM0
 wMetatileTableAddr: dw
 wTempEntityMtilesAddr:: dw
 wTempEntityMattrsAddr:: dw
-
-
-SECTION "Dynamic allocation", WRAM0
-wCurrBGTile: db
-wCurrOBJTile: db
-wCurrBGPalette:: db
-wCurrOBJPalette: db
-wChosenEntitySlot:: db
+wTempRoomLoadBaseTileOrPalIdx: db

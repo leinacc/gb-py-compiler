@@ -1253,3 +1253,6 @@ wEntityIdToProcess: db
 
 ; For checking solid entities
 wMetatileYXtoCheck: db
+
+; Where a new entity has been assigned in wEntityxx
+wChosenEntitySlot:: db

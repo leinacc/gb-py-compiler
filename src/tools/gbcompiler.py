@@ -38,15 +38,15 @@ def get_block_output(block):
                 if isinstance(ell, str):
                     str_len = len(ell) + 1
                     val = ell.replace('\n', '\\n')
-                    output += f"\t\t\tdb TYPE_STR, ${str_len:02x}\n"
-                    output += f"\t\t\tdb \"{val}\", $ff\n"
+                    output += f"\t\t\tdb TYPE_STR\n"
+                    output += f"\t\t\tStr \"{val}\"\n"
                 else:
                     raise Exception("test")
         elif isinstance(el, str):
             str_len = len(el) + 1
             val = el.replace('\n', '\\n')
-            output += f"\t\tdb TYPE_STR, ${str_len:02x}\n"
-            output += f"\t\tdb \"{val}\", $ff\n"
+            output += f"\t\tdb TYPE_STR\n"
+            output += f"\t\tStr \"{val}\"\n"
         elif type(el).__name__ == 'code':
             output += f"\t\tdb TYPE_FUNCTION\n"
             clean_name = el.co_name.replace("<", "_").replace(">", "_")
@@ -67,7 +67,7 @@ def get_block_output(block):
     for i, el in enumerate(block.co_names):
         str_len = len(el) + 1
         output += f"\t.name{i}:\n"
-        output += f"\t\tdb ${str_len:02x}, \"{el}\", $ff\n"
+        output += f"\t\tStr \"{el}\"\n"
 
     # 3: co_varnames (mangled)
 
@@ -87,7 +87,7 @@ output =  "FileSystem::\n"
 fnames = os.listdir("data")
 for i, fname in enumerate(fnames):
     str_len = len(fname) + 1
-    output += f"\tdb ${str_len:02x}, \"{fname}\", $ff\n"
+    output += f"\tStr \"{fname}\"\n"
     output += f"\t\tdw File{i}\n"
     output += f"\t\tdw File{i}.end-File{i}\n"
 output += "\tdb $ff\n"

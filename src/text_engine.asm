@@ -3,7 +3,7 @@ INCLUDE "defines.asm"
 SECTION "Text Engine Code", ROMX
 
 NUM_VWF_PALS equ 4
-COL_VWF_TEXT_BG_COL equ $2525
+COL_VWF_TEXT_BG_COL equ $2525 ; #2f4f4f
 
 LoadVwf::
 ; Set all pixel column colors as unused
