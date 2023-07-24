@@ -9,6 +9,8 @@ InitEntites::
 	rst Memset
 	ld [wCurrOamIdxToFill], a
 	ld [wEntityIdToProcess], a
+	ld [wHoveredOverPower], a
+	ld [wIsPowerSelected], a
 	ret
 
 
@@ -159,6 +161,67 @@ AddEntity::
 
 
 UpdateEntities::
+; todo: split out status bar code elsewhere
+	ld a, [wCurrOamIdxToFill]
+	ld l, a
+	ld h, HIGH(wShadowOAM)
+
+; C = x * 24 + 1st power's X. B = Y, D = tile idx
+	ld a, [wHoveredOverPower]
+	swap a
+	ld c, a
+	srl a
+	add c
+	add 1*8+8
+	ld c, a
+	ld b, 15*8+16
+
+	ld a, [wIsPowerSelected]
+	ld d, a
+
+	ld a, b
+	ld [hl+], a
+	ld a, c
+	ld [hl+], a
+	ld a, d
+	ld [hl+], a
+	ld a, OAMF_PRI
+	ld [hl+], a
+
+	ld a, b
+	add 8
+	ld [hl+], a
+	ld a, c
+	ld [hl+], a
+	ld a, d
+	ld [hl+], a
+	ld a, OAMF_PRI
+	ld [hl+], a
+
+	ld a, b
+	ld [hl+], a
+	ld a, c
+	add 8
+	ld [hl+], a
+	ld a, d
+	ld [hl+], a
+	ld a, OAMF_PRI
+	ld [hl+], a
+
+	ld a, b
+	add 8
+	ld [hl+], a
+	ld a, c
+	add 8
+	ld [hl+], a
+	ld a, d
+	ld [hl+], a
+	ld a, OAMF_PRI
+	ld [hl+], a
+
+	ld a, l
+	ld [wCurrOamIdxToFill], a
+
 ; todo: put camera code in its own python-called routine, selecting an entity
 	ld hl, wCurrEntity
 	ld de, wEntity00_InUse
@@ -236,7 +299,7 @@ UpdateEntities::
 	    rst MemcpySmall
 
 	    call UpdateAnimation
-	    call SendEntityDataToShadowOam
+	    call SendScrollAffectedEntityDataToShadowOam
 
 	; Save updated details
 	    ld de, wCurrEntity
@@ -394,6 +457,9 @@ CheckForWalkableEntities:
 
 
 UpdateEntity::
+	xor a
+	ld [wIsPowerSelected], a
+
 	ld a, [wCurrEntity_State]
 	add a
 	ld hl, EntityStateTable
@@ -422,11 +488,23 @@ EntityStateStill:
 
 ; Return if action btn not pressed
 	ldh a, [hPressedKeys]
+	bit PADB_SELECT, a
+	jr nz, .cyclePower
+
 	bit PADB_B, a
 	ret z
 
 	ld b, ENTSTATE_USING_ABILITY
 	jp SetEntityState
+
+.cyclePower:
+	ld a, [wHoveredOverPower]
+	inc a
+	cp 5
+	jr c, :+
+	xor a
+:	ld [wHoveredOverPower], a
+	ret
 
 
 EntityStateMoving:
@@ -498,6 +576,9 @@ PassTurnToNextEntity::
 
 
 EntityStateUsingAbility:
+	ld a, 1
+	ld [wIsPowerSelected], a
+
 	call HLequAddrInMetatiles
 
 ; Check direction pressed
@@ -1006,7 +1087,7 @@ UpdateAnimation:
 
 
 ; wCurrEntity - entity struct
-SendEntityDataToShadowOam:
+SendScrollAffectedEntityDataToShadowOam:
 	ld hl, wCurrEntity_ScreenX
 	ldh a, [hSCX]
 	ld b, a
@@ -1127,6 +1208,10 @@ AnimDefSimple_moving:
 ; B - starting screen X (pre-plus 8)
 ; C - starting screen Y (pre-plus 16)
 ; HL - dest addr in shadow oam
+; wCurrEntity_MetatilesTilesSrc
+; wCurrEntity_MetatilesAttrsSrc
+; wCurrEntity_TilesBaseIdx
+; wCurrEntity_PalBaseIdx
 ; Returns HL = next oam slot to fill
 ; Trashes all
 AddSprite:
@@ -1256,3 +1341,6 @@ wMetatileYXtoCheck: db
 
 ; Where a new entity has been assigned in wEntityxx
 wChosenEntitySlot:: db
+
+wHoveredOverPower: db
+wIsPowerSelected: db

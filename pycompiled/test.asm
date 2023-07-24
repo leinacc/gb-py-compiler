@@ -19,7 +19,7 @@ PyBlock__module_:
 		db $00
 	.const1:
 		db TYPE_TUPLE
-		db $07
+		db $08
 		dw .tupleItem0
 		dw .tupleItem1
 		dw .tupleItem2
@@ -27,6 +27,7 @@ PyBlock__module_:
 		dw .tupleItem4
 		dw .tupleItem5
 		dw .tupleItem6
+		dw .tupleItem7
 		.tupleItem0
 			db TYPE_STR
 			Str "load_bg_palettes"
@@ -48,6 +49,9 @@ PyBlock__module_:
 		.tupleItem6
 			db TYPE_STR
 			Str "add_entity"
+		.tupleItem7
+			db TYPE_STR
+			Str "show_status"
 	.const2:
 		db TYPE_NONE
 	.const3:
@@ -89,7 +93,8 @@ PyBlock__module_:
 	dw .name11
 	dw .name12
 	dw .name13
-	db $cf
+	dw .name14
+	db $de
 	.name0:
 		Str "gbpy"
 	.name1:
@@ -107,16 +112,18 @@ PyBlock__module_:
 	.name7:
 		Str "add_entity"
 	.name8:
-		Str "player"
+		Str "show_status"
 	.name9:
-		Str "door"
+		Str "player"
 	.name10:
-		Str "player_movement"
+		Str "door"
 	.name11:
-		Str "door_script"
+		Str "player_movement"
 	.name12:
-		Str "pplate_script"
+		Str "door_script"
 	.name13:
+		Str "pplate_script"
+	.name14:
 		Str "main"
 .bytecode:
 	db $64, $00
@@ -136,28 +143,30 @@ PyBlock__module_:
 	db $5a, $06
 	db $6d, $07
 	db $5a, $07
+	db $6d, $08
+	db $5a, $08
 	db $01, $00
 	db $64, $02
-	db $61, $08
-	db $64, $02
 	db $61, $09
+	db $64, $02
+	db $61, $0a
 	db $64, $03
 	db $64, $04
 	db $84, $00
-	db $5a, $0a
+	db $5a, $0b
 	db $64, $05
 	db $64, $06
 	db $84, $00
-	db $5a, $0b
+	db $5a, $0c
 	db $64, $07
 	db $64, $08
 	db $84, $00
-	db $5a, $0c
+	db $5a, $0d
 	db $64, $09
 	db $64, $0a
 	db $84, $00
-	db $5a, $0d
-	db $65, $0d
+	db $5a, $0e
+	db $65, $0e
 	db $83, $00
 	db $01, $00
 	db $64, $02
@@ -300,7 +309,8 @@ PyBlock_main:
 	dw .name12
 	dw .name13
 	dw .name14
-	db $e9
+	dw .name15
+	db $f8
 	.name0:
 		Str "gbpy"
 	.name1:
@@ -331,6 +341,8 @@ PyBlock_main:
 		Str "door"
 	.name14:
 		Str "pplate_script"
+	.name15:
+		Str "show_status"
 .bytecode:
 	db $64, $01
 	db $64, $02
@@ -416,6 +428,9 @@ PyBlock_main:
 	db $64, $1a
 	db $83, $08
 	db $01, $00
+	db $74, $0f
+	db $83, $00
+	db $01, $00
 	db $09, $00
 	db $7c, $00
 	db $83, $00
@@ -423,7 +438,7 @@ PyBlock_main:
 	db $7c, $01
 	db $83, $00
 	db $01, $00
-	db $71, $55
+	db $71, $58
 
 
 PyBlock_pplate_script:

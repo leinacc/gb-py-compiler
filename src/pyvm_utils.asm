@@ -230,7 +230,7 @@ HLequAfterFilenameInVMDir::
 	ld d, h
 	ld e, l
 
-HLequAddrOfFilenameInDE::
+HLequAddrOfFilenameInDEsSrcLen::
 	ld hl, FileSystem
 
 ; Each name has 2 word ptrs after it

@@ -77,6 +77,8 @@ GbpyModule::
 		dw AsmLookOtherDown
 	Str "look_down"
 		dw AsmLookDown
+	Str "show_status"
+		dw AsmShowStatus
 	db $ff
 
 
@@ -224,8 +226,11 @@ LoadRoomMetatiles:
 
 ; A - metatile idx
 ; DE - dest addr for top-left tile
+; wMetatileTableAddr
+; wTempRoomLoadBaseTileOrPalIdx
 ; Preserves B, C, HL
 ; Returns DE = DE+2
+; rVBK - determines if it's tiles or attrs being set
 StoreMetatileTilesOrAttrs:
 	push bc
 	push hl
@@ -598,6 +603,80 @@ AsmWaitVBlank:
 	db TYPE_ASM
 	rst WaitVBlank
 	jp PushNewNone
+
+
+AsmShowStatus:
+	db TYPE_ASM
+
+; Render status bar via window
+; todo: this hardware setup should sit elsewhere
+	ld a, 7
+	ldh [rWX], a
+	ld a, $90-32
+	ldh [rWY], a
+	ldh a, [hLCDC]
+	or LCDCF_WIN9C00|LCDCF_WINON
+	ldh [hLCDC], a
+
+; todo: flip a flag to say we have status bar controls
+
+; Add the power icons
+	ld de, .mtilesFile
+	call HLequAddrOfFilenameInDEsSrcLen
+	ld a, [hl+]
+	ld [wMetatileTableAddr], a
+	ld a, [hl]
+	ld [wMetatileTableAddr+1], a
+
+	xor a
+	ld [wTempRoomLoadBaseTileOrPalIdx], a
+	ld b, 5
+	ld de, $9c21
+
+	.nextMetatiles:
+		push af
+		call StoreMetatileTilesOrAttrs
+		inc de
+		pop af
+
+		inc a
+		dec b
+		jr nz, .nextMetatiles
+
+	ld a, 1
+	ldh [rVBK], a
+
+	ld de, .mattrsFile
+	call HLequAddrOfFilenameInDEsSrcLen
+	ld a, [hl+]
+	ld [wMetatileTableAddr], a
+	ld a, [hl]
+	ld [wMetatileTableAddr+1], a
+
+	xor a
+	ld b, 5
+	ld de, $9c21
+
+	.nextMetatileAttrs:
+		push af
+		call StoreMetatileTilesOrAttrs
+		inc de
+		pop af
+
+		inc a
+		dec b
+		jr nz, .nextMetatileAttrs
+
+	xor a
+	ldh [rVBK], a
+
+	jp PushNewNone
+
+.mtilesFile:
+	Str "power_icons_mtiles.bin"
+
+.mattrsFile:
+	Str "power_icons_mattrs.bin"
 
 
 SECTION "Room metatiles", WRAM0, ALIGN[8]

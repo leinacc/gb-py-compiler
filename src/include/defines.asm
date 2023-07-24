@@ -166,3 +166,8 @@ def ENTSTATE_USING_ABILITY rb 1
 macro Str
 	db STRLEN(\1)+1, \1, $ff
 endm
+
+
+; Misc constants
+
+STATUS_SCREEN_MAIN_COL equ $2525 ; #2f4f4f

@@ -3,7 +3,6 @@ INCLUDE "defines.asm"
 SECTION "Text Engine Code", ROMX
 
 NUM_VWF_PALS equ 4
-COL_VWF_TEXT_BG_COL equ $2525 ; #2f4f4f
 
 LoadVwf::
 ; Set all pixel column colors as unused
@@ -50,7 +49,6 @@ LoadVwf::
 	ldh [hLCDC], a
 
 	ret
-
 
 
 VwfloadString:
@@ -163,9 +161,9 @@ VWFcreateShadowPals:
 
 	.nextPalette:
 	; 1st color of each palette is dark slate grey
-	    ld a, LOW(COL_VWF_TEXT_BG_COL)
+	    ld a, LOW(STATUS_SCREEN_MAIN_COL)
 	    ld [hl+], a
-	    ld a, HIGH(COL_VWF_TEXT_BG_COL)
+	    ld a, HIGH(STATUS_SCREEN_MAIN_COL)
 	    ld [hl+], a
 
 	; Fill the other 3 based on bits used
@@ -294,11 +292,6 @@ VwfsetupTilemap:
 	ldh [rVBK], a
 
 ; Clear palettes
-	ld hl, $9c00
-	ld a, [wCurrBGPalette]
-	ld c, SCRN_VX_B*4
-	call LCDMemsetSmall
-
 	ld hl, $9c21
 	ld de, wTileToPalsMap
 	ld b, (SCRN_X_B-2)
@@ -318,12 +311,6 @@ VwfsetupTilemap:
 
 	xor a
 	ldh [rVBK], a
-
-; Clear tilemap
-	ld hl, $9c00
-	ld a, $ff
-	ld c, SCRN_VX_B*4
-	call LCDMemsetSmall
 
 ; 1st text row
 	ld hl, $9c21
