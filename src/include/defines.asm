@@ -171,3 +171,6 @@ endm
 ; Misc constants
 
 STATUS_SCREEN_MAIN_COL equ $2525 ; #2f4f4f
+_JP = $c3
+_RETI = $d9
+PUSH_AF = $f5

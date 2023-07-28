@@ -689,60 +689,66 @@ FileSystem::
 	Str "pressure_plate.2bpp"
 		dw File4
 		dw File4.end-File4
-	Str "crypt_mattrs.bin"
+	Str "stars.2bpp"
 		dw File5
 		dw File5.end-File5
-	Str "pressure_plate_mtiles.bin"
+	Str "crypt_mattrs.bin"
 		dw File6
 		dw File6.end-File6
-	Str "orc.pal"
+	Str "pressure_plate_mtiles.bin"
 		dw File7
 		dw File7.end-File7
-	Str "power_icons.2bpp"
+	Str "stars.pal"
 		dw File8
 		dw File8.end-File8
-	Str "crypt_4_5.room"
+	Str "orc.pal"
 		dw File9
 		dw File9.end-File9
-	Str "crypt_5_5.room"
+	Str "power_icons.2bpp"
 		dw File10
 		dw File10.end-File10
-	Str "pressure_plate_mattrs.bin"
+	Str "crypt_4_5.room"
 		dw File11
 		dw File11.end-File11
-	Str "orc_mtiles.bin"
+	Str "crypt_5_5.room"
 		dw File12
 		dw File12.end-File12
-	Str "power_icons_mtiles.bin"
+	Str "pressure_plate_mattrs.bin"
 		dw File13
 		dw File13.end-File13
-	Str "door_mtiles.bin"
+	Str "orc_mtiles.bin"
 		dw File14
 		dw File14.end-File14
-	Str "crypt.2bpp"
+	Str "power_icons_mtiles.bin"
 		dw File15
 		dw File15.end-File15
-	Str "crypt_mtiles.bin"
+	Str "door_mtiles.bin"
 		dw File16
 		dw File16.end-File16
-	Str "power_icons_mattrs.bin"
+	Str "crypt.2bpp"
 		dw File17
 		dw File17.end-File17
-	Str "door.2bpp"
+	Str "crypt_mtiles.bin"
 		dw File18
 		dw File18.end-File18
-	Str "power_icons.pal"
+	Str "power_icons_mattrs.bin"
 		dw File19
 		dw File19.end-File19
-	Str "pressure_plate.pal"
+	Str "door.2bpp"
 		dw File20
 		dw File20.end-File20
-	Str "crypt.pal"
+	Str "power_icons.pal"
 		dw File21
 		dw File21.end-File21
-	Str "orc_mattrs.bin"
+	Str "pressure_plate.pal"
 		dw File22
 		dw File22.end-File22
+	Str "crypt.pal"
+		dw File23
+		dw File23.end-File23
+	Str "orc_mattrs.bin"
+		dw File24
+		dw File24.end-File24
 	db $ff
 
 File0:
@@ -766,73 +772,81 @@ File4:
 .end:
 
 File5:
-	INCBIN "data/crypt_mattrs.bin"
+	INCBIN "data/stars.2bpp"
 .end:
 
 File6:
-	INCBIN "data/pressure_plate_mtiles.bin"
+	INCBIN "data/crypt_mattrs.bin"
 .end:
 
 File7:
-	INCBIN "data/orc.pal"
+	INCBIN "data/pressure_plate_mtiles.bin"
 .end:
 
 File8:
-	INCBIN "data/power_icons.2bpp"
+	INCBIN "data/stars.pal"
 .end:
 
 File9:
-	INCBIN "data/crypt_4_5.room"
+	INCBIN "data/orc.pal"
 .end:
 
 File10:
-	INCBIN "data/crypt_5_5.room"
+	INCBIN "data/power_icons.2bpp"
 .end:
 
 File11:
-	INCBIN "data/pressure_plate_mattrs.bin"
+	INCBIN "data/crypt_4_5.room"
 .end:
 
 File12:
-	INCBIN "data/orc_mtiles.bin"
+	INCBIN "data/crypt_5_5.room"
 .end:
 
 File13:
-	INCBIN "data/power_icons_mtiles.bin"
+	INCBIN "data/pressure_plate_mattrs.bin"
 .end:
 
 File14:
-	INCBIN "data/door_mtiles.bin"
+	INCBIN "data/orc_mtiles.bin"
 .end:
 
 File15:
-	INCBIN "data/crypt.2bpp"
+	INCBIN "data/power_icons_mtiles.bin"
 .end:
 
 File16:
-	INCBIN "data/crypt_mtiles.bin"
+	INCBIN "data/door_mtiles.bin"
 .end:
 
 File17:
-	INCBIN "data/power_icons_mattrs.bin"
+	INCBIN "data/crypt.2bpp"
 .end:
 
 File18:
-	INCBIN "data/door.2bpp"
+	INCBIN "data/crypt_mtiles.bin"
 .end:
 
 File19:
-	INCBIN "data/power_icons.pal"
+	INCBIN "data/power_icons_mattrs.bin"
 .end:
 
 File20:
-	INCBIN "data/pressure_plate.pal"
+	INCBIN "data/door.2bpp"
 .end:
 
 File21:
-	INCBIN "data/crypt.pal"
+	INCBIN "data/power_icons.pal"
 .end:
 
 File22:
+	INCBIN "data/pressure_plate.pal"
+.end:
+
+File23:
+	INCBIN "data/crypt.pal"
+.end:
+
+File24:
 	INCBIN "data/orc_mattrs.bin"
 .end:

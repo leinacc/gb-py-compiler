@@ -117,11 +117,11 @@ SECTION "Handlers", ROM0[$40]
 	ds $48 - @
 
 ; STAT handler
-	rst $38
+	jp wStatInterrupt
 	ds $50 - @
 
 ; Timer handler
-	rst $38
+	jp hTimerInterrupt
 	ds $58 - @
 
 ; Serial handler

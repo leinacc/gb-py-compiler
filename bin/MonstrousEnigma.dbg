@@ -5,3 +5,12 @@ Debug x:break
 
 ExecBytecodes+1 xd:
     message "Exec bytecodes src: ${hl,4$}"
+
+@var _timerInts 0
+
+hTimerInterrupt+1 x:
+    set _timerInts := _timerInts + 1
+
+LoadAPageOfVoiceSamplesBankUnpreserved x:
+    message "Timer ints: {_timerInts}";
+    set _timerInts := 0
