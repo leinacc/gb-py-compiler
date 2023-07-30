@@ -626,11 +626,26 @@ AsmShowStatus:
 ; todo: this hardware setup should sit elsewhere
 	ld a, 7
 	ldh [rWX], a
-	ld a, $90-32
+	ld a, $90-STATUS_BAR_TILE_HEIGHT*8
 	ldh [rWY], a
 	ldh a, [hLCDC]
 	or LCDCF_WIN9C00|LCDCF_WINON
 	ldh [hLCDC], a
+
+; Setup stat interrupt to hide objs in the 1st tile row of the status bar
+	ld a, _JP
+	ld [wStatInterrupt], a
+	ld a, LOW(StatInt_TurnOffObjs)
+	ld [wStatInterrupt+1], a
+	ld a, HIGH(StatInt_TurnOffObjs)
+	ld [wStatInterrupt+2], a
+	ld a, $90-STATUS_BAR_TILE_HEIGHT*8
+	ldh [rLYC], a
+	ld a, STATF_LYC
+	ldh [rSTAT], a
+	ldh a, [rIE]
+	or IEF_STAT
+	ldh [rIE], a
 
 ; todo: flip a flag to say we have status bar controls
 

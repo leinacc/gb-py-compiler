@@ -40,6 +40,11 @@ LoadNewRoom::
 	call InitEntites
 	call InitDynamicAllocation
 
+; Init interrupts
+	ld a, _RETI
+	ld [wStatInterrupt], a
+	ldh [hTimerInterrupt], a
+
 ; Clear screens, and attrs, allocating a palette for the 2nd screen
 	ld hl, _SCRN0
 	ld bc, $800
@@ -147,6 +152,40 @@ PowerIconsSelectSpritePals:
 	dw $7fff ; white
 	dw $001f ; red
 .end:
+
+
+StatInt_TurnOffObjs::
+	push af
+	ldh a, [rLCDC]
+	and ~LCDCF_OBJON
+	ldh [rLCDC], a
+
+	ld a, $90-STATUS_BAR_TILE_HEIGHT*8+8
+	ldh [rLYC], a
+	ld a, LOW(StatInt_TurnOnObjs)
+	ld [wStatInterrupt+1], a
+	ld a, HIGH(StatInt_TurnOnObjs)
+	ld [wStatInterrupt+2], a
+
+	pop af
+	reti
+
+
+StatInt_TurnOnObjs::
+	push af
+	ldh a, [rLCDC]
+	or LCDCF_OBJON
+	ldh [rLCDC], a
+
+	ld a, $90-STATUS_BAR_TILE_HEIGHT*8
+	ldh [rLYC], a
+	ld a, LOW(StatInt_TurnOffObjs)
+	ld [wStatInterrupt+1], a
+	ld a, HIGH(StatInt_TurnOffObjs)
+	ld [wStatInterrupt+2], a
+
+	pop af
+	reti
 
 
 INCLUDE "pycompiled/crypt_4_5.asm"

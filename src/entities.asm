@@ -1194,7 +1194,7 @@ SendScrollAffectedEntityDataToShadowOam:
 	ld l, a
 	ld h, HIGH(wShadowOAM)
 
-	call AddSprite
+	call AddMetasprite
 
 	ld a, l
 	ld [wCurrOamIdxToFill], a
@@ -1301,7 +1301,7 @@ AnimDefSimple_moving:
 ; wCurrEntity_PalBaseIdx
 ; Returns HL = next oam slot to fill
 ; Trashes all
-AddSprite:
+AddMetasprite:
 ; DE = addr of metatile tile src
 	ld a, [wCurrEntity_MetatilesTilesSrc]
 	ld e, a
@@ -1318,7 +1318,10 @@ AddSprite:
 
 ; Populate 4 tile Y, X and tile idxes
 :   ld a, c
-	ld [hl+], a
+	cp $90-STATUS_BAR_TILE_HEIGHT*8 + 16
+	jr c, :+
+	ld a, $ff
+:	ld [hl+], a
 	ld a, b
 	ld [hl+], a
 	ld a, [de]
@@ -1329,7 +1332,10 @@ AddSprite:
 	inc hl
 
 	ld a, c
-	ld [hl+], a
+	cp $90-STATUS_BAR_TILE_HEIGHT*8 + 16
+	jr c, :+
+	ld a, $ff
+:	ld [hl+], a
 	ld a, b
 	add 8
 	ld [hl+], a
@@ -1340,7 +1346,10 @@ AddSprite:
 
 	ld a, c
 	add 8
-	ld [hl+], a
+	cp $90-STATUS_BAR_TILE_HEIGHT*8 + 16
+	jr c, :+
+	ld a, $ff
+:	ld [hl+], a
 	ld a, b
 	ld [hl+], a
 	ld a, [de]
@@ -1350,7 +1359,10 @@ AddSprite:
 
 	ld a, c
 	add 8
-	ld [hl+], a
+	cp $90-STATUS_BAR_TILE_HEIGHT*8 + 16
+	jr c, :+
+	ld a, $ff
+:	ld [hl+], a
 	ld a, b
 	add 8
 	ld [hl+], a

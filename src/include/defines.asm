@@ -174,6 +174,7 @@ WORLD_CRYPT = 0
 
 ; Misc constants
 
+STATUS_BAR_TILE_HEIGHT = 4
 STATUS_SCREEN_MAIN_COL equ $2525 ; #2f4f4f
 _JP = $c3
 _RETI = $d9
