@@ -3,7 +3,6 @@ INCLUDE "defines.asm"
 SECTION "Python VM bytecode handlers", ROM0
 
 ; A - rom bank of module to load
-; todo: preserve the curr bank
 ; HL - address of module to load
 LoadModule::
 	push hl
@@ -453,10 +452,16 @@ StartEntityFrameStack::
 ContEntityFrameStack::
 ; Save prev stack
 	call SaveCurrCallStackVars
+	ldh a, [hCurrCallStackIdx]
+	push af
 
 ; Get vars for the entity's script's frame
 	ld a, [wCurrEntity_CallStackIdx]
 	call LoadCallStackSavedVars
+
+	call HLequCurrReturnCallStackIdx
+	pop af
+	ld [hl], a
 
 ; Return to .return
 	ld bc, .return
