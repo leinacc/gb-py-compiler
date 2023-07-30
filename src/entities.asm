@@ -117,7 +117,7 @@ AddEntity::
 	ld [hl+], a
 	ld a, [wTempEntityMtilesAddr+1]
 	ld [hl+], a
-	ldh a, [hCurROMBank]
+	ld a, [wTempEntityMtilesAddr+2]
 	ld [hl+], a
 
 ; MetatilesAttrsSrc
@@ -125,7 +125,7 @@ AddEntity::
 	ld [hl+], a
 	ld a, [wTempEntityMattrsAddr+1]
 	ld [hl+], a
-	ldh a, [hCurROMBank]
+	ld a, [wTempEntityMattrsAddr+2]
 	ld [hl+], a
 	push hl
 
@@ -798,6 +798,11 @@ MoveDown::
 	ld a, [wWorldRoomY]
 	inc a
 	ld [wWorldRoomY], a
+
+JpLoadNewRoom:
+	ld a, BANK(LoadNewRoom)
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 	jp LoadNewRoom
 
 
@@ -870,7 +875,7 @@ assert DIR_UP == 0
 	ld a, [wWorldRoomY]
 	dec a
 	ld [wWorldRoomY], a
-	jp LoadNewRoom
+	jp JpLoadNewRoom
 
 
 ; B - num tiles
@@ -942,7 +947,7 @@ MoveLeft::
 	ld a, [wWorldRoomX]
 	dec a
 	ld [wWorldRoomX], a
-	jp LoadNewRoom
+	jp JpLoadNewRoom
 
 
 ; B - num tiles
@@ -1015,7 +1020,7 @@ MoveRight::
 	ld a, [wWorldRoomX]
 	inc a
 	ld [wWorldRoomX], a
-	jp LoadNewRoom
+	jp JpLoadNewRoom
 
 
 ProcessEntDirectionsInput:
@@ -1290,6 +1295,13 @@ AnimDefSimple_moving:
 ; Returns HL = next oam slot to fill
 ; Trashes all
 AddMetasprite:
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, [wCurrEntity_MetatilesTilesSrc+2]
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
 ; DE = addr of metatile tile src
 	ld a, [wCurrEntity_MetatilesTilesSrc]
 	ld e, a
@@ -1375,6 +1387,10 @@ AddMetasprite:
 	    dec b
 	    jr nz, .nextTileIdx
 
+	ld a, [wCurrEntity_MetatilesTilesSrc+2]
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
 ; DE = addr of metatile attr src
 	pop hl
 	ld a, [wCurrEntity_MetatilesAttrsSrc]
@@ -1404,6 +1420,10 @@ AddMetasprite:
 
 	:   dec b
 	    jr nz, .nextAttr
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 	dec hl
 	dec hl

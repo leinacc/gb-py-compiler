@@ -16,12 +16,16 @@ fnames += [
 ]
 for i, fname in enumerate(fnames):
     output += f"\tStr \"{fname}\"\n"
+    output += f"\t\tdb BANK(File{i})\n"
     output += f"\t\tdw File{i}\n"
-    output += f"\t\tdw File{i}.end-File{i}\n"
-output += "\tdb $ff\n"
+output += "\tdb $ff\n\n"
+
+output += 'SECTION "Files", ROMX, BANK[$3f]\n'
 
 for i, fname in enumerate(fnames):
     output += f"\nFile{i}:\n"
+    output += f"\tdw .end-.start\n"
+    output += ".start:\n"
     output += f"\tINCBIN \"data/{fname}\"\n"
     output += ".end:\n"
 

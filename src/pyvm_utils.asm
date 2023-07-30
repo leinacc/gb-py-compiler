@@ -220,7 +220,7 @@ HLequAfterMatchingNameInList::
 
 ; A - param idx starting 0
 ; Trashes A, BC and DE
-HLequAfterFilenameInVMDir::
+BHLequFarSrcOfFilenameInVMDir::
 	call HLequAddrOfFuncParam
 
 ; Check filename to load is str
@@ -232,13 +232,19 @@ HLequAfterFilenameInVMDir::
 	ld e, l
 
 ; Trashes A and BC
-HLequAddrOfFilenameInDEsSrcLen::
+BHLequFarSrcOfFilenameInDEsSrcLen::
 	ld hl, FileSystem
 
-; Each name has 2 word ptrs after it
-	ld a, 4
+; Each name has a far src after it
+	ld a, 3
 	ldh [hStringListExtraBytes], a
-	jp HLequAfterMatchingNameInList
+	call HLequAfterMatchingNameInList
+	ld a, [hl+]
+	ld b, a
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+	ret
 
 
 ; A - param idx starting 0

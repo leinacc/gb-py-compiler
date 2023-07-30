@@ -100,10 +100,10 @@ AsmLoadBGTiles:
 
 ; 1st param file is the tile data to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
 
 ; Return the 1st tile idx from the auto-allocation
-	call AllocateBGTileData
+	call FarAllocateBGTileData
 	ld b, a
 	jp PushNewInt
 
@@ -113,10 +113,10 @@ AsmLoadOBJTiles:
 
 ; 1st param file is the tile data to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
 
 ; Return the 1st tile idx from the auto-allocation
-	call AllocateOBJTileData
+	call FarAllocateOBJTileData
 	ld b, a
 	jp PushNewInt
 
@@ -126,9 +126,9 @@ AsmLoadBGPalettes:
 
 ; 1st param file is the palette data to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
 
-	call AllocateBGPalettes
+	call FarAllocateBGPalettes
 	jp PushNewInt
 
 
@@ -137,9 +137,9 @@ AsmLoadOBJPalettes:
 
 ; 1st param file is the palette data to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
 
-	call AllocateOBJPalettes
+	call FarAllocateOBJPalettes
 	jp PushNewInt
 
 
@@ -148,20 +148,31 @@ AsmLoadMetatiles:
 
 ; 1st param file is the room metatile data to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
 
-; DE = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
 ; BC = len of data
 	ld a, [hl+]
 	ld c, a
-	ld b, [hl]
+	ld a, [hl+]
+	ld b, a
+
+; DE = src of data
+	ld e, l
+	ld d, h
 
 	ld hl, wRoomMetatiles
 	call Memcpy
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 	jp PushNewNone
 
@@ -176,14 +187,28 @@ AsmLoadRoom:
 
 ; 1st param file is the metatile tiles to load
 	xor a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
+; Ignore the file size
+	inc hl
+	inc hl
+
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 ; Store metatile table addr
-	ld a, [hl+]
+	ld a, l
 	ld [wMetatileTableAddr], a
-	ld a, [hl+]
+	ld a, h
 	ld [wMetatileTableAddr+1], a
 	call LoadRoomMetatiles
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 ; 4th param is the base palette idx
 	ld a, 3
@@ -193,14 +218,28 @@ AsmLoadRoom:
 ; 2nd param file is the metatile attrs to load
 	ld a, 1
 	ldh [rVBK], a
-	call HLequAfterFilenameInVMDir
+	call BHLequFarSrcOfFilenameInVMDir
+; Ignore the file size
+	inc hl
+	inc hl
+
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 ; Store metatile table addr
-	ld a, [hl+]
+	ld a, l
 	ld [wMetatileTableAddr], a
-	ld a, [hl+]
+	ld a, h
 	ld [wMetatileTableAddr+1], a
 	call LoadRoomMetatiles
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 	xor a
 	ldh [rVBK], a
@@ -330,19 +369,29 @@ _AddEntity:
 
 ; 5th param is the metatiles tiles data
 	ld a, 4
-	call HLequAfterFilenameInVMDir
-	ld a, [hl+]
+	call BHLequFarSrcOfFilenameInVMDir
+; Ignore the file size
+	inc hl
+	inc hl
+	ld a, l
 	ld [wTempEntityMtilesAddr], a
-	ld a, [hl]
+	ld a, h
 	ld [wTempEntityMtilesAddr+1], a
+	ld a, b
+	ld [wTempEntityMtilesAddr+2], a
 
 ; 6th param is the metatiles attrs data
 	ld a, 5
-	call HLequAfterFilenameInVMDir
-	ld a, [hl+]
+	call BHLequFarSrcOfFilenameInVMDir
+; Ignore the file size
+	inc hl
+	inc hl
+	ld a, l
 	ld [wTempEntityMattrsAddr], a
-	ld a, [hl]
+	ld a, h
 	ld [wTempEntityMattrsAddr+1], a
+	ld a, b
+	ld [wTempEntityMattrsAddr+2], a
 
 ; 1st param is the entity script
 	xor a
@@ -651,10 +700,21 @@ AsmShowStatus:
 
 ; Add the power icons
 	ld de, .mtilesFile
-	call HLequAddrOfFilenameInDEsSrcLen
-	ld a, [hl+]
+	call BHLequFarSrcOfFilenameInDEsSrcLen
+; Ignore the file size
+	inc hl
+	inc hl
+
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	ld a, l
 	ld [wMetatileTableAddr], a
-	ld a, [hl]
+	ld a, h
 	ld [wMetatileTableAddr+1], a
 
 	xor a
@@ -672,14 +732,29 @@ AsmShowStatus:
 		dec b
 		jr nz, .nextMetatiles
 
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
 	ld a, 1
 	ldh [rVBK], a
 
 	ld de, .mattrsFile
-	call HLequAddrOfFilenameInDEsSrcLen
-	ld a, [hl+]
+	call BHLequFarSrcOfFilenameInDEsSrcLen
+; Ignore the file size
+	inc hl
+	inc hl
+
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	ld a, l
 	ld [wMetatileTableAddr], a
-	ld a, [hl]
+	ld a, h
 	ld [wMetatileTableAddr+1], a
 
 	xor a
@@ -695,6 +770,10 @@ AsmShowStatus:
 		inc a
 		dec b
 		jr nz, .nextMetatileAttrs
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
 
 	xor a
 	ldh [rVBK], a
@@ -729,6 +808,6 @@ wRoomMetatiles:: ds 16*16 ; do not change
 
 SECTION "Room loading", WRAM0
 wMetatileTableAddr: dw
-wTempEntityMtilesAddr:: dw
-wTempEntityMattrsAddr:: dw
+wTempEntityMtilesAddr:: ds 3
+wTempEntityMattrsAddr:: ds 3
 wTempRoomLoadBaseTileOrPalIdx: db

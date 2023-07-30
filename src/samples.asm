@@ -4,12 +4,12 @@ SECTION "Samples", ROM0
 
 ExampleSamplesTest:
 	ld de, StarsTileData
-	call HLequAddrOfFilenameInDEsSrcLen
-	call AllocateBGTileData
+	call BHLequFarSrcOfFilenameInDEsSrcLen
+	call FarAllocateBGTileData
 
 	ld de, StarsPalettes
-	call HLequAddrOfFilenameInDEsSrcLen
-	call AllocateBGPalettes
+	call BHLequFarSrcOfFilenameInDEsSrcLen
+	call FarAllocateBGPalettes
 
 	ld c, $20
 	ld hl, $9800

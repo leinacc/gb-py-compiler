@@ -11,19 +11,41 @@ InitDynamicAllocation::
 	ret
 
 
-; HL - addr of 1st file ptr - src of data. Next ptr is length of data
+; B - bank
+; HL - addr of file, has a size word, then the file data after it
 ; Returns 1st allocated tile idx in A
 ; Trashes BC and DE
-AllocateBGTileData::
-; DE = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
+FarAllocateBGTileData::
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	call AllocateBGTileData
+	ld b, a
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+	ld a, b
+	ret
+
+
+; HL - addr of file, has a size word, then the file data after it
+; Returns 1st allocated tile idx in A
+; Trashes BC and DE
+AllocateBGTileData:
 ; BC = len of data
 	ld a, [hl+]
 	ld c, a
-	ld b, [hl]
+	ld a, [hl+]
+	ld b, a
+
+; DE = src of data
+	ld e, l
+	ld d, h
 
 ; HL = dest
 	ld a, [wCurrBGTile]
@@ -81,19 +103,41 @@ AllocateBGTileData::
     ret
 
 
-; HL - addr of 1st file ptr - src of data. Next ptr is length of data
+; B - bank
+; HL - addr of file, has a size word, then the file data after it
+; Returns 1st allocated tile idx in A
+; Trashes BC and DE
+FarAllocateOBJTileData::
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	call AllocateOBJTileData
+	ld b, a
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+	ld a, b
+	ret
+
+
+; HL - addr of file, has a size word, then the file data after it
 ; Returns 1st allocated tile idx in A
 ; Trashes BC and DE
 AllocateOBJTileData::
-; DE = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
 ; BC = len of data
 	ld a, [hl+]
 	ld c, a
-	ld b, [hl]
+	ld a, [hl+]
+	ld b, a
+
+; DE = src of data
+	ld e, l
+	ld d, h
 
 ; HL = dest
 	ld a, [wCurrOBJTile]
@@ -148,20 +192,35 @@ AllocateOBJTileData::
     ret
 
 
-; HL - addr of 1st file ptr - src of data. Next ptr is length of data
+; B - bank
+; HL - addr of file, has a size word, then the file data after it
 ; Returns 1st allocated palette idx in B
 ; Trashes A, C, D, E
-AllocateBGPalettes::
-; DE (later HL) = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-	push de
+FarAllocateBGPalettes::
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	call AllocateBGPalettes
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+	ret
+
+
+; HL - addr of file, has a size word, then the file data after it
+; Returns 1st allocated palette idx in B
+; Trashes A, C, D, E
+AllocateBGPalettes:
 ; B = len of data
-	ld a, [hl]
+; HL = src of data
+	ld a, [hl+]
 	ld b, a
-	pop hl
+	inc hl
 
 ; Push num palettes
 	srl a
@@ -193,20 +252,35 @@ AllocateBGPalettes::
     ret
 
 
-; HL - addr of 1st file ptr - src of data. Next ptr is length of data
+; B - bank
+; HL - addr of file, has a size word, then the file data after it
+; Returns 1st allocated palette idx in B
+; Trashes A, C, D, E
+FarAllocateOBJPalettes::
+	ldh a, [hCurROMBank]
+	push af
+
+	ld a, b
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+
+	call AllocateOBJPalettes
+
+	pop af
+	ldh [hCurROMBank], a
+	ld [rROMB0], a
+	ret
+
+
+; HL - addr of file, has a size word, then the file data after it
 ; Returns 1st allocated palette idx in B
 ; Trashes A, C, D, E
 AllocateOBJPalettes::
-; DE (later HL) = src of data
-	ld a, [hl+]
-	ld e, a
-	ld a, [hl+]
-	ld d, a
-	push de
 ; B = len of data
-	ld a, [hl]
+; HL = src of data
+	ld a, [hl+]
 	ld b, a
-	pop hl
+	inc hl
 
 ; Push num palettes
 	srl a
