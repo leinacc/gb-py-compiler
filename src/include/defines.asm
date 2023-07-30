@@ -168,6 +168,10 @@ macro Str
 endm
 
 
+; Worlds
+WORLD_CRYPT = 0
+
+
 ; Misc constants
 
 STATUS_SCREEN_MAIN_COL equ $2525 ; #2f4f4f

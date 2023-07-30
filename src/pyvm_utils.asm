@@ -187,6 +187,7 @@ HLequGlobalNamePtrAddr::
 ; DE - string to find
 ; HL - list of strings to match against
 ; hStringListExtraBytes - num bytes in a string entry, excluding string + $ff
+; Trashes A and BC
 HLequAfterMatchingNameInList::
 .nextName:
 	push hl
@@ -218,7 +219,7 @@ HLequAfterMatchingNameInList::
 
 
 ; A - param idx starting 0
-; Trashes DE
+; Trashes A, BC and DE
 HLequAfterFilenameInVMDir::
 	call HLequAddrOfFuncParam
 
@@ -230,6 +231,7 @@ HLequAfterFilenameInVMDir::
 	ld d, h
 	ld e, l
 
+; Trashes A and BC
 HLequAddrOfFilenameInDEsSrcLen::
 	ld hl, FileSystem
 

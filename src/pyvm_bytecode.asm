@@ -878,7 +878,7 @@ HeapifyNames:
 	ld h, a
 
 ; HL = address of name 0 (end marker)
-; HL-1 => ptr to heap length
+; HL-1 => HIGH(ptr) to heap length
 	ld a, [hl+]
 	ld h, [hl]
 	ld l, a
@@ -886,7 +886,8 @@ HeapifyNames:
 	dec hl
 
 ; HL points to region to heapify names
-	ld b, 0
+	ld b, [hl]
+	dec hl
 	ld c, [hl]
 	call Malloc
 	ld a, l

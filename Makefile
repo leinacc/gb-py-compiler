@@ -131,6 +131,9 @@ res/%.pb8.size: res/%
 	@$(MKDIR_P) $(@D)
 	$(call filesize,$<,8) > res/$*.pb8.size
 
+pycompiled/%.asm: pyscripts/%.py
+	python3 src/tools/gbcompiler.py $<
+
 ###############################################
 #                                             #
 #                 COMPILATION                 #

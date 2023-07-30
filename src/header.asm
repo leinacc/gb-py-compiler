@@ -199,5 +199,5 @@ SECTION "Stack", WRAM0
 
 wStack:
 	ds STACK_SIZE
-wStackBottom:
+wStackBottom::
 

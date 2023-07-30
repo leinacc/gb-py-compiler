@@ -317,6 +317,21 @@ UpdateEntities::
 	    dec b
 	    jr nz, .nextEntity
 
+; Clear the rest of shadow oam
+	ld a, [wCurrOamIdxToFill]
+	ld l, a
+	ld a, $a0
+	sub l
+	jr c, .afterClearingShadowOam
+	jr z, .afterClearingShadowOam
+
+	ld c, a
+	ld a, $ff
+	ld h, HIGH(wShadowOAM)
+	rst MemsetSmall
+
+.afterClearingShadowOam:
+; Set flag to update OAM, and clear oam idx for the next frame
 	ld a, HIGH(wShadowOAM)
 	ldh [hOAMHigh], a
 	xor a
@@ -738,6 +753,11 @@ ForceMoveDown:
 
 ; B - num tiles
 MoveDown::
+; todo: check if entity 0
+	ld a, [wCurrEntity_TileY]
+	cp $0f
+	jr z, .changeRoom
+
 	call HLequAddrInMetatiles
 	ld de, $10
 	add hl, de
@@ -770,6 +790,19 @@ MoveDown::
 	ld [wCurrEntity_Dir], a
 	ret
 
+.changeRoom:
+	xor a
+	ld [hHeldKeys], a
+
+	xor a
+	ld [wPlayerTileY], a
+	ld a, [wCurrEntity_TileX]
+	ld [wPlayerTileX], a
+	ld a, [wWorldRoomY]
+	inc a
+	ld [wWorldRoomY], a
+	jp LoadNewRoom
+
 
 ; B - num tiles
 ForceMoveUp:
@@ -795,6 +828,11 @@ ForceMoveUp:
 
 ; B - num tiles
 MoveUp::
+; todo: check if entity 0
+	ld a, [wCurrEntity_TileY]
+	and a
+	jr z, .changeRoom
+
 	call HLequAddrInMetatiles
 	ld de, -$10
 	add hl, de
@@ -827,6 +865,19 @@ assert DIR_UP == 0
 	ld [wCurrEntity_Dir], a
 	ret
 
+.changeRoom:
+	xor a
+	ld [hHeldKeys], a
+
+	ld a, $0f
+	ld [wPlayerTileY], a
+	ld a, [wCurrEntity_TileX]
+	ld [wPlayerTileX], a
+	ld a, [wWorldRoomY]
+	dec a
+	ld [wWorldRoomY], a
+	jp LoadNewRoom
+
 
 ; B - num tiles
 ForceMoveLeft:
@@ -852,6 +903,11 @@ ForceMoveLeft:
 
 ; B - num tiles
 MoveLeft::
+; todo: check if entity 0
+	ld a, [wCurrEntity_TileX]
+	and a
+	jr z, .changeRoom
+
 	call HLequAddrInMetatiles
 	ld de, -1
 	add hl, de
@@ -884,6 +940,19 @@ MoveLeft::
 	ld [wCurrEntity_Dir], a
 	ret
 
+.changeRoom:
+	xor a
+	ld [hHeldKeys], a
+
+	ld a, $0f
+	ld [wPlayerTileX], a
+	ld a, [wCurrEntity_TileY]
+	ld [wPlayerTileY], a
+	ld a, [wWorldRoomX]
+	dec a
+	ld [wWorldRoomX], a
+	jp LoadNewRoom
+
 
 ; B - num tiles
 ForceMoveRight:
@@ -909,6 +978,11 @@ ForceMoveRight:
 
 ; B - num tiles
 MoveRight::
+; todo: check if entity 0
+	ld a, [wCurrEntity_TileX]
+	cp $0f
+	jr z, .changeRoom
+
 	call HLequAddrInMetatiles
 	ld de, 1
 	add hl, de
@@ -941,6 +1015,19 @@ MoveRight::
 	ld a, DIR_RIGHT
 	ld [wCurrEntity_Dir], a
 	ret
+
+.changeRoom:
+	xor a
+	ld [hHeldKeys], a
+
+	xor a
+	ld [wPlayerTileX], a
+	ld a, [wCurrEntity_TileY]
+	ld [wPlayerTileY], a
+	ld a, [wWorldRoomX]
+	inc a
+	ld [wWorldRoomX], a
+	jp LoadNewRoom
 
 
 ProcessEntDirectionsInput:

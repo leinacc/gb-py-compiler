@@ -28,14 +28,14 @@ GbpyModule::
 	; arg0: room's metatiles filename
 	Str "load_metatiles"
 		dw AsmLoadMetatiles
-	; arg0: metatile x
-	; arg1: metatile y
-	; arg2: script function ptr
-	; arg3: animation definition index
-	; arg4: palettes ptr for the palettes arg7 refers to
-	; arg5: tile data ptr for the tiles arg6 refers to
-	; arg6: metatile tiles filename
-	; arg7: metatile attrs filename
+	; arg0: script function ptr
+	; arg1: animation definition index
+	; arg2: palettes ptr for the palettes arg7 refers to
+	; arg3: tile data ptr for the tiles arg6 refers to
+	; arg4: metatile tiles filename
+	; arg5: metatile attrs filename
+	; arg6: metatile x
+	; arg7: metatile y
 	Str "add_entity"
 		dw AsmAddEntity
 	; arg0: num metatiles to move
@@ -79,6 +79,14 @@ GbpyModule::
 		dw AsmLookDown
 	Str "show_status"
 		dw AsmShowStatus
+	; arg0: script function ptr
+	; arg1: animation definition index
+	; arg2: palettes ptr for the palettes arg7 refers to
+	; arg3: tile data ptr for the tiles arg6 refers to
+	; arg4: metatile tiles filename
+	; arg5: metatile attrs filename
+	Str "add_player_entity"
+		dw AsmAddPlayerEntity
 	db $ff
 
 
@@ -290,24 +298,8 @@ StoreMetatileTilesOrAttrs:
 AsmAddEntity:
 	db TYPE_ASM
 
-; 7th param is the metatiles tiles data
+; 7th param is the tile x (push as the below routine trashes B)
 	ld a, 6
-	call HLequAfterFilenameInVMDir
-	ld a, [hl+]
-	ld [wTempEntityMtilesAddr], a
-	ld a, [hl]
-	ld [wTempEntityMtilesAddr+1], a
-
-; 8th param is the metatiles attrs data
-	ld a, 7
-	call HLequAfterFilenameInVMDir
-	ld a, [hl+]
-	ld [wTempEntityMattrsAddr], a
-	ld a, [hl]
-	ld [wTempEntityMattrsAddr+1], a
-
-; 1st param is the tile x (push as the below routine trashes B)
-	xor a
 	call HLequAddrOfFuncParam
 
 	ld a, [hl+]
@@ -317,21 +309,43 @@ AsmAddEntity:
 	ld a, [hl]
 	push af
 
-; 2nd param is the tile y
-	ld a, 1
+; 8th param is the tile y
+	ld a, 7
 	call HLequAddrOfFuncParam
 
 	ld a, [hl+]
 	cp TYPE_INT
 	jp nz, Debug
 
+; B = tile x, C = tile y
 	pop bc
 	ld a, [hl]
 	ld c, a
+
+; B - tile x
+; C - tile y
+; Rest of details in AsmAddEntity or AsmAddPlayerEntity's 6 params
+_AddEntity:
 	push bc
 
-; 3rd param is the entity script
-	ld a, 2
+; 5th param is the metatiles tiles data
+	ld a, 4
+	call HLequAfterFilenameInVMDir
+	ld a, [hl+]
+	ld [wTempEntityMtilesAddr], a
+	ld a, [hl]
+	ld [wTempEntityMtilesAddr+1], a
+
+; 6th param is the metatiles attrs data
+	ld a, 5
+	call HLequAfterFilenameInVMDir
+	ld a, [hl+]
+	ld [wTempEntityMattrsAddr], a
+	ld a, [hl]
+	ld [wTempEntityMattrsAddr+1], a
+
+; 1st param is the entity script
+	xor a
 	call HLequAddrOfFuncParam
 
 	ld a, [hl]
@@ -341,30 +355,30 @@ AsmAddEntity:
 	ld e, l
 	ld d, h
 
-; 4th param is the anim definition idx
+; 2nd param is the anim definition idx
+	ld a, 1
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+	ld a, [hl]
+	push af
+
+; 3rd param is the pals ptr
+	ld a, 2
+	call HLequAddrOfFuncParam
+
+	ld a, [hl+]
+	cp TYPE_INT
+	jp nz, Debug
+
+	ld a, [hl]
+	push af
+
+; 4th param is the tiles ptr
 	ld a, 3
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
-
-	ld a, [hl]
-	push af
-
-; 5th param is the pals ptr
-	ld a, 4
-	call HLequAddrOfFuncParam
-
-	ld a, [hl+]
-	cp TYPE_INT
-	jp nz, Debug
-
-	ld a, [hl]
-	push af
-
-; 6th param is the tiles ptr
-	ld a, 5
 	call HLequAddrOfFuncParam
 
 	ld a, [hl+]
@@ -677,6 +691,15 @@ AsmShowStatus:
 
 .mattrsFile:
 	Str "power_icons_mattrs.bin"
+
+
+AsmAddPlayerEntity:
+	db TYPE_ASM
+	ld a, [wPlayerTileX]
+	ld b, a
+	ld a, [wPlayerTileY]
+	ld c, a
+	jp _AddEntity
 
 
 SECTION "Room metatiles", WRAM0, ALIGN[8]

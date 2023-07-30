@@ -10,6 +10,32 @@ Intro::
 	ld a, $01
 	ldh [hCanSoftReset], a
 
+; Display sprites globally
+	ldh a, [hLCDC]
+	or LCDCF_OBJON
+	ldh [hLCDC], a
+
+; Load the starting room
+	ld a, 5
+	ld [wPlayerTileX], a
+	ld a, 6
+	ld [wPlayerTileY], a
+
+	ld a, WORLD_CRYPT
+	ld [wWorldArea], a
+	ld a, 5
+	ld [wWorldRoomX], a
+	ld [wWorldRoomY], a
+
+	call LoadNewRoom
+
+:	rst WaitVBlank
+	jr :-
+
+
+LoadNewRoom::
+	ld sp, wStackBottom
+
 ; Init sub-engines
 	call InitEntites
 	call InitDynamicAllocation
@@ -29,11 +55,6 @@ Intro::
 	call LCDMemset
 	ldh [rVBK], a
 
-; Display sprites globally
-	ldh a, [hLCDC]
-	or LCDCF_OBJON
-	ldh [hLCDC], a
-
 ; Show abilities
 	ld de, PowerIconsTileData
 	call HLequAddrOfFilenameInDEsSrcLen
@@ -49,13 +70,52 @@ Intro::
 	ld hl, PowerIconsSelectSpritePals
 	call AllocateOBJPalettes
 
-; test: load a sample room
-	ld a, BANK(PyBlock__module_)
-	ld hl, PyBlock__module_
-	call LoadModule
+	jp LoadRoomModule
 
-:	rst WaitVBlank
-	jr :-
+
+LoadRoomModule:
+; todo: index on a table based on world area
+	ld hl, CryptRooms
+	ld a, [wWorldRoomX]
+	ld b, a
+	ld a, [wWorldRoomY]
+	ld c, a
+	ld de, 4
+
+	.nextRoom:
+		ld a, [hl+]
+		cp $ff
+		jp z, Debug
+
+		push hl
+		cp b
+		jr nz, .toNextRoom
+
+		ld a, [hl+]
+		cp c
+		jr z, .foundRoom
+
+	.toNextRoom:
+		pop hl
+		add hl, de
+		jr .nextRoom
+
+.foundRoom:
+	ld a, [hl+]
+	ld b, a
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+	ld a, b
+	jp LoadModule
+
+
+CryptRooms:
+	db 4, 5, BANK(PyBlock_crypt_4_5__module_)
+		dw PyBlock_crypt_4_5__module_
+	db 5, 5, BANK(PyBlock_crypt_5_5__module_)
+		dw PyBlock_crypt_5_5__module_
+	db $ff
 
 
 PowerIconsTileData:
@@ -89,4 +149,14 @@ PowerIconsSelectSpritePals:
 .end:
 
 
-INCLUDE "pycompiled/test.asm"
+INCLUDE "pycompiled/crypt_4_5.asm"
+INCLUDE "pycompiled/crypt_5_5.asm"
+INCLUDE "pycompiled/file_system.asm"
+
+
+SECTION "World", WRAM0
+wWorldRoomX:: db
+wWorldRoomY:: db
+wWorldArea: db
+wPlayerTileX:: db
+wPlayerTileY:: db

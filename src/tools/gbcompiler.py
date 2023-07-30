@@ -1,8 +1,9 @@
 import os
 import sys
 
-fname = sys.argv[1]
-with open(fname) as f:
+full_fname = sys.argv[1]
+fname = full_fname.split('/')[1].split('.')[0]
+with open(full_fname) as f:
     compiled = compile(f.read(), fname, "exec")
 
 
@@ -11,7 +12,7 @@ outputs = []
 
 def get_block_output(block):
     clean_name = block.co_name.replace("<", "_").replace(">", "_")
-    output = f"""PyBlock_{clean_name}:
+    output = f"""PyBlock_{fname}_{clean_name}:
 \tdw .consts
 \tdw .names
 \tdw .bytecode
@@ -43,14 +44,13 @@ def get_block_output(block):
                 else:
                     raise Exception("test")
         elif isinstance(el, str):
-            str_len = len(el) + 1
             val = el.replace('\n', '\\n')
             output += f"\t\tdb TYPE_STR\n"
             output += f"\t\tStr \"{val}\"\n"
         elif type(el).__name__ == 'code':
             output += f"\t\tdb TYPE_FUNCTION\n"
             clean_name = el.co_name.replace("<", "_").replace(">", "_")
-            output += f"\t\tdw PyBlock_{clean_name}\n"
+            output += f"\t\tdw PyBlock_{fname}_{clean_name}\n"
             outputs.insert(0, get_block_output(el))
         else:
             print(type(el), el)
@@ -63,9 +63,8 @@ def get_block_output(block):
     heap_name_len = 1  # terminator
     for i, el in enumerate(block.co_names):
         heap_name_len += 1 + len(el) + 1 + 2
-    output += f"\tdb ${heap_name_len:02x}\n"
+    output += f"\tdw ${heap_name_len:02x}\n"
     for i, el in enumerate(block.co_names):
-        str_len = len(el) + 1
         output += f"\t.name{i}:\n"
         output += f"\t\tStr \"{el}\"\n"
 
@@ -82,22 +81,5 @@ def get_block_output(block):
 
 outputs.insert(0, get_block_output(compiled))
 
-# File system
-output =  "FileSystem::\n"
-fnames = os.listdir("data")
-for i, fname in enumerate(fnames):
-    str_len = len(fname) + 1
-    output += f"\tStr \"{fname}\"\n"
-    output += f"\t\tdw File{i}\n"
-    output += f"\t\tdw File{i}.end-File{i}\n"
-output += "\tdb $ff\n"
-
-for i, fname in enumerate(fnames):
-    output += f"\nFile{i}:\n"
-    output += f"\tINCBIN \"data/{fname}\"\n"
-    output += ".end:\n"
-
-outputs.append(output)
-
-with open("pycompiled/test.asm", "w") as f:
+with open(f"pycompiled/{fname}.asm", "w") as f:
     f.write('\n\n'.join(outputs))
