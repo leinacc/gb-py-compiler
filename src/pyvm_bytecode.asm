@@ -932,16 +932,33 @@ HeapifyNames:
 
 SECTION "PYVM Hram", HRAM
 
+;-----------------------------------------------------------------------------
+; Frames
+;-----------------------------------------------------------------------------
+;
+; wFrameStackPtrs:
+;   $100*x bytes each for every block frame in the global frame stack
+; hCurrCallStackIdx:
+;   determines which $100 bytes to look at
+; hPyStackTop:
+;   index into wFrameStackPtrs for the current block frame
+;   where a new pointer will be stored
+;
+;-----------------------------------------------------------------------------
+
 ; Local to a single block frame
-hPyCodeAddr: dw
-hPyConstAddr: dw
-hPyNamesAddr: dw
-hBytecodeAddr:: dw
-hSavedBytecodeAddr:: dw
+hPyLocalStart:
+hPyCodeAddr: dw ; points to a PyBlock's addr
+hPyConstAddr: dw ; points to a PyBlock's .consts
+hPyNamesAddr: dw ; points to a PyBlock's .names
+hBytecodeAddr:: dw ; points to a PyBlock's .bytecode
+hSavedBytecodeAddr:: dw ; points to the next instruction to execute in .bytecode
 hPyStackTop:: db
+; hPyBank: db ; bank where the current PyBlock resides
 ; Keep hPyOpcode here
 hPyOpcode: db
 hPyParam:: db
+hPyLocalEnd:
 
 ; For generic singly-linked list string tables
 hStringListExtraBytes:: db
@@ -967,4 +984,6 @@ wLocalFrameIgnore: ds (CALL_STACK_LEN-1) * $100 ; per frame
 SECTION "PYVM Wram Global data", WRAM0, ALIGN[8]
 
 ; todo: Per-module (a concept which doesn't exist yet)
-wCallStackSavedVars: ds CALL_STACK_LEN * $10
+SAVED_VARS_LEN = $10
+assert SAVED_VARS_LEN > hPyLocalEnd-hPyLocalStart
+wCallStackSavedVars: ds CALL_STACK_LEN * SAVED_VARS_LEN

@@ -1,6 +1,6 @@
 INCLUDE "defines.asm"
 
-SECTION "Intro", ROMX
+SECTION "Intro", ROMX, BANK[$01]
 
 Intro::
 ; todo: use hConsoleType to display a CGB-only screen
@@ -122,9 +122,20 @@ CryptRooms:
 	db $ff
 
 
+SECTION "Crypt 4 4", ROMX, BANK[$02]
+
 INCLUDE "pycompiled/crypt_4_4.asm"
+
+SECTION "Crypt 4 5", ROMX, BANK[$03]
+
 INCLUDE "pycompiled/crypt_4_5.asm"
+
+SECTION "Crypt 5 4", ROMX, BANK[$04]
+
 INCLUDE "pycompiled/crypt_5_4.asm"
+
+SECTION "Crypt 5 5", ROMX, BANK[$05]
+
 INCLUDE "pycompiled/crypt_5_5.asm"
 
 
