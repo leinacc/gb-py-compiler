@@ -792,9 +792,6 @@ MoveDown::
 
 .changeRoom:
 	xor a
-	ld [hHeldKeys], a
-
-	xor a
 	ld [wPlayerTileY], a
 	ld a, [wCurrEntity_TileX]
 	ld [wPlayerTileX], a
@@ -866,9 +863,6 @@ assert DIR_UP == 0
 	ret
 
 .changeRoom:
-	xor a
-	ld [hHeldKeys], a
-
 	ld a, $0f
 	ld [wPlayerTileY], a
 	ld a, [wCurrEntity_TileX]
@@ -941,9 +935,6 @@ MoveLeft::
 	ret
 
 .changeRoom:
-	xor a
-	ld [hHeldKeys], a
-
 	ld a, $0f
 	ld [wPlayerTileX], a
 	ld a, [wCurrEntity_TileY]
@@ -1017,9 +1008,6 @@ MoveRight::
 	ret
 
 .changeRoom:
-	xor a
-	ld [hHeldKeys], a
-
 	xor a
 	ld [wPlayerTileX], a
 	ld a, [wCurrEntity_TileY]

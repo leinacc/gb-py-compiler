@@ -27,14 +27,26 @@ Intro::
 	ld [wWorldRoomX], a
 	ld [wWorldRoomY], a
 
-	call LoadNewRoom
-
-:	rst WaitVBlank
-	jr :-
+	jp LoadNewRoom
 
 
 LoadNewRoom::
+; Turn off screen
 	ld sp, wStackBottom
+	ldh a, [hLCDC]
+	and ~LCDCF_ON
+	ldh [hLCDC], a
+
+; Clear OAM
+	ld hl, wShadowOAM
+	ld c, $a0
+	ld a, $ff
+	rst MemsetSmall
+
+	ld a, h
+	ldh [hOAMHigh], a
+
+	rst WaitVBlank
 
 ; Init sub-engines
 	call InitEntites

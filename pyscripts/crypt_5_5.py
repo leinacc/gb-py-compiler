@@ -1,5 +1,6 @@
 from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
-    load_obj_tiles, load_room, load_metatiles, add_entity, show_status, add_player_entity
+    load_obj_tiles, load_room, load_metatiles, show_status, add_player_entity, \
+    add_entity
 
 player = None
 door = None

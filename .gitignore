@@ -7,3 +7,4 @@
 pycompiled/*.asm
 images/*.map
 data/*.room
+src/file_system.asm

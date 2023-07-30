@@ -699,6 +699,13 @@ AsmShowStatus:
 	xor a
 	ldh [rVBK], a
 
+; Turn on the screen
+	ldh a, [hLCDC]
+	or LCDCF_ON
+	ldh [hLCDC], a
+	ldh [rLCDC], a
+	rst WaitVBlank
+
 	jp PushNewNone
 
 .mtilesFile:
