@@ -241,9 +241,9 @@ UpdateEntities::
 	sub $90/2-8
 	jr nc, :+
 	xor a
-:   cp $100-$90
+:   cp $100-$90+STATUS_BAR_TILE_HEIGHT*8
 	jr c, :+
-	ld a, $100-$90
+	ld a, $100-$90+STATUS_BAR_TILE_HEIGHT*8
 :   ldh [hSCY], a
 
 ; actual entity update code

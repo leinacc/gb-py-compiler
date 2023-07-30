@@ -6,3 +6,4 @@
 *.tiled-session
 pycompiled/*.asm
 images/*.map
+data/*.room

@@ -116,8 +116,12 @@ LoadRoomModule:
 
 
 CryptRooms:
+	db 4, 4, BANK(PyBlock_crypt_4_4__module_)
+		dw PyBlock_crypt_4_4__module_
 	db 4, 5, BANK(PyBlock_crypt_4_5__module_)
 		dw PyBlock_crypt_4_5__module_
+	db 5, 4, BANK(PyBlock_crypt_5_4__module_)
+		dw PyBlock_crypt_5_4__module_
 	db 5, 5, BANK(PyBlock_crypt_5_5__module_)
 		dw PyBlock_crypt_5_5__module_
 	db $ff
@@ -188,9 +192,10 @@ StatInt_TurnOnObjs::
 	reti
 
 
+INCLUDE "pycompiled/crypt_4_4.asm"
 INCLUDE "pycompiled/crypt_4_5.asm"
+INCLUDE "pycompiled/crypt_5_4.asm"
 INCLUDE "pycompiled/crypt_5_5.asm"
-INCLUDE "pycompiled/file_system.asm"
 
 
 SECTION "World", WRAM0

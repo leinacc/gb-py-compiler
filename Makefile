@@ -134,6 +134,9 @@ res/%.pb8.size: res/%
 pycompiled/%.asm: pyscripts/%.py
 	python3 src/tools/gbcompiler.py $<
 
+data/%.room: tiled/%.json
+	python3 src/tools/tiledExtract.py $<
+
 ###############################################
 #                                             #
 #                 COMPILATION                 #
