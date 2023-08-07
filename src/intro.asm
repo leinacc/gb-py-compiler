@@ -70,10 +70,8 @@ LoadNewRoom::
 	ldh [rVBK], a
 
 	call ShowAbilities
-	jp LoadRoomModule
 
-
-LoadRoomModule:
+; Load a room's python module
 ; todo: index on a table based on world area
 	ld hl, CryptRooms
 	ld a, [wWorldRoomX]

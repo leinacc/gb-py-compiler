@@ -108,9 +108,6 @@ res/%.1bpp: res/%.png
 	@$(MKDIR_P) $(@D)
 	$(RGBGFX) -d 1 -o $@ $<
 
-data/ascii.2bpp: res/ascii.png
-	$(RGBGFX) -d 2 -o $@ $<
-
 # Define how to compress files using the PackBits16 codec
 # Compressor script requires Python 3
 res/%.pb16: res/% src/tools/pb16.py
@@ -134,8 +131,23 @@ res/%.pb8.size: res/%
 pycompiled/%.asm: pyscripts/%.py
 	python3 src/tools/gbcompiler.py $<
 
+data/ascii.2bpp: res/ascii.png
+	$(RGBGFX) -d 2 -o $@ $<
+
+data/power_icons.2bpp: images/power_icons.png
+	superfamiconv -p data/power_icons.pal -t $@ -m images/power_icons.map -i $< -M gbc -W 8 -H 8 --color-zero 2f4f4f
+
+data/stars.2bpp: images/stars.png
+	superfamiconv -p data/stars.pal -t $@ -i $< -M gbc -W 8 -H 8 -F
+
 data/%.room: tiled/%.json
 	python3 src/tools/tiledExtract.py $<
+
+data/%.2bpp: images/%.png
+	superfamiconv -p data/$*.pal -t $@ -m images/$*.map -i $< -M gbc -W 8 -H 8
+
+data/%_mtiles.bin: images/%.map
+	python3 src/tools/metatilesExtract.py $*
 
 ###############################################
 #                                             #

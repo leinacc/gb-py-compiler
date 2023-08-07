@@ -96,7 +96,6 @@ ExecBytecodes:
 	pop hl
 	jp Debug
 
-; POP_JUMP_IF_TRUE
 
 LoadConst:
 ; HL = address of const items

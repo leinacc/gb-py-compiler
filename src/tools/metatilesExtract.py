@@ -1,8 +1,14 @@
+import png
 import sys
 
+# Usage: `metatilesExtract.py crypt` for `images/crypt.map`
 name = sys.argv[1]
-numMCols = int(sys.argv[2])
-numMRows = int(sys.argv[3])
+r = png.Reader(filename=f"images/{name}.png")
+width, height = r.read()[:2]
+assert width % 16 == 0
+assert height % 16 == 0
+numMCols = width // 16
+numMRows = height // 16
 
 
 # Load superfamiconv output
