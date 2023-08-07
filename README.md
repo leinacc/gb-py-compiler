@@ -38,11 +38,3 @@ Simply open you favorite command prompt / terminal, place yourself in this direc
 While this project is able to compile under "bare" Windows (i.e. without using MSYS2, Cygwin, etc.), it requires PowerShell, and is sometimes unreliable. You should try running `make` two or three times if it errors out.
 
 If you get errors that you don't understand, try running `make clean`. If that gives the same error, try deleting the `deps` folder. If that still doesn't work, try deleting the `bin` and `obj` folders as well. If that still doesn't work, you probably did something wrong yourself.
-
-### See also
-
-If you want something more barebones, check out [gb-boilerplate](https://github.com/ISSOtm/gb-boilerplate).
-
-Perhaps [a gbdev style guide](https://gbdev.io/guides/asmstyle) may be of interest to you?
-
-I recommend the [BGB](https://bgb.bircd.org) emulator for developing ROMs on Windows and, via Wine, Linux and macOS (64-bit build available for Catalina). [SameBoy](https://github.com/LIJI32/SameBoy) is more accurate, but has a much worse interface outside of macOS.
