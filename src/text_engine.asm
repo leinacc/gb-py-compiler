@@ -1,8 +1,9 @@
 INCLUDE "defines.asm"
 
-SECTION "Text Engine Code", ROMX
+SECTION "Text Engine Code", ROM0
 
 NUM_VWF_PALS equ 4
+NUM_VWF_TEXT_ROWS equ 2 ; todo: I'm only handling 1
 
 LoadVwf::
 ; Set all pixel column colors as unused
@@ -22,9 +23,15 @@ LoadVwf::
 	ld c, NUM_VWF_PALS
 	rst MemsetSmall
 
+; Clear shadow bg palettes
+	ld hl, wVWFShadowBGPals
+	ld c, NUM_VWF_PALS*8
+	rst MemsetSmall
+
 ; Clear text vram buffer
+; todo: hard-coded to temp not interfere with dynamically allocated BG tiles
 	ld hl, $8800
-	ld bc, $10*(SCRN_X_B-2)*2
+	ld bc, $10*(SCRN_X_B-2)*NUM_VWF_TEXT_ROWS
 	rst Memset
 
 ; Init text engine and set HL = addr of text data
@@ -40,23 +47,32 @@ LoadVwf::
 	call VwfsetupTilemap
 
 ; todo: this hardware setup should sit elsewhere
-	ld a, 7
-	ldh [rWX], a
-	ld a, $90-(8*4)
-	ldh [rWY], a
-	ldh a, [hLCDC]
-	or LCDCF_WIN9C00|LCDCF_WINON
-	ldh [hLCDC], a
+; this was commented out for working with status bar
+	; ld a, 7
+	; ldh [rWX], a
+	; ld a, $90-(8*4)
+	; ldh [rWY], a
+	; ldh a, [hLCDC]
+	; or LCDCF_WIN9C00|LCDCF_WINON
+	; ldh [hLCDC], a
 
 	ret
 
 
-VwfloadString:
-	call HLequAddrOfFuncParam
+TextPhaseShift:
+	Str "\t1P\t2h\t3a\t4s\t5e \t6* \t7Shift"
 
-	ld a, [hl+]
-	cp TYPE_STR
-	jp nz, Debug
+
+; A - should be 0
+VwfloadString:
+; this was commented out for working with status bar
+	; call HLequAddrOfFuncParam
+
+	; ld a, [hl+]
+	; cp TYPE_STR
+	; jp nz, Debug
+
+	ld hl, TextPhaseShift
 
 ; Pass string length
 	inc hl
@@ -97,7 +113,7 @@ VWFassociatePalettes:
 ; Step 2: understand what colors each tile uses
 	ld hl, wVWFPixelCurrColors
 	ld de, wTileToPalsMap
-	ld c, 2*(SCRN_X_B-2)
+	ld c, NUM_VWF_TEXT_ROWS*(SCRN_X_B-2)
 	ld b, 8 ; for the colors in a tile
 
 	.nextTile:
@@ -224,7 +240,7 @@ VWFcreateShadowPals:
 VWFfillTiles:
 	ld hl, wTileToPalsMap
 	ld de, wVWFPixelCurrColors
-	ld b, 2*(SCRN_X_B-2)
+	ld b, NUM_VWF_TEXT_ROWS*(SCRN_X_B-2)
 	xor a
 	ld [wVWFIs2ndRow], a
 	ldh [hVWFPixelColIdx], a
@@ -291,10 +307,11 @@ VwfsetupTilemap:
 	ld a, 1
 	ldh [rVBK], a
 
-; Clear palettes
-	ld hl, $9c21
+; Clear tilemap attrs
+	ld hl, $9c61
 	ld de, wTileToPalsMap
 	ld b, (SCRN_X_B-2)
+	ld a, [wCurrBGPalette]
 	ld c, a
 
 	.nextTile:
@@ -313,7 +330,7 @@ VwfsetupTilemap:
 	ldh [rVBK], a
 
 ; 1st text row
-	ld hl, $9c21
+	ld hl, $9c61
 	ld a, $80
 	ld b, (SCRN_X_B-2)
 	.nextCol1:
@@ -328,7 +345,7 @@ VwfsetupTilemap:
 	push af
 
 ; 2nd text row
-	ld hl, $9c41
+	ld hl, $9c81
 	pop af
 	ld b, (SCRN_X_B-2)
 	.nextCol2:
@@ -634,13 +651,15 @@ SECTION "Text Engine Wram", WRAM0
 
 ; 2-bordered lines
 ; 8 bytes per tile * 2 rows * tiles within border
-wVWFText1bpp: ds 8*2*(SCRN_X_B-2)
+wVWFText1bpp: ds 8*NUM_VWF_TEXT_ROWS*(SCRN_X_B-2)
+.end:
 wVWFIs2ndRow: db ; when loading text, not populating it
 ; 8 pixel cols per tile * 2 tiles * tiles within border
 ; Contains bitfield values $01 to $80
-wVWFPixelCurrColors: ds 8*2*(SCRN_X_B-2)
+wVWFPixelCurrColors: ds 8*NUM_VWF_TEXT_ROWS*(SCRN_X_B-2)
 
+; Max number allocated
 wPalettesInUse: ds NUM_VWF_PALS
-wTileToPalsMap: ds 2*(SCRN_X_B-2)
+wTileToPalsMap: ds NUM_VWF_TEXT_ROWS*(SCRN_X_B-2)
 
 wVWFShadowBGPals: ds 2*4*NUM_VWF_PALS ; 4 color words * num palettes used

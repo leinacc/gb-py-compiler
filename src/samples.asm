@@ -2,7 +2,7 @@ INCLUDE "defines.asm"
 
 SECTION "Samples", ROM0
 
-ExampleSamplesTest:
+ExampleSamplesTest::
 	ld de, StarsTileData
 	call BHLequFarSrcOfFilenameInDEsSrcLen
 	call FarAllocateBGTileData
@@ -58,6 +58,14 @@ ExampleSamplesTest:
 
 	xor a
 	ldh [hSCY], a
+
+; Turn on the screen
+	ldh a, [hLCDC]
+	or LCDCF_ON
+	ldh [hLCDC], a
+	ldh [rLCDC], a
+	rst WaitVBlank
+
 	call PlaySample
 
 	.nextFrame:

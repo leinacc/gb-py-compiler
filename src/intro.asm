@@ -54,6 +54,8 @@ LoadNewRoom::
 	ld [wStatInterrupt], a
 	ldh [hTimerInterrupt], a
 
+	;jp ExampleSamplesTest
+
 ; Clear screens, and attrs, allocating a palette for the 2nd screen
 	ld hl, _SCRN0
 	ld bc, $800

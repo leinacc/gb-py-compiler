@@ -2,6 +2,7 @@
 ; Heap
 ;-----------------------------------------------------------------------------
 ;
+; TODO: combine neighboring, free chunks
 ; * chunks:
 ;   * 0:backward_ptr.w - ptr to the prev chunk, or $ffxx if the 1st (todo: seems useless)
 ;   * 2:forward_ptr.w - ptr to the next chunk, or $ffxx if the last allocated data

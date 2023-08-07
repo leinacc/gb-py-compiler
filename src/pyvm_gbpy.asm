@@ -778,6 +778,9 @@ AsmShowStatus:
 	xor a
 	ldh [rVBK], a
 
+; Add VWF text
+	call LoadVwf
+
 ; Turn on the screen
 	ldh a, [hLCDC]
 	or LCDCF_ON

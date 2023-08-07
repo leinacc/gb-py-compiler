@@ -174,7 +174,7 @@ UpdateEntities::
 	add c
 	add 1*8+8
 	ld c, a
-	ld b, 15*8+16
+	ld b, (SCRN_Y_B-STATUS_BAR_TILE_HEIGHT+1)*8+16
 
 	ld a, [wIsPowerSelected]
 	ld d, a
