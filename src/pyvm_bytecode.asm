@@ -45,56 +45,279 @@ ExecBytecodes:
 	pop hl
 	ld a, [hl+]
 	ldh [hPyOpcode], a
-	ld b, a
+	ld c, a
 	ld a, [hl+]
 	ldh [hPyParam], a
 	push hl
-	ld a, b
-	cp $01
-	jp z, PopTop
-	cp $09
-	jp z, Nope
-	cp $17
-	jp z, BinaryAdd
-	cp $53
-	jp z, ReturnValue
-	cp $5a
-	jp z, StoreName
-	cp $61
-	jp z, StoreGlobal
-	cp $64
-	jp z, LoadConst
-	cp $65
-	jp z, LoadName
-	cp $6c
-	jp z, ImportName
-	cp $6d
-	jp z, ImportFrom
-	cp $6e
-	jp z, JumpForward
-	cp $71
-	jp z, JumpAbsolute
-	cp $72
-	jp z, PopJumpIfFalse
-	cp $73
-	jp z, PopJumpIfTrue
-	cp $74
-	jp z, LoadGlobal
-	cp $7c
-	jp z, LoadFast
-	cp $7d
-	jp z, StoreFast
-	cp $83
-	jp z, CallFunction
-	cp $84
-	jp z, MakeFunction
-	cp $9b
-	jp z, FormatValue
-	cp $9d
-	jp z, BuildString
 
-	pop hl
-	jp Debug
+; Jump to opcode C's handler
+	ld hl, BytecodeHandlers
+	ld b, 0
+	add hl, bc
+	add hl, bc
+	ld a, [hl+]
+	ld h, [hl]
+	ld l, a
+	jp hl
+
+
+BytecodeHandlers:
+	dw Debug ; $00
+	dw PopTop ; $01
+	dw Debug ; $02
+	dw Debug ; $03
+	dw Debug ; $04
+	dw Debug ; $05
+	dw Debug ; $06
+	dw Debug ; $07
+	dw Debug ; $08
+	dw Nope ; $09
+	dw Debug ; $0a
+	dw Debug ; $0b
+	dw Debug ; $0c
+	dw Debug ; $0d
+	dw Debug ; $0e
+	dw Debug ; $0f
+	dw Debug ; $10
+	dw Debug ; $11
+	dw Debug ; $12
+	dw Debug ; $13
+	dw Debug ; $14
+	dw Debug ; $15
+	dw Debug ; $16
+	dw BinaryAdd ; $17
+	dw Debug ; $18
+	dw Debug ; $19
+	dw Debug ; $1a
+	dw Debug ; $1b
+	dw Debug ; $1c
+	dw Debug ; $1d
+	dw Debug ; $1e
+	dw Debug ; $1f
+	dw Debug ; $20
+	dw Debug ; $21
+	dw Debug ; $22
+	dw Debug ; $23
+	dw Debug ; $24
+	dw Debug ; $25
+	dw Debug ; $26
+	dw Debug ; $27
+	dw Debug ; $28
+	dw Debug ; $29
+	dw Debug ; $2a
+	dw Debug ; $2b
+	dw Debug ; $2c
+	dw Debug ; $2d
+	dw Debug ; $2e
+	dw Debug ; $2f
+	dw Debug ; $30
+	dw Debug ; $31
+	dw Debug ; $32
+	dw Debug ; $33
+	dw Debug ; $34
+	dw Debug ; $35
+	dw Debug ; $36
+	dw Debug ; $37
+	dw Debug ; $38
+	dw Debug ; $39
+	dw Debug ; $3a
+	dw Debug ; $3b
+	dw Debug ; $3c
+	dw Debug ; $3d
+	dw Debug ; $3e
+	dw Debug ; $3f
+	dw Debug ; $40
+	dw Debug ; $41
+	dw Debug ; $42
+	dw Debug ; $43
+	dw Debug ; $44
+	dw Debug ; $45
+	dw Debug ; $46
+	dw Debug ; $47
+	dw Debug ; $48
+	dw Debug ; $49
+	dw Debug ; $4a
+	dw Debug ; $4b
+	dw Debug ; $4c
+	dw Debug ; $4d
+	dw Debug ; $4e
+	dw Debug ; $4f
+	dw Debug ; $50
+	dw Debug ; $51
+	dw Debug ; $52
+	dw ReturnValue ; $53
+	dw Debug ; $54
+	dw Debug ; $55
+	dw Debug ; $56
+	dw Debug ; $57
+	dw Debug ; $58
+	dw Debug ; $59
+	dw StoreName ; $5a
+	dw Debug ; $5b
+	dw Debug ; $5c
+	dw Debug ; $5d
+	dw Debug ; $5e
+	dw Debug ; $5f
+	dw Debug ; $60
+	dw StoreGlobal ; $61
+	dw Debug ; $62
+	dw Debug ; $63
+	dw LoadConst ; $64
+	dw LoadName ; $65
+	dw Debug ; $66
+	dw Debug ; $67
+	dw Debug ; $68
+	dw Debug ; $69
+	dw Debug ; $6a
+	dw Debug ; $6b
+	dw ImportName ; $6c
+	dw ImportFrom ; $6d
+	dw JumpForward ; $6e
+	dw Debug ; $6f
+	dw Debug ; $70
+	dw JumpAbsolute ; $71
+	dw PopJumpIfFalse ; $72
+	dw PopJumpIfTrue ; $73
+	dw LoadGlobal ; $74
+	dw Debug ; $75
+	dw Debug ; $76
+	dw Debug ; $77
+	dw Debug ; $78
+	dw Debug ; $79
+	dw Debug ; $7a
+	dw Debug ; $7b
+	dw LoadFast ; $7c
+	dw StoreFast ; $7d
+	dw Debug ; $7e
+	dw Debug ; $7f
+	dw Debug ; $80
+	dw Debug ; $81
+	dw Debug ; $82
+	dw CallFunction ; $83
+	dw MakeFunction ; $84
+	dw Debug ; $85
+	dw Debug ; $86
+	dw Debug ; $87
+	dw Debug ; $88
+	dw Debug ; $89
+	dw Debug ; $8a
+	dw Debug ; $8b
+	dw Debug ; $8c
+	dw Debug ; $8d
+	dw Debug ; $8e
+	dw Debug ; $8f
+	dw Debug ; $90
+	dw Debug ; $91
+	dw Debug ; $92
+	dw Debug ; $93
+	dw Debug ; $94
+	dw Debug ; $95
+	dw Debug ; $96
+	dw Debug ; $97
+	dw Debug ; $98
+	dw Debug ; $99
+	dw Debug ; $9a
+	dw FormatValue ; $9b
+	dw Debug ; $9c
+	dw BuildString ; $9d
+	dw Debug ; $9e
+	dw Debug ; $9f
+	dw Debug ; $a0
+	dw Debug ; $a1
+	dw Debug ; $a2
+	dw Debug ; $a3
+	dw Debug ; $a4
+	dw Debug ; $a5
+	dw Debug ; $a6
+	dw Debug ; $a7
+	dw Debug ; $a8
+	dw Debug ; $a9
+	dw Debug ; $aa
+	dw Debug ; $ab
+	dw Debug ; $ac
+	dw Debug ; $ad
+	dw Debug ; $ae
+	dw Debug ; $af
+	dw Debug ; $b0
+	dw Debug ; $b1
+	dw Debug ; $b2
+	dw Debug ; $b3
+	dw Debug ; $b4
+	dw Debug ; $b5
+	dw Debug ; $b6
+	dw Debug ; $b7
+	dw Debug ; $b8
+	dw Debug ; $b9
+	dw Debug ; $ba
+	dw Debug ; $bb
+	dw Debug ; $bc
+	dw Debug ; $bd
+	dw Debug ; $be
+	dw Debug ; $bf
+	dw Debug ; $c0
+	dw Debug ; $c1
+	dw Debug ; $c2
+	dw Debug ; $c3
+	dw Debug ; $c4
+	dw Debug ; $c5
+	dw Debug ; $c6
+	dw Debug ; $c7
+	dw Debug ; $c8
+	dw Debug ; $c9
+	dw Debug ; $ca
+	dw Debug ; $cb
+	dw Debug ; $cc
+	dw Debug ; $cd
+	dw Debug ; $ce
+	dw Debug ; $cf
+	dw Debug ; $d0
+	dw Debug ; $d1
+	dw Debug ; $d2
+	dw Debug ; $d3
+	dw Debug ; $d4
+	dw Debug ; $d5
+	dw Debug ; $d6
+	dw Debug ; $d7
+	dw Debug ; $d8
+	dw Debug ; $d9
+	dw Debug ; $da
+	dw Debug ; $db
+	dw Debug ; $dc
+	dw Debug ; $dd
+	dw Debug ; $de
+	dw Debug ; $df
+	dw Debug ; $e0
+	dw Debug ; $e1
+	dw Debug ; $e2
+	dw Debug ; $e3
+	dw Debug ; $e4
+	dw Debug ; $e5
+	dw Debug ; $e6
+	dw Debug ; $e7
+	dw Debug ; $e8
+	dw Debug ; $e9
+	dw Debug ; $ea
+	dw Debug ; $eb
+	dw Debug ; $ec
+	dw Debug ; $ed
+	dw Debug ; $ee
+	dw Debug ; $ef
+	dw Debug ; $f0
+	dw Debug ; $f1
+	dw Debug ; $f2
+	dw Debug ; $f3
+	dw Debug ; $f4
+	dw Debug ; $f5
+	dw Debug ; $f6
+	dw Debug ; $f7
+	dw Debug ; $f8
+	dw Debug ; $f9
+	dw Debug ; $fa
+	dw Debug ; $fb
+	dw Debug ; $fc
+	dw Debug ; $fd
+	dw Debug ; $fe
+	dw Debug ; $ff
 
 
 LoadConst:
