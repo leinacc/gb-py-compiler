@@ -12,7 +12,7 @@ This project roughly shows how a subset of python could be used to write game lo
 ## Controls
 
 * Directions - move orthogonally only. If phase shifting, you can pass through walls / solid blocks
-* B - select power. They all default to the 1st: phase shift (walk straight through walls if you can eventually reach a ground tile)
+* B - select power. They all default to the 1st: phase shift (walk straight through walls if you can eventually reach a ground tile, eg try phasing through the wall below where you start)
 * Select - cycle through powers (if they weren't all phase shift like right now)
 
 ## Notes
@@ -23,6 +23,7 @@ This project roughly shows how a subset of python could be used to write game lo
 * Python VM-related files start with `src/pyvm_`
 * Rainbow VWF code is in `src/text_engine.asm`
 * The 1st room has a button you can stand on to make a block non-solid (thus preventing phase shifting through it). This script is in `pyscripts/crypt_5_5.py`
+* DMG is just not handled
 
 ## Building
 
