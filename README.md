@@ -19,6 +19,7 @@ This project roughly shows how a subset of python could be used to write game lo
 
 * The python-to-gb-compiler is `src/tools/gbcompiler.py`
 * A virtual file system is created with `src/tools/genFileSystem.py`
+* The conversion script for wav files to my uncompressed NR50 .bin files is `src/tools/samplesConvert.py`
 * To try the sample engine, uncomment `jp ExampleSamplesTest` in `src/intro.asm`
 * Python VM-related files start with `src/pyvm_`
 * Rainbow VWF code is in `src/text_engine.asm`
