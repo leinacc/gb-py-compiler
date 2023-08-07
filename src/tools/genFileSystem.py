@@ -20,7 +20,7 @@ for i, fname in enumerate(fnames):
     output += f"\t\tdw File{i}\n"
 output += "\tdb $ff\n\n"
 
-output += 'SECTION "Files", ROMX, BANK[$3f]\n'
+output += 'SECTION "Files", ROMX, BANK[$06]\n'
 
 for i, fname in enumerate(fnames):
     output += f"\nFile{i}:\n"

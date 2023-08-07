@@ -122,6 +122,8 @@ CryptRooms:
 	db $ff
 
 
+; todo: Hard-coded banks to later test non-gbpy module access
+; from different banks
 SECTION "Crypt 4 4", ROMX, BANK[$02]
 
 INCLUDE "pycompiled/crypt_4_4.asm"

@@ -402,19 +402,22 @@ LoadAPageOfVoiceSamplesBankUnpreserved:
     ret
 
 
-FOR N, $13
+SAMPLE_START_BANK = $07
+SAMPLE_FULL_BANKS = $13
 
-SECTION "Sample{N}", ROMX[$4000], BANK[$40+N]
+FOR N, SAMPLE_FULL_BANKS
+
+SECTION "Sample{N}", ROMX[$4000], BANK[SAMPLE_START_BANK+N]
 
 ExampleSample{x:N}:
     INCBIN "res/kh_sample.bin", $4000*N, $4000
 
 ENDR
 
-SECTION "SampleLast", ROMX[$4000], BANK[$40+$13]
+SECTION "SampleLast", ROMX[$4000], BANK[SAMPLE_START_BANK+SAMPLE_FULL_BANKS]
 
 ExampleSampleLast:
-    INCBIN "res/kh_sample.bin", $4000*$13
+    INCBIN "res/kh_sample.bin", $4000*SAMPLE_FULL_BANKS
 
 
 SECTION "Samples buffers", WRAM0, ALIGN[8]
