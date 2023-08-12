@@ -3,10 +3,10 @@
 ;-----------------------------------------------------------------------------
 ;
 ; Step 1 (VwfloadString):
-;   * $09 (\t) sets the palette from the next byte until it's changed again
+;   * $09 (\t) the next byte is the palette value to use (0-7), until changed again
 ;   * $ff ends loading the string
 ;   * Other text bytes load the char
-;     * Fill an array that tracks the color for every pixel column
+;     * Fill an array that tracks the color for every pixel column (0-7 -> $01-$80)
 ;     * Rotates in the char's 1bpp data
 ;     * Advances the current column to draw to
 ; Step 2 (VWFassociatePalettes):
@@ -16,17 +16,17 @@
 ;       are 8 colors, so a bitfield represents those used
 ;     * Track in a map, what palette index each tile uses
 ; Step 3 (VWFcreateShadowPals):
-;  * Given the bitfield of colors used, per tile, figure out the word palette values
+;  * Given the bitfield of colors used, per palette, figure out the word palette values
 ;  * Copy these to rBCPD
 ; Step 4 (VWFfillTiles):
 ;  * Given each pixel column color, figure out its index in the tile's color bitfield
-;    * eg for %0010_1100
-;      * color 3 is $08
+;    * eg for a tile using colors %0010_1100 (orange+yellow+blue in white-roygbiv)
+;      * color 3 (yellow) is $08
 ;      * -1 makes it 7
 ;      * anded with %0010_1100 gives %0000_0100
 ;      * 1 bit set means it's the 2nd color going from low to high
-;    * Similarly, color 2 yields %0000_0000, and color 5 yields %0000_1100,
-;      to show that color 2 is the 1st color, and 5 is the 3rd color
+;    * Similarly, color 2 (orange) yields %0000_0000, and color 5 (blue) yields 
+;      %0000_1100, to show that color 2 is the 1st color, and 5 is the 3rd color
 ;  * Based on that index, fill 1 or 2 bitplanes for the pixel column
 ; Step 5 (VwfsetupTilemap):
 ;  * Simply upload the built up tiles to vram
