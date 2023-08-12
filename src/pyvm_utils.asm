@@ -142,7 +142,7 @@ PushNewBool::
 ; Return Z flag set if strings match
 ; Does not preserve regs (DE and HL will be past a terminator if they match)
 ; todo: if string length == $ff, this will fail
-CheckString::
+CheckString:
 .nextChar:
 ; If either [hl] or [de] are both $ff, they have the same length, so are both $ff
 	ld a, [hl+]

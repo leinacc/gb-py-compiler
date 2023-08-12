@@ -4,7 +4,7 @@
 ;
 ; TODO: combine neighboring, free chunks
 ; * chunks:
-;   * 0:backward_ptr.w - ptr to the prev chunk, or $ffxx if the 1st (todo: seems useless)
+;   * 0:backward_ptr.w - ptr to the prev chunk, or $ffxx if the 1st (todo: for combining chunks)
 ;   * 2:forward_ptr.w - ptr to the next chunk, or $ffxx if the last allocated data
 ;   * 4:size.w - size of chunk including the 6-byte header
 ;   * 6:is_free.b - if the chunk had been freed, and is ready for re-use

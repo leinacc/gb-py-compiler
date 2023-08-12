@@ -1,3 +1,38 @@
+;-----------------------------------------------------------------------------
+; Rainbow VWF
+;-----------------------------------------------------------------------------
+;
+; Step 1 (VwfloadString):
+;   * $09 (\t) sets the palette from the next byte until it's changed again
+;   * $ff ends loading the string
+;   * Other text bytes load the char
+;     * Fill an array that tracks the color for every pixel column
+;     * Rotates in the char's 1bpp data
+;     * Advances the current column to draw to
+; Step 2 (VWFassociatePalettes):
+;   * Given the color for every pixel column,
+;     * Figure out the 1st palette that can acommodate the current tile's colors,
+;       using a Set to ensure no more than 3 colors are used for the palette. There
+;       are 8 colors, so a bitfield represents those used
+;     * Track in a map, what palette index each tile uses
+; Step 3 (VWFcreateShadowPals):
+;  * Given the bitfield of colors used, per tile, figure out the word palette values
+;  * Copy these to rBCPD
+; Step 4 (VWFfillTiles):
+;  * Given each pixel column color, figure out its index in the tile's color bitfield
+;    * eg for %0010_1100
+;      * color 3 is $08
+;      * -1 makes it 7
+;      * anded with %0010_1100 gives %0000_0100
+;      * 1 bit set means it's the 2nd color going from low to high
+;    * Similarly, color 2 yields %0000_0000, and color 5 yields %0000_1100,
+;      to show that color 2 is the 1st color, and 5 is the 3rd color
+;  * Based on that index, fill 1 or 2 bitplanes for the pixel column
+; Step 5 (VwfsetupTilemap):
+;  * Simply upload the built up tiles to vram
+;
+;-----------------------------------------------------------------------------
+
 INCLUDE "defines.asm"
 
 SECTION "Text Engine Code", ROM0
