@@ -1,5 +1,7 @@
 INCLUDE "defines.asm"
 
+INCLUDE "include/file_system.asm"
+
 SECTION "Python VM common routines", ROM0
 
 

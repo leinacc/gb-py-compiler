@@ -146,6 +146,9 @@ data/%.2bpp: images/%.png
 data/%_mtiles.bin: images/%.map
 	python3 src/tools/metatilesExtract.py $*
 
+src/include/file_system.asm: $(wildcard data/*) $(wildcard tiled/*.json)
+	python3 src/tools/genFileSystem.py
+
 ###############################################
 #                                             #
 #                 COMPILATION                 #

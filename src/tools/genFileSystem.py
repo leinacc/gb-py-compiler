@@ -11,9 +11,7 @@ fnames += [
 
 asso_values, hash_algo, wordlist = process_words(fnames, "FileSystem")
 
-output = f"""INCLUDE "defines.asm"
-
-SECTION "File System", ROM0
+output = f"""SECTION "File System", ROM0
 
 {asso_values}
 
@@ -41,5 +39,5 @@ for i, fname in enumerate(wordlist):
     output += ".end:\n"
 
 
-with open("src/file_system.asm", "w") as f:
+with open("src/include/file_system.asm", "w") as f:
     f.write(output)

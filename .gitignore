@@ -6,7 +6,7 @@
 *.tiled-session
 pycompiled/*.asm
 images/*.map
-src/file_system.asm
+src/include/file_system.asm
 data/*.room
 data/*.2bpp
 data/*.bin
