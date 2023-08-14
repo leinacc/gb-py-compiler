@@ -41,13 +41,12 @@ def get_tuple_output(tup, indents=0):
         output += indent + f'.tupleItem{i}:\n'
         if isinstance(el, str):
             output += get_str_output(el, indents+1)
-            names.add(el)
         else:
             raise Exception("text")
     return output
 
 
-def get_block_output(block, indents=0):
+def get_block_output(block, indents=0, module=False):
     clean_name = block.co_name.replace("<", "_").replace(">", "_")
     indent = '\t' * indents
     output = f"""PyBlock_{fname}_{clean_name}:
@@ -56,6 +55,8 @@ def get_block_output(block, indents=0):
 {indent}\tdw .bytecode
 {indent}\t.consts:
 """
+
+    block_names = set()
 
     # 1. co_consts
     for i in range(len(block.co_consts)):
@@ -68,9 +69,16 @@ def get_block_output(block, indents=0):
             output += get_int_output(el, indents+2)
         elif isinstance(el, tuple):
             output += get_tuple_output(el, indents+2)
+            for child_el in el:
+                if isinstance(child_el, str):
+                    names.add(child_el)
+                    if module:
+                        block_names.add(child_el)
         elif isinstance(el, str):
             output += get_str_output(el, indents+2)
             names.add(el)
+            if module:
+                block_names.add(el)
         elif type(el).__name__ == 'code':
             output += f"{indent}\t\tdb TYPE_FUNCTION\n"
             clean_name = el.co_name.replace("<", "_").replace(">", "_")
@@ -100,10 +108,13 @@ def get_block_output(block, indents=0):
     for i in range(len(c)//2):
         output += f"{indent}\tdb ${c[i*2]:02x}, ${c[i*2+1]:02x}\n"
 
+    if module:
+        print('/*\n' + '\n'.join(sorted(block_names)) + '\n*/')
+
     return output
 
 
-outputs.insert(0, get_block_output(compiled))
+outputs.insert(0, get_block_output(compiled, module=True))
 
 
 outputs.append('/*\n' + '\n'.join(sorted(names)) + '\n*/')

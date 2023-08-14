@@ -7,12 +7,12 @@ ShowAbilities::
 	push af
 
 ; Show abilities
-	ld de, PowerIconsTileData
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, PowerIconsTileData
+	call GetSrcOfFileInHL
 	call FarAllocateBGTileData
 
-	ld de, PowerIconsPalettes
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, PowerIconsPalettes
+	call GetSrcOfFileInHL
 	call FarAllocateBGPalettes
 
 	ld hl, PowerIconsSelectSpriteTiles

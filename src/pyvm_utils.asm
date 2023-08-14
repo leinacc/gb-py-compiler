@@ -219,8 +219,9 @@ HLequAfterMatchingNameInList::
 
 
 ; A - param idx starting 0
-; Trashes A, BC and DE
-BHLequFarSrcOfFilenameInVMDir::
+; Returns B:HL = a pointer to the file
+; Trashes A, C and DE
+GetSrcOfFileGivenGbpyFuncParam::
 	call HLequAddrOfFuncParam
 
 ; Check filename to load is str
@@ -228,18 +229,20 @@ BHLequFarSrcOfFilenameInVMDir::
 	cp TYPE_STR
 	jp nz, Debug
 
-	ld d, h
-	ld e, l
-
-; Trashes A and BC
-BHLequFarSrcOfFilenameInDEsSrcLen::
+; HL - pointer to a Str macro
+; Returns B:HL = a pointer to the file
+; Trashes A, C, DE
+GetSrcOfFileInHL::
+	call FileSystemHash
+	ld b, a
+	add a
+	add b
 	ld hl, FileSystem
-
-; Each name has a far src after it
-	ld a, 3
-	ldh [hStringListExtraBytes], a
-	call HLequAfterMatchingNameInList
-	ld a, [hl+]
+	add l
+	ld l, a
+	jr nc, :+
+	inc h
+:	ld a, [hl+]
 	ld b, a
 	ld a, [hl+]
 	ld h, [hl]

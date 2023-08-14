@@ -100,7 +100,7 @@ AsmLoadBGTiles:
 
 ; 1st param file is the tile data to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 
 ; Return the 1st tile idx from the auto-allocation
 	call FarAllocateBGTileData
@@ -113,7 +113,7 @@ AsmLoadOBJTiles:
 
 ; 1st param file is the tile data to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 
 ; Return the 1st tile idx from the auto-allocation
 	call FarAllocateOBJTileData
@@ -126,7 +126,7 @@ AsmLoadBGPalettes:
 
 ; 1st param file is the palette data to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 
 	call FarAllocateBGPalettes
 	jp PushNewInt
@@ -137,7 +137,7 @@ AsmLoadOBJPalettes:
 
 ; 1st param file is the palette data to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 
 	call FarAllocateOBJPalettes
 	jp PushNewInt
@@ -148,7 +148,7 @@ AsmLoadMetatiles:
 
 ; 1st param file is the room metatile data to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 
 	ldh a, [hCurROMBank]
 	push af
@@ -187,7 +187,7 @@ AsmLoadRoom:
 
 ; 1st param file is the metatile tiles to load
 	xor a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 ; Ignore the file size
 	inc hl
 	inc hl
@@ -218,7 +218,7 @@ AsmLoadRoom:
 ; 2nd param file is the metatile attrs to load
 	ld a, 1
 	ldh [rVBK], a
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 ; Ignore the file size
 	inc hl
 	inc hl
@@ -369,7 +369,7 @@ _AddEntity:
 
 ; 5th param is the metatiles tiles data
 	ld a, 4
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 ; Ignore the file size
 	inc hl
 	inc hl
@@ -382,7 +382,7 @@ _AddEntity:
 
 ; 6th param is the metatiles attrs data
 	ld a, 5
-	call BHLequFarSrcOfFilenameInVMDir
+	call GetSrcOfFileGivenGbpyFuncParam
 ; Ignore the file size
 	inc hl
 	inc hl
@@ -699,8 +699,8 @@ AsmShowStatus:
 ; todo: flip a flag to say we have status bar controls
 
 ; Add the power icons
-	ld de, .mtilesFile
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, .mtilesFile
+	call GetSrcOfFileInHL
 ; Ignore the file size
 	inc hl
 	inc hl
@@ -739,8 +739,8 @@ AsmShowStatus:
 	ld a, 1
 	ldh [rVBK], a
 
-	ld de, .mattrsFile
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, .mattrsFile
+	call GetSrcOfFileInHL
 ; Ignore the file size
 	inc hl
 	inc hl

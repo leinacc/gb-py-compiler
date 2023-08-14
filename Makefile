@@ -131,9 +131,6 @@ res/%.pb8.size: res/%
 pycompiled/%.asm: pyscripts/%.py
 	python3 src/tools/gbcompiler.py $<
 
-data/ascii.2bpp: res/ascii.png
-	$(RGBGFX) -d 2 -o $@ $<
-
 data/power_icons.2bpp: images/power_icons.png
 	superfamiconv -p data/power_icons.pal -t $@ -m images/power_icons.map -i $< -M gbc -W 8 -H 8 --color-zero 2f4f4f
 

@@ -163,10 +163,6 @@ def ENTSTATE_STILL rb 1
 def ENTSTATE_MOVING rb 1
 def ENTSTATE_USING_ABILITY rb 1
 
-macro Str
-	db STRLEN(\1)+1, \1, $ff
-endm
-
 
 ; Worlds
 WORLD_CRYPT = 0
@@ -179,3 +175,12 @@ STATUS_SCREEN_MAIN_COL equ $2525 ; #2f4f4f
 _JP = $c3
 _RETI = $d9
 PUSH_AF = $f5
+
+macro Str
+	db STRLEN(\1)+1, \1, $ff
+endm
+
+macro BankAddr
+	db BANK(\1)
+	dw \1
+endm

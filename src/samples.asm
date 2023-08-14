@@ -3,12 +3,12 @@ INCLUDE "defines.asm"
 SECTION "Samples", ROM0
 
 ExampleSamplesTest::
-	ld de, StarsTileData
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, StarsTileData
+	call GetSrcOfFileInHL
 	call FarAllocateBGTileData
 
-	ld de, StarsPalettes
-	call BHLequFarSrcOfFilenameInDEsSrcLen
+	ld hl, StarsPalettes
+	call GetSrcOfFileInHL
 	call FarAllocateBGPalettes
 
 	ld c, $20

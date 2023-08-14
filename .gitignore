@@ -11,3 +11,4 @@ data/*.room
 data/*.2bpp
 data/*.bin
 data/*.pal
+__pycache__/
