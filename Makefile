@@ -149,6 +149,9 @@ data/%_mtiles.bin: images/%.map
 src/include/file_system.asm: $(wildcard data/*) $(wildcard tiled/*.json)
 	python3 src/tools/genFileSystem.py
 
+src/include/gbpy_table.asm: src/tools/gb.py
+	python3 src/tools/genGbpyTable.py
+
 ###############################################
 #                                             #
 #                 COMPILATION                 #

@@ -383,20 +383,23 @@ ImportFrom:
 	jr nc, :+
 	inc h
 
-; DE = address of name string to find
+; HL = address of name string to find
 :   ld a, [hl+]
-	ld e, a
-	ld d, [hl]
+	ld h, [hl]
+	ld l, a
 
+; HL points to the gbpy routine
+	call GbpyRoutinesHash
 	pop hl
 
-; Each name has a word ptr after it
-	ld a, 2
-	ldh [hStringListExtraBytes], a
-	call HLequAfterMatchingNameInList
+	add a
+	add l
+	ld l, a
+	jr nc, :+
+	inc h
 
 ; Push ptr to asm type
-	ld a, [hl+]
+:	ld a, [hl+]
 	ld h, [hl]
 	ld l, a
 	call PushStack
@@ -1186,9 +1189,6 @@ hPyStackTop:: db
 hPyOpcode: db
 hPyParam:: db
 hPyLocalEnd:
-
-; For generic singly-linked list string tables
-hStringListExtraBytes:: db
 
 ; Call stack which 1st points to a global frame
 hCurrCallStackIdx:: db

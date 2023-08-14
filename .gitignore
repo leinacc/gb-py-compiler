@@ -7,6 +7,7 @@
 pycompiled/*.asm
 images/*.map
 src/include/file_system.asm
+src/include/gbpy_table.asm
 data/*.room
 data/*.2bpp
 data/*.bin

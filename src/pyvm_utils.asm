@@ -180,39 +180,28 @@ HLequGlobalNamePtrAddr::
 	ld a, [hGlobalNamesPtr+1]
 	ld h, a
 
-; Each name has a word ptr after it
-	ld a, 2
-	ldh [hStringListExtraBytes], a
-	jp HLequAfterMatchingNameInList
+	.nextName:
+		push hl
+	; String lists end in $ff
+		ld a, [hl]
+		cp $ff
+		jp z, Debug
 
+		push de
+		call CheckString
+		pop de
+		jr z, .foundName
 
-; DE - string to find
-; HL - list of strings to match against
-; hStringListExtraBytes - num bytes in a string entry, excluding string + $ff
-; Trashes A and BC
-HLequAfterMatchingNameInList::
-.nextName:
-	push hl
-; String lists end in $ff
-	ld a, [hl]
-	cp $ff
-	jp z, Debug
-
-	push de
-	call CheckString
-	pop de
-	jr z, .foundName
-
-	pop hl
-; Skip past length byte + str + $ff + extra bytes
-	ldh a, [hStringListExtraBytes]
-	inc a
-	ld c, [hl]
-	add c
-	ld c, a
-	ld b, 0
-	add hl, bc
-	jr .nextName
+		pop hl
+	; Skip past length byte + str + $ff + the name ptr
+		ld a, 2
+		inc a
+		ld c, [hl]
+		add c
+		ld c, a
+		ld b, 0
+		add hl, bc
+		jr .nextName
 
 .foundName:
 ; Remove 'push hl'

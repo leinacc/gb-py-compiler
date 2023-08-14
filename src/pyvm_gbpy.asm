@@ -1,93 +1,8 @@
 INCLUDE "defines.asm"
 
+INCLUDE "include/gbpy_table.asm"
+
 SECTION "Python VM gbpy module asm routines", ROM0
-
-
-GbpyModule::
-	db TYPE_GBPY_MODULE
-	; arg0: filename
-	Str "load_bg_tiles"
-		dw AsmLoadBGTiles
-	; arg0: filename
-	Str "load_obj_tiles"
-		dw AsmLoadOBJTiles
-	Str "wait_vblank"
-		dw AsmWaitVBlank
-	; arg0: filename
-	Str "load_bg_palettes"
-		dw AsmLoadBGPalettes
-	; arg0: filename
-	Str "load_obj_palettes"
-		dw AsmLoadOBJPalettes
-	; arg0: metatile tiles filename
-	; arg1: metatile attrs filename
-	; arg2: tile data ptr for the tiles arg0 refers to
-	; arg3: palettes ptr for the palettes arg1 refers to
-	Str "load_room"
-		dw AsmLoadRoom
-	; arg0: room's metatiles filename
-	Str "load_metatiles"
-		dw AsmLoadMetatiles
-	; arg0: script function ptr
-	; arg1: animation definition index
-	; arg2: palettes ptr for the palettes arg7 refers to
-	; arg3: tile data ptr for the tiles arg6 refers to
-	; arg4: metatile tiles filename
-	; arg5: metatile attrs filename
-	; arg6: metatile x
-	; arg7: metatile y
-	Str "add_entity"
-		dw AsmAddEntity
-	; arg0: num metatiles to move
-	Str "move_left"
-		dw AsmMoveLeft
-	; arg0: num metatiles to move
-	Str "move_right"
-		dw AsmMoveRight
-	; arg0: num metatiles to move
-	Str "move_up"
-		dw AsmMoveUp
-	; arg0: num metatiles to move
-	Str "move_down"
-		dw AsmMoveDown
-	Str "update_entities"
-		dw AsmUpdateEntities
-	Str "enable_movement"
-		dw AsmEnableMovement
-	Str "enable_abilities"
-		dw AsmEnableAbilities
-	Str "entity_noop"
-		dw AsmEntityNoop
-	; arg0: the text to print
-	;       \0 to \7 change the text to 1 of 8 pre-defined colors
-	Str "load_vwf"
-		dw AsmLoadVwf
-	Str "allow_1_move"
-		dw AsmAllow1Move
-	Str "enable_solid"
-		dw AsmEnableSolid
-	; arg0: id of an entity to check collision with
-	Str "collides_with"
-		dw AsmCollidesWith
-	; arg0: id of an entity to remove the 'solid' state from
-	Str "disable_other_solid"
-		dw AsmDisableOtherSolid
-	; arg0: id of an entity to change the dir of
-	Str "look_other_down"
-		dw AsmLookOtherDown
-	Str "look_down"
-		dw AsmLookDown
-	Str "show_status"
-		dw AsmShowStatus
-	; arg0: script function ptr
-	; arg1: animation definition index
-	; arg2: palettes ptr for the palettes arg7 refers to
-	; arg3: tile data ptr for the tiles arg6 refers to
-	; arg4: metatile tiles filename
-	; arg5: metatile attrs filename
-	Str "add_player_entity"
-		dw AsmAddPlayerEntity
-	db $ff
 
 
 AsmStub:
@@ -95,7 +10,7 @@ AsmStub:
 	jp Debug
 
 
-AsmLoadBGTiles:
+Asm_load_bg_tiles:
 	db TYPE_ASM
 
 ; 1st param file is the tile data to load
@@ -108,7 +23,7 @@ AsmLoadBGTiles:
 	jp PushNewInt
 
 
-AsmLoadOBJTiles:
+Asm_load_obj_tiles:
 	db TYPE_ASM
 
 ; 1st param file is the tile data to load
@@ -121,7 +36,7 @@ AsmLoadOBJTiles:
 	jp PushNewInt
 
 
-AsmLoadBGPalettes:
+Asm_load_bg_palettes:
 	db TYPE_ASM
 
 ; 1st param file is the palette data to load
@@ -132,7 +47,7 @@ AsmLoadBGPalettes:
 	jp PushNewInt
 
 
-AsmLoadOBJPalettes:
+Asm_load_obj_palettes:
 	db TYPE_ASM
 
 ; 1st param file is the palette data to load
@@ -143,7 +58,7 @@ AsmLoadOBJPalettes:
 	jp PushNewInt
 
 
-AsmLoadMetatiles:
+Asm_load_metatiles:
 	db TYPE_ASM
 
 ; 1st param file is the room metatile data to load
@@ -177,7 +92,7 @@ AsmLoadMetatiles:
 	jp PushNewNone
 
 
-AsmLoadRoom:
+Asm_load_room:
 	db TYPE_ASM
 
 ; 3rd param is the base tile idx
@@ -334,7 +249,7 @@ StoreMetatileTilesOrAttrs:
 	ret
 
 
-AsmAddEntity:
+Asm_add_entity:
 	db TYPE_ASM
 
 ; 7th param is the tile x (push as the below routine trashes B)
@@ -449,7 +364,7 @@ _AddEntity:
 	jp PushNewInt
 
 
-AsmMoveLeft:
+Asm_move_left:
 	db TYPE_ASM
 
 	xor a
@@ -463,7 +378,7 @@ AsmMoveLeft:
 	jp EndEntitysScript
 
 
-AsmMoveRight:
+Asm_move_right:
 	db TYPE_ASM
 
 	xor a
@@ -477,7 +392,7 @@ AsmMoveRight:
 	jp EndEntitysScript
 
 
-AsmMoveUp:
+Asm_move_up:
 	db TYPE_ASM
 
 	xor a
@@ -491,7 +406,7 @@ AsmMoveUp:
 	jp EndEntitysScript
 
 
-AsmMoveDown:
+Asm_move_down:
 	db TYPE_ASM
 
 	xor a
@@ -505,13 +420,13 @@ AsmMoveDown:
 	jp EndEntitysScript
 
 
-AsmUpdateEntities:
+Asm_update_entities:
 	db TYPE_ASM
 	call UpdateEntities
 	jp PushNewNone
 
 
-AsmEnableMovement:
+Asm_enable_movement:
 	db TYPE_ASM
 	ld a, [wCurrEntity_InputCtrl]
 	set ENTCTRL_DIR_MOVABLE, a
@@ -519,7 +434,7 @@ AsmEnableMovement:
 	jp PushNewNone
 
 
-AsmEnableAbilities:
+Asm_enable_abilities:
 	db TYPE_ASM
 	ld a, [wCurrEntity_InputCtrl]
 	set ENTCTRL_USES_ABILITIES, a
@@ -527,21 +442,21 @@ AsmEnableAbilities:
 	jp PushNewNone
 
 
-AsmEntityNoop:
+Asm_entity_noop:
 	db TYPE_ASM
 	call PassTurnToNextEntity
 	call PushNewNone
 	jp EndEntitysScript
 
 
-AsmAllow1Move:
+Asm_allow_1_move:
 	db TYPE_ASM
 	call UpdateEntity
 	call PushNewNone
 	jp EndEntitysScript
 
 
-AsmEnableSolid:
+Asm_enable_solid:
 	db TYPE_ASM
 	ld a, [wCurrEntity_InputCtrl]
 	set ENTCTRL_IS_SOLID, a
@@ -549,7 +464,7 @@ AsmEnableSolid:
 	jp PushNewNone
 
 
-AsmCollidesWith:
+Asm_collides_with:
 	db TYPE_ASM
 
 ; Arg 0 is the entity id to check against the current
@@ -587,7 +502,7 @@ AsmCollidesWith:
 	jp PushNewBool
 
 
-AsmDisableOtherSolid:
+Asm_disable_other_solid:
 	db TYPE_ASM
 
 ; Arg 0 is the entity id to disable
@@ -612,7 +527,7 @@ AsmDisableOtherSolid:
 	jp PushNewNone
 
 
-AsmLookOtherDown:
+Asm_look_other_down:
 	db TYPE_ASM
 
 ; Arg 0 is the entity id to change direction of
@@ -645,7 +560,7 @@ AsmLookOtherDown:
 	jp PushNewNone
 
 
-AsmLookDown:
+Asm_look_down:
 	db TYPE_ASM
 
 	ld a, DIR_DOWN
@@ -656,19 +571,19 @@ AsmLookDown:
 	jp PushNewNone
 
 
-AsmLoadVwf:
+Asm_load_vwf:
 	db TYPE_ASM
 	call LoadVwf
 	jp PushNewNone
 
 
-AsmWaitVBlank:
+Asm_wait_vblank:
 	db TYPE_ASM
 	rst WaitVBlank
 	jp PushNewNone
 
 
-AsmShowStatus:
+Asm_show_status:
 	db TYPE_ASM
 
 ; Render status bar via window
@@ -797,7 +712,7 @@ AsmShowStatus:
 	Str "power_icons_mattrs.bin"
 
 
-AsmAddPlayerEntity:
+Asm_add_player_entity:
 	db TYPE_ASM
 	ld a, [wPlayerTileX]
 	ld b, a
