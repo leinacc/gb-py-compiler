@@ -28,11 +28,6 @@ for i, fname in enumerate(wordlist):
     else:
         output += f"    BankAddr File{i}\n"
 
-# for i, fname in enumerate(fnames):
-#     output += f"\tStr \"{fname}\"\n"
-#     output += f"\t\tdb BANK(File{i})\n"
-#     output += f"\t\tdw File{i}\n"
-# output += "\tdb $ff\n\n"
 
 output += '\n\nSECTION "Files", ROMX, BANK[$06]\n'
 
@@ -45,12 +40,6 @@ for i, fname in enumerate(wordlist):
     output += f"\tINCBIN \"data/{fname}\"\n"
     output += ".end:\n"
 
-# for i, fname in enumerate(fnames):
-#     output += f"\nFile{i}:\n"
-#     output += f"\tdw .end-.start\n"
-#     output += ".start:\n"
-#     output += f"\tINCBIN \"data/{fname}\"\n"
-#     output += ".end:\n"
 
 with open("src/file_system.asm", "w") as f:
     f.write(output)
