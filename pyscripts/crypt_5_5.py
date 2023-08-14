@@ -1,10 +1,11 @@
 from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
     load_obj_tiles, load_room, load_metatiles, show_status, add_player_entity, \
-    add_entity
+    add_entity, enable_movement, enable_abilities, allow_1_move, enable_solid, \
+    entity_noop, collides_with, disable_other_solid, look_other_down, look_down, \
+    update_entities, wait_vblank
 
 
 def player_movement():
-    from gbpy import enable_movement, enable_abilities, allow_1_move
     enable_movement()
     enable_abilities()
     while 1:
@@ -12,15 +13,12 @@ def player_movement():
 
 
 def door_script():
-    from gbpy import enable_solid, entity_noop
     enable_solid()
     while 1:
         entity_noop()
 
 
 def pplate_script():
-    from gbpy import collides_with, disable_other_solid, entity_noop, \
-        look_other_down, look_down
     while 1:
         while 1:
             if collides_with(player):
@@ -57,8 +55,6 @@ door = add_entity(
 
 
 def main():
-    from gbpy import update_entities, wait_vblank
-
     cryptPals = load_bg_palettes("crypt.pal")
     cryptTiles = load_bg_tiles("crypt.2bpp")
     load_metatiles("crypt_5_5.room")

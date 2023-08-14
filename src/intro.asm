@@ -111,14 +111,14 @@ LoadNewRoom::
 
 
 CryptRooms:
-	db 4, 4, BANK(PyBlock_crypt_4_4__module_)
-		dw PyBlock_crypt_4_4__module_
-	db 4, 5, BANK(PyBlock_crypt_4_5__module_)
-		dw PyBlock_crypt_4_5__module_
-	db 5, 4, BANK(PyBlock_crypt_5_4__module_)
-		dw PyBlock_crypt_5_4__module_
-	db 5, 5, BANK(PyBlock_crypt_5_5__module_)
-		dw PyBlock_crypt_5_5__module_
+	db 4, 4
+		BankAddr PyBlock_crypt_4_4__module_
+	db 4, 5
+		BankAddr PyBlock_crypt_4_5__module_
+	db 5, 4
+		BankAddr PyBlock_crypt_5_4__module_
+	db 5, 5
+		BankAddr PyBlock_crypt_5_5__module_
 	db $ff
 
 

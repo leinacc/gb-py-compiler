@@ -1,8 +1,8 @@
 from gbpy import load_bg_palettes, load_bg_tiles, load_obj_palettes, \
-    load_obj_tiles, load_room, load_metatiles, show_status, add_player_entity
+    load_obj_tiles, load_room, load_metatiles, show_status, add_player_entity, \
+    enable_movement, enable_abilities, allow_1_move, update_entities, wait_vblank
 
 def player_movement():
-    from gbpy import enable_movement, enable_abilities, allow_1_move
     enable_movement()
     enable_abilities()
     while 1:
@@ -10,8 +10,6 @@ def player_movement():
 
 
 def main():
-    from gbpy import update_entities, wait_vblank
-
     cryptPals = load_bg_palettes("crypt.pal")
     cryptTiles = load_bg_tiles("crypt.2bpp")
     load_metatiles("crypt_4_4.room")

@@ -157,6 +157,7 @@ def get_hash_algo(gperf_output: str, prefix: str):
     zero_add = 0
     if zero_last:
         entry = asso_thresholds.pop()
+        zero_thresh = entry[1]
         zero_add = entry[2]
 
     for i in range(len(asso_thresholds)-1, -1, -1):
@@ -178,7 +179,7 @@ def get_hash_algo(gperf_output: str, prefix: str):
         if i == len(asso_thresholds)-1:
             if zero_last:
                 hash_algo += '.idx0:\n'
-                hash_algo += get_asso_call_output(prefix, 0, zero_add)
+                hash_algo += get_asso_call_output(prefix, zero_thresh, zero_add)
             else:
                 hash_algo += '.ret:\n'
         else:
@@ -229,7 +230,7 @@ def process_words(words: List[str], prefix: str):
         input='\n'.join(sorted(words)).encode("utf-8"), 
         capture_output=True,
     ).stdout.decode("utf-8")
-    print(gperf_output)
+    # print(gperf_output)
 
     return (
         get_asso_values(gperf_output, prefix),
