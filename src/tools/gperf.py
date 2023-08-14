@@ -128,9 +128,8 @@ def get_hash_algo(gperf_output: str, prefix: str):
             asso_threshold_add = int(gperf_output[asso_threshold_close_i+2:asso_threshold_add_close_i])
 
     # Now generate the hash algo
-    hash_algo = f"""; B - current hval sum
-; DE - char pos in string, to use as a lookup index in {prefix}AssoValues
-; HL - pointer to string
+    hash_algo = f"""; A - index into {prefix}AssoValues
+; B - current hval sum
 {prefix}AddAssoVal:
 ; Add the asso value to the sum
     ld hl, {prefix}AssoValues

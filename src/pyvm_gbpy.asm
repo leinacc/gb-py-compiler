@@ -4,6 +4,18 @@ INCLUDE "include/gbpy_table.asm"
 
 SECTION "Python VM gbpy module asm routines", ROM0
 
+; A - param idx starting 0
+; Returns B:HL = a pointer to the file
+; Trashes A, C and DE
+GetSrcOfFileGivenGbpyFuncParam:
+	call HLequAddrOfFuncParam
+
+; Check filename to load is str
+	ld a, [hl+]
+	cp TYPE_STR
+	jp z, GetSrcOfFileInHL
+	jp Debug
+
 
 AsmStub:
 	db TYPE_ASM

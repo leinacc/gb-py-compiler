@@ -6,6 +6,7 @@ SECTION "Python VM bytecode handlers", ROM0
 ; HL - address of module to load
 LoadModule::
 	push hl
+	push hl
 	ldh [hCurROMBank], a
 	ld [rROMB0], a
 
@@ -33,11 +34,13 @@ LoadModule::
 ; Python code address in hram
 	pop hl
 	call InitFrame
+	pop hl
 	call HeapifyNames
 
 ; Get bytecode addr
-	ld a, [hl-]
-	ld l, [hl]
+	ldh a, [hBytecodeAddr]
+	ld l, a
+	ldh a, [hBytecodeAddr+1]
 	ld h, a
 	push hl
 
@@ -804,8 +807,8 @@ StoreGlobal:
 
 ; DE = address of name string to find
 :   ld a, [hl+]
-	ld e, a
-	ld d, [hl]
+	ld h, [hl]
+	ld l, a
 
 	call HLequGlobalNamePtrAddr
 	ld c, l
@@ -917,8 +920,8 @@ LoadGlobal:
 
 ; DE = address of name string to find
 :   ld a, [hl+]
-	ld e, a
-	ld d, [hl]
+	ld h, [hl]
+	ld l, a
 
 	call HLequGlobalNamePtrAddr
 ; Push address of function
@@ -1089,74 +1092,61 @@ BuildString:
 	jp ExecBytecodes
 
 
-; Preserve HL
-; There should exist a list of global names that point to their values, eg
-; <heap_address>:
-;   db <str_len>, <str>, $ff
-;      dw <ptr to name's value>
-;   db $ff
-; thus every entry that exists generates 1+str_len+1+2 bytes
-; and the final entry ($ff) takes up 1
-; this value is stored before the 1st name, by `gbcompiler.py`
+; HL - addr of module block
+; There should exist a list of word pointers for each module's co_names
 HeapifyNames:
-	push hl
-
-; HL = address of names
-	ldh a, [hPyNamesAddr]
+; The 4th word points to the global/module hash func
+	ld a, 6
+	add l
 	ld l, a
-	ldh a, [hPyNamesAddr+1]
-	ld h, a
-
-; HL = address of name 0 (end marker)
-; HL-1 => HIGH(ptr) to heap length
+	jr nc, :+
+	inc h
+:	ld a, [hl+]
+	ldh [hGlobalHashFuncPtr], a
 	ld a, [hl+]
-	ld h, [hl]
-	ld l, a
-	push hl
-	dec hl
+	ldh [hGlobalHashFuncPtr+1], a
 
-; HL points to region to heapify names
-	ld b, [hl]
-	dec hl
-	ld c, [hl]
-	call Malloc
+; The byte after is the wordlist len
+	ld a, [hl]
+	add a
+	ld b, 0
+	ld c, a
+	jr nc, :+
+	inc b
+:	call Malloc
 	ld a, l
 	ldh [hGlobalNamesPtr], a
 	ld a, h
 	ldh [hGlobalNamesPtr+1], a
+	ret
 
-; Start storing string data here, DE = 1st name's address
-	pop de
 
-; BC = bytecode addr - 1st name's address
-	ldh a, [hBytecodeAddr]
-	sub e
-	ld c, a
-	ldh a, [hBytecodeAddr+1]
-	sbc d
+; HL - address of name to find
+HLequGlobalNamePtrAddr:
+	ldh a, [hGlobalHashFuncPtr]
+	ld e, a
+	ldh a, [hGlobalHashFuncPtr+1]
+	ld d, a
+	call .jpDE
+
 	ld b, a
 
-; Copy data over, skipping 2 bytes after every $ff
-	dec bc
-	inc b
-	inc c
-	.loop
-	    ld a, [de]
-	    ld [hli], a
-	    cp $ff
-	    jr nz, :+
-	    inc hl
-	    inc hl
-	:   inc de
-	    dec c
-	    jr nz, .loop
-	    dec b
-	    jr nz, .loop
+	ldh a, [hGlobalNamesPtr]
+	ld l, a
+	ldh a, [hGlobalNamesPtr+1]
+	ld h, a
 
-	ld a, $ff
-	ld [hl+], a
+	ld a, b
+	add a
+	add l
+	ld l, a
+	ret nc
 
-	pop hl
+	inc h
+	ret
+
+.jpDE:
+	push de
 	ret
 
 
@@ -1193,7 +1183,9 @@ hPyLocalEnd:
 ; Call stack which 1st points to a global frame
 hCurrCallStackIdx:: db
 
-hGlobalNamesPtr:: dw
+; Module co_names handlers
+hGlobalHashFuncPtr: dw
+hGlobalNamesPtr: dw
 
 
 SECTION "PYVM Wram Frame data", WRAMX[$d000] ; ALIGN[8]

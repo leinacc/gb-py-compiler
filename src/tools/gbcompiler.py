@@ -1,5 +1,6 @@
-import os
 import sys
+from gperf import process_words
+
 
 full_fname = sys.argv[1]
 fname = full_fname.split('/')[1].split('.')[0]
@@ -49,14 +50,30 @@ def get_tuple_output(tup, indents=0):
 def get_block_output(block, indents=0, module=False):
     clean_name = block.co_name.replace("<", "_").replace(">", "_")
     indent = '\t' * indents
-    output = f"""PyBlock_{fname}_{clean_name}:
+    output = ""
+    if module:
+        global_names = block.co_names
+        asso_values, hash_algo, wordlist = process_words(global_names, fname)
+
+        output = f"""{asso_values}
+
+{hash_algo}
+
+
+"""
+
+    output += f"""PyBlock_{fname}_{clean_name}:
 {indent}\tdw .consts
 {indent}\tdw .names
 {indent}\tdw .bytecode
-{indent}\t.consts:
+"""
+    if module:
+        output += f"""{indent}\tdw {fname}Hash
+{indent}\tdb {len(wordlist)} ; wordlist len
 """
 
-    block_names = set()
+    output += f"""{indent}\t.consts:
+"""
 
     # 1. co_consts
     for i in range(len(block.co_consts)):
@@ -72,13 +89,9 @@ def get_block_output(block, indents=0, module=False):
             for child_el in el:
                 if isinstance(child_el, str):
                     names.add(child_el)
-                    if module:
-                        block_names.add(child_el)
         elif isinstance(el, str):
             output += get_str_output(el, indents+2)
             names.add(el)
-            if module:
-                block_names.add(el)
         elif type(el).__name__ == 'code':
             output += f"{indent}\t\tdb TYPE_FUNCTION\n"
             clean_name = el.co_name.replace("<", "_").replace(">", "_")
@@ -108,16 +121,10 @@ def get_block_output(block, indents=0, module=False):
     for i in range(len(c)//2):
         output += f"{indent}\tdb ${c[i*2]:02x}, ${c[i*2+1]:02x}\n"
 
-    if module:
-        print('/*\n' + '\n'.join(sorted(block_names)) + '\n*/')
-
     return output
 
 
 outputs.insert(0, get_block_output(compiled, module=True))
-
-
-outputs.append('/*\n' + '\n'.join(sorted(names)) + '\n*/')
 
 
 with open(f"pycompiled/{fname}.asm", "w") as f:
